@@ -1,0 +1,11 @@
+extends baseEmail
+
+block content
+  p Hi #{firstName},
+  p Welcome to The Line, we're glad to have you 🎉🙏
+  p Need to confirm your Email? 
+  strong(style='color: blue;') Your OTP is #{data.otp}
+  p It's valid for 10 minutes
+  hr
+  p If you need any help, please don't hesitate to contact us!
+  p The Line Support Team

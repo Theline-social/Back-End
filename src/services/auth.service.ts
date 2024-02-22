@@ -80,7 +80,7 @@ class AuthService {
     return true;
   };
 
-  sendConfirmationOtp = async (body: SendConfirmOtpBody): Promise<void> => {
+  sendConfirmationOtp = async (body: SendConfirmOtpBody, lang: string): Promise<void> => {
     const { input, name, provider } = body;
 
     const { otp, hashedOtp, otpExpires } = createOtp(8, 10);
@@ -116,7 +116,7 @@ class AuthService {
           { otp }
         ).sendConfirmationEmail();
       } else if (provider === OtpProvider.PHONE) {
-        await new MsegatSmsRepository().sendOtpVerification(input, otp);
+        await new MsegatSmsRepository().sendOtpVerification(input, otp, lang);
       }
     } catch (error) {
       console.log(error);

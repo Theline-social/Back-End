@@ -30,8 +30,15 @@ export class MsegatSmsRepository implements SmsRepository {
     }
   }
 
-  async sendOtpVerification(to: string, otp: string) {
-    return await this.sendSms(to, `You OTP verification is ${otp}`);
+  async sendOtpVerification(to: string, otp: string, lang: string) {
+    let message = '';
+    if (lang === 'ar') {
+      message = `${otp} رمز التحقق الخاص بك هو `;
+    } else {
+      message = `Your OTP verification is ${otp}`;
+    }
+
+    return await this.sendSms(to, message);
   }
 
   async sendVerify(to: string) {

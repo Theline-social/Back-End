@@ -6,7 +6,8 @@
   "scripts": {
     "build": "rimraf dist && npx tsc",
     "start:dev": "(SET NODE_ENV=development) & nodemon src/server.ts",
-    "start:prod": "npm run build & (SET NODE_ENV=production)  & node dist/server.js",
+    RUN sed -i 's/"start:prod": "npm run build & (SET NODE_ENV=production)  & node dist/server.js"/"start:prod": "npm run build && NODE_ENV=production node dist/server.js"/' package.json
+
     "debug": "ndb server.js"
   },
   "keywords": [],

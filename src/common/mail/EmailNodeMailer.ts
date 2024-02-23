@@ -53,7 +53,7 @@ export class Email {
         },
       });
 
-      if (resp.data.status === 'true') return true;
+      if (resp.status == 200) return true;
 
       throw new AppError('Error in sending email', 400);
     } catch (error) {

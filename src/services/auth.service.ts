@@ -47,7 +47,6 @@ class AuthService {
     const user = new User();
     user.password = hashedPassword;
     user.email = body.email;
-    user.gender = body.gender;
     user.jobtitle = body.jobtitle;
     user.dateOfBirth = body.dateOfBirth;
     user.phoneNumber = body.phoneNumber;
@@ -126,9 +125,7 @@ class AuthService {
 
     try {
       if (provider === OtpProvider.EMAIL) {
-        await new Email(
-          { email: input, name },
-        ).sendConfirmationEmail(otp);
+        await new Email({ email: input, name }).sendConfirmationEmail(otp);
       } else if (provider === OtpProvider.PHONE) {
         await new MsegatSmsRepository().sendOtpVerification(input, otp, lang);
       }

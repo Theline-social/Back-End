@@ -27,7 +27,7 @@ let server: http.Server | https.Server;
 
       // Read SSL/TLS certificates only if NODE_ENV is 'production'
       let serverCreator;
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === 'productio') {
         const privateKey = fs.readFileSync(
           '/etc/letsencrypt/live/theline.social/privkey.pem',
           'utf8'

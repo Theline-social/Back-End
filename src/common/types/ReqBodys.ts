@@ -1,4 +1,4 @@
-import { Gender, OtpProvider } from '../../entities';
+import {  OtpProvider } from '../../entities';
 
 export interface SignupRequestBody {
   name: string;
@@ -7,7 +7,6 @@ export interface SignupRequestBody {
   password: string;
   jobtitle: string;
   dateOfBirth: Date;
-  gender: Gender;
 }
 
 export interface CheckValidOtpBody {

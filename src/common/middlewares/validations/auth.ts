@@ -75,15 +75,7 @@ export const signupValidationRules = [
   body('dateOfBirth')
     .isDate({ format: 'YYYY-MM-DD' })
     .withMessage('Invalid date format. Use YYYY-MM-DD'),
-  body('gender')
-    .isString()
-    .toUpperCase()
-    .custom((value, { req }) => {
-      if (![Gender.MALE, Gender.FEMALE].includes(value)) {
-        throw new Error('Invalid Gender. Must be either Male or Female.');
-      }
-      return true;
-    }),
+
 ];
 
 export const signinValidationRules = [

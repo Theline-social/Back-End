@@ -31,10 +31,6 @@ const router: Router = express.Router();
  *                 type: string
  *                 minLength: 3
  *                 description: The name of the user, at least 3 characters long.
- *               username:
- *                 type: string
- *                 minLength: 3
- *                 description: The username of the user, at least 3 characters long.
  *               email:
  *                 type: string
  *                 format: email
@@ -57,12 +53,6 @@ const router: Router = express.Router();
  *                 type: string
  *                 format: date
  *                 description: The date of birth of the user in the format YYYY-MM-DD.
- *               gender:
- *                 type: string
- *                 enum:
- *                   - "MALE"
- *                   - "FEMALE"
- *                 description: The gender of the user.
  *     responses:
  *       '201':
  *         description: OK. User signed up successfully.

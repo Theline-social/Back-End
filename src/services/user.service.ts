@@ -77,12 +77,12 @@ export class UsersService {
     if (input.match(emailRegex)) {
       user = await userRepository.findOne({
         where: { email: input },
-        select: { email: true, phoneNumber: true },
+        select: { email: true, phoneNumber: true , name: true},
       });
     } else if (isPhoneValid(input)) {
       user = await userRepository.findOne({
         where: { phoneNumber: input },
-        select: { email: true, phoneNumber: true },
+        select: { email: true, phoneNumber: true , name: true},
       });
     } else {
       user = await userRepository.findOne({

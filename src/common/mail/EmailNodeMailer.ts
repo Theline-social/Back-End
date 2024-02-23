@@ -1,8 +1,6 @@
-import nodemailer from 'nodemailer';
-import { htmlToText } from 'html-to-text';
-import pug from 'pug';
 import axios from 'axios';
 import https from 'https';
+import { AppError } from '../utils/AppError';
 
 interface User {
   name: string;
@@ -13,27 +11,19 @@ interface EmailData {
   [key: string]: any;
 }
 
-interface MailData {
-  subject: string;
-  content: string;
-}
-
 export class Email {
   firstName: string;
   to: string;
   from: string;
   data: EmailData;
 
-  constructor(user: User, data: EmailData = {}) {
+  constructor(user: User) {
     this.firstName = user.name.split(' ')[0];
     this.to = user.email;
     this.from = `${process.env.MAILER_AAPANEL_FROM}`;
-    this.data = data;
   }
 
-  private async sendMailAPI(mailData: MailData) {
-    const { subject, content } = mailData;
-
+  private async sendMailAPI(subject: string, data: EmailData) {
     const url = `${process.env.PANEL_ADDRESS}/mail_sys/send_mail_http.json`;
 
     try {
@@ -41,59 +31,37 @@ export class Email {
         rejectUnauthorized: false,
       });
 
+      const html = `
+        <!-- CONTENT-->
+        <p>Hi ${this.firstName},</p>
+        <p>Welcome to The Line, we're glad to have you 🎉🙏</p>
+        <p>Need to confirm your Email? </p>
+        <strong style="color: blue;">Your OTP is ${data.otp}</strong>
+        <p>It's valid for 10 minutes</p>
+        <hr>
+        <p>If you need any help, please don't hesitate to contact us!</p>
+        <p>The Line Support Team</p>
+      `;
       const resp = await axios.post(url, null, {
         params: {
           mail_from: this.from,
           password: process.env.MAILER_AAPANEL_PASSWORD,
           mail_to: this.to,
           subject: subject,
-          content: "Message",
-        //   subtype: 'html',
+          content: html,
+          subtype: 'html',
         },
       });
 
-      console.log(resp.data);
+      if (resp.data.status === 'true') return true;
+
+      throw new AppError('Error in sending email', 400);
     } catch (error) {
-      console.error('Error sending email:', error);
+      throw new AppError('Error in sending email', 400);
     }
   }
 
-  async sendEmail(template: string, subject: string): Promise<void> {
-    const html = pug.renderFile(`${__dirname}/templates/${template}.pug`, {
-      firstName: this.firstName,
-      subject,
-      data: this.data,
-    });
-
-    if (process.env.NODE_ENV == 'development') {
-      await this.sendMailAPI({ content: html, subject });
-    }
-
-    const mailOptions = {
-      from: this.from,
-      to: this.to,
-      subject,
-      html,
-      text: htmlToText(html),
-    };
-
-    const transporter = nodemailer.createTransport({
-      host: process.env.MAIL_HOST,
-      port: Number(process.env.MAIL_PORT),
-      auth: {
-        user: process.env.MAIL_USERNAME,
-        pass: process.env.MAIL_PASSWORD,
-      },
-    });
-
-    await transporter.sendMail(mailOptions);
-  }
-
-  async sendConfirmationEmail(): Promise<void> {
-    await this.sendEmail('confirmEmail', 'Confirm your email on TheLine');
-  }
-
-  async sendConfirmationUpdateEmail(): Promise<void> {
-    await this.sendEmail('updateEmail', 'Confirm your email on TheLine');
+  async sendConfirmationEmail(otp: string): Promise<void> {
+    await this.sendMailAPI('Confirm your email on TheLine', { otp });
   }
 }

@@ -128,8 +128,7 @@ class AuthService {
       if (provider === OtpProvider.EMAIL) {
         await new Email(
           { email: input, name },
-          { otp }
-        ).sendConfirmationEmail();
+        ).sendConfirmationEmail(otp);
       } else if (provider === OtpProvider.PHONE) {
         await new MsegatSmsRepository().sendOtpVerification(input, otp, lang);
       }

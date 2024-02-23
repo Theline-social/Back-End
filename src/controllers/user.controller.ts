@@ -109,8 +109,8 @@ export const resizePhoto = async (
     .jpeg({ quality: 90 })
     .toFile(
       process.env.NODE_ENV !== 'production'
-        ? `F:/MyRepos/Back-End-SM-Mostaql/assets/users/${req.file.filename}.jpeg`
-        : `/home/TheLine/Back-End/assets/users/${req.file.filename}.jpeg`
+        ? `F:/MyRepos/Back-End-SM-Mostaql/assets/users/${uniqueSuffix}.jpeg`
+        : `/home/TheLine/Back-End/assets/users/${uniqueSuffix}.jpeg`
     );
 
   await AppDataSource.getRepository(User).update(

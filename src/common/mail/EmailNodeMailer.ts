@@ -41,13 +41,15 @@ export class Email {
         rejectUnauthorized: false,
       });
 
-      const resp = await axios.post(url, {
-        mail_from: this.from,
-        password: process.env.MAILER_AAPANEL_PASSWORD,
-        mail_to: this.to,
-        subject: subject,
-        content: content,
-        subtype: 'html',
+      const resp = await axios.post(url, null, {
+        params: {
+          mail_from: this.from,
+          password: process.env.MAILER_AAPANEL_PASSWORD,
+          mail_to: this.to,
+          subject: subject,
+          content: "Message",
+        //   subtype: 'html',
+        },
       });
 
       console.log(resp.data);

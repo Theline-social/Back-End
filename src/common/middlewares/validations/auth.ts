@@ -31,7 +31,7 @@ export const sendOTPVerificationEmailValidationRules = [
     .custom(isValidProvider),
   body('input')
     .custom((value, { req }) => isValidEmailOrPhone(value, req.body.provider))
-    .withMessage('Invalid email address or phone number'),
+    .withMessage('Invalid input'),
   body('name').isString().notEmpty().withMessage('Name is required'),
 ];
 
@@ -44,7 +44,7 @@ export const checkOTPVerificationEmailValidationRules = [
     .custom(isValidProvider),
   body('input')
     .custom((value, { req }) => isValidEmailOrPhone(value, req.body.provider))
-    .withMessage('Invalid email address or phone number'),
+    .withMessage('Invalid input'),
   body('otp').isString().notEmpty().withMessage('Otp is required'),
 ];
 

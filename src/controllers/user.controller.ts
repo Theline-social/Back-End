@@ -115,7 +115,7 @@ export const resizePhoto = async (
 
   await AppDataSource.getRepository(User).update(
     { userId },
-    { imageUrl: `user-${uniqueSuffix}.jpeg` }
+    { imageUrl: `/home/TheLine/Back-End/assets/user-${uniqueSuffix}.jpeg` }
   );
 
   res.status(200).json({

@@ -203,6 +203,8 @@ router
  * /upload-photo-profile:
  *   post:
  *     summary: Upload and resize user profile photo.
+ *     tags:
+ *       - users
  *     description: Endpoint to upload and resize user profile photo.
  *     consumes:
  *       - multipart/form-data

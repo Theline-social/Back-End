@@ -2,7 +2,7 @@ import { AppError, catchAsync } from '../common';
 import { Request, Response, NextFunction } from 'express';
 import { UsersService } from '../services/user.service';
 import multer from 'multer';
-// import sharp from 'sharp';
+import sharp from 'sharp';
 import { AppDataSource } from '../dataSource';
 import { User } from '../entities';
 
@@ -99,15 +99,15 @@ export const resizePhoto = async (
   const { userId } = res.locals.currentUser;
   const uniqueSuffix = Date.now() + '-' + userId;
 
-//   await sharp(req.file.buffer)
-//     .resize(500, 500)
-//     .toFormat('jpeg')
-//     .jpeg({ quality: 90 })
-//     .toFile(
-//       process.env.NODE_ENV !== 'production'
-//         ? `F:/MyRepos/Back-End-SM-Mostaql/assets/users/${req.file.filename}`
-//         : ``
-//     );
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(
+      process.env.NODE_ENV !== 'production'
+        ? `F:/MyRepos/Back-End-SM-Mostaql/assets/users/${req.file.filename}`
+        : ``
+    );
 
   await AppDataSource.getRepository(User).update(
     { userId },

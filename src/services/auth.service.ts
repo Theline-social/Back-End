@@ -51,6 +51,7 @@ class AuthService {
     user.dateOfBirth = body.dateOfBirth;
     user.phoneNumber = body.phoneNumber;
     user.name = body.name;
+    user.username = `@user-${body.phoneNumber}`
 
     await userRepository.insert(user);
 

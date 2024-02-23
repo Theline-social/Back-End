@@ -1,4 +1,10 @@
-import { AppError, ChangePasswordBody, Password } from '../common';
+import {
+  AppError,
+  ChangePasswordBody,
+  Password,
+  emailRegex,
+  phoneRegex,
+} from '../common';
 import { AppDataSource } from '../dataSource';
 import { User } from '../entities';
 
@@ -68,12 +74,12 @@ export class UsersService {
     let user: User | null = null;
     const userRepository = AppDataSource.getRepository(User);
 
-    if (input.includes('@')) {
+    if (input.match(emailRegex)) {
       user = await userRepository.findOne({
         where: { email: input },
         select: { email: true, phoneNumber: true },
       });
-    } else if (!isNaN(Number(input))) {
+    } else if (input.match(phoneRegex)) {
       user = await userRepository.findOne({
         where: { phoneNumber: input },
         select: { email: true, phoneNumber: true },

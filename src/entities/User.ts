@@ -27,7 +27,7 @@ export class User {
     length: 60,
     unique: true,
     nullable: false,
-    default: Date.now(),
+    default: `@user-${Date.now()}`,
   })
   username: string;
 

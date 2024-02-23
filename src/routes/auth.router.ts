@@ -269,7 +269,7 @@ router
 /**
  * @swagger
  * /auth/signout:
- *   get:
+ *   post:
  *     summary: Sign out
  *     description: Signs out the currently authenticated user.
  *     security:

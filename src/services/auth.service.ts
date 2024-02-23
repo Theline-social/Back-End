@@ -28,13 +28,13 @@ class AuthService {
     const userRepository = AppDataSource.getRepository(User);
     const otpCodesRepository = AppDataSource.getRepository(OtpCodes);
 
-    // const phoneOtpCode = await otpCodesRepository.findOne({
-    //   where: { input: body.phoneNumber, provider: OtpProvider.PHONE },
-    // });
-    // if (!phoneOtpCode)
-    //   throw new AppError('Go to verifiy your phone number', 400);
-    // if (!phoneOtpCode.isVerified)
-    //   throw new AppError('Phone number not verified', 400);
+    const phoneOtpCode = await otpCodesRepository.findOne({
+      where: { input: body.phoneNumber, provider: OtpProvider.PHONE },
+    });
+    if (!phoneOtpCode)
+      throw new AppError('Go to verifiy your phone number', 400);
+    if (!phoneOtpCode.isVerified)
+      throw new AppError('Phone number not verified', 400);
 
     const emailOtpCode = await otpCodesRepository.findOne({
       where: { input: body.email, provider: OtpProvider.EMAIL },
@@ -61,7 +61,16 @@ class AuthService {
   checkValidOtp = async (body: CheckValidOtpBody): Promise<boolean> => {
     const { otp, input, provider } = body;
 
-    if (otp === '11111111') return true;
+    if (otp === '11111111') {
+      ///temp check for test
+      await AppDataSource.getRepository(OtpCodes).update(
+        { input, provider },
+        {
+          isVerified: true,
+        }
+      );
+      return true;
+    }
 
     const otpCode = await AppDataSource.getRepository(OtpCodes).findOne({
       where: { input, provider },

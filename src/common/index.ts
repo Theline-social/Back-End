@@ -7,7 +7,7 @@ export * from './utils/OtpHelper';
 export * from './utils/OtpHelper';
 export * from './types/ReqBodys';
 
-export * from './mail/Email';
+export * from './mail/EmailNodeMailer';
 export * from './sms/TwilioSmsRepository';
 export * from './sms/MsegatRepository';
 

@@ -1,6 +1,7 @@
 import { body } from 'express-validator';
 import { Gender, OtpProvider } from '../../../entities';
-import { emailRegex, passwordRegex, phoneRegex } from '../../constants/regex';
+import { emailRegex, passwordRegex } from '../../constants/regex';
+import { isPhoneValid } from './user';
 
 const isValidProvider = (value: OtpProvider) => {
   if (![OtpProvider.EMAIL, OtpProvider.PHONE].includes(value)) {
@@ -14,7 +15,7 @@ const isValidEmailOrPhone = (value: string, provider: OtpProvider) => {
     return true;
   }
 
-  if (provider === OtpProvider.PHONE && phoneRegex.test(value)) {
+  if (provider === OtpProvider.PHONE && isPhoneValid(value)) {
     return true;
   }
 
@@ -56,7 +57,7 @@ export const signupValidationRules = [
   body('email').toLowerCase().isEmail().withMessage('Invalid email address'),
   body('phoneNumber')
     .notEmpty()
-    .matches(phoneRegex)
+    .custom(isPhoneValid)
     .withMessage('Enter phone number'),
   body('password')
     .isString()

@@ -3,7 +3,7 @@ import {
   ChangePasswordBody,
   Password,
   emailRegex,
-  phoneRegex,
+  isPhoneValid,
 } from '../common';
 import { AppDataSource } from '../dataSource';
 import { User } from '../entities';
@@ -79,7 +79,7 @@ export class UsersService {
         where: { email: input },
         select: { email: true, phoneNumber: true },
       });
-    } else if (input.match(phoneRegex)) {
+    } else if (isPhoneValid(input)) {
       user = await userRepository.findOne({
         where: { phoneNumber: input },
         select: { email: true, phoneNumber: true },

@@ -1,5 +1,3 @@
-export const phoneRegex: RegExp = /^[0-9()-]+$/;
-
 export const emailRegex: RegExp =
   /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
 

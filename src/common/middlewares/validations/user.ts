@@ -1,5 +1,15 @@
 import { body } from 'express-validator';
 import { passwordRegex } from '../../constants/regex';
+import phoneNumberUtil from 'google-libphonenumber';
+const phoneUtil = phoneNumberUtil.PhoneNumberUtil.getInstance();
+
+export const isPhoneValid = (phone: string) => {
+  try {
+    return phoneUtil.isValidNumber(phoneUtil.parseAndKeepRawInput(phone));
+  } catch (error) {
+    return false;
+  }
+};
 
 export const changeUsernameValidationRules = [
   body('newUsername').isString().notEmpty().withMessage('username is required'),

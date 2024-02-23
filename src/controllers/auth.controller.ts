@@ -86,7 +86,7 @@ export const checkValidOtp = catchAsync(
 
     res.status(200).json({
       status: true,
-      message: 'Email Confirmed Successfully',
+      message: `${req.body.provider} confirmed successfully`,
     });
   }
 );
@@ -112,12 +112,12 @@ export const checkValidOtpAndAssignResetToken = catchAsync(
 
 export const sendConfirmationOtp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const lang = req.headers['accept-language'] as string
+    const lang = req.headers['accept-language'] as string;
     await authService.sendConfirmationOtp(req.body, lang);
 
     res.status(200).json({
       status: true,
-      message: 'Confirmation email has been sent successfully',
+      message: 'Confirmation OTP has been sent successfully',
     });
   }
 );
@@ -198,7 +198,7 @@ export const requireResetToken = catchAsync(
     } else if (req.cookies.reset_token) {
       token = req.cookies.reset_token;
     }
-    
+
     if (!token) {
       return next(
         new AppError(

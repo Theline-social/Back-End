@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 import { catchAsync } from '../common';
 import { AppError } from '../common';
 import AuthService from '../services/auth.service';
-import { OtpCodes, OtpProvider, User } from '../entities';
+import { OtpProvider, User } from '../entities';
 import { AppDataSource } from '../dataSource';
 
 const authService = new AuthService();
@@ -82,7 +82,7 @@ export const checkValidOtp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const isValid = await authService.checkValidOtp(req.body);
 
-    if (!isValid) throw new AppError('Invalid OTP ', 400);
+    if (!isValid) throw new AppError('Invalid OTP!', 400);
 
     res.status(200).json({
       status: true,
@@ -106,7 +106,7 @@ export const checkValidOtpAndAssignResetToken = catchAsync(
     }
 
     if (!user) throw new AppError('User not found', 404);
-    createAndSendToken(user, req, res, 200, 'reset_token', '1');
+    createAndSendToken(user, req, res, 200, 'reset_token', '0.25');
   }
 );
 
@@ -198,7 +198,7 @@ export const requireResetToken = catchAsync(
     } else if (req.cookies.reset_token) {
       token = req.cookies.reset_token;
     }
-
+    
     if (!token) {
       return next(
         new AppError(

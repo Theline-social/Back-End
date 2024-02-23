@@ -10,7 +10,6 @@ export class UsersService {
 
     const existingUser = await userRepository.findOne({
       where: { userId },
-      select: { username: true },
     });
 
     if (!existingUser) throw new AppError(`User ${userId} does not exist`, 404);
@@ -24,7 +23,6 @@ export class UsersService {
 
     const existingUser = await userRepository.findOne({
       where: { userId },
-      select: { password: true },
     });
 
     if (!existingUser) throw new AppError(`User ${userId} does not exist`, 404);
@@ -34,7 +32,7 @@ export class UsersService {
       existingUser.password
     );
 
-    if (!isCorrectPassword) throw new AppError('Wrong Password', 400);
+    if (!isCorrectPassword) throw new AppError('Wrong Current Password', 400);
 
     const hashedPassword = await Password.hashPassword(body.newPassword);
     existingUser.password = hashedPassword;
@@ -55,7 +53,6 @@ export class UsersService {
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({
       where: { userId },
-      select: { password: true },
     });
 
     if (!user) throw new AppError('User not found', 404);

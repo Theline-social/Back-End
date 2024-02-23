@@ -14,7 +14,7 @@ const router: Router = express.Router();
 
 /**
  * @swagger
- * /api/v1/users/current:
+ * /users/current:
  *   get:
  *     summary: Get current user information
  *     description: Retrieves the information of the currently authenticated user.
@@ -35,7 +35,7 @@ router.route('/current').get(authController.requireAuth, usersController.getMe);
 
 /**
  * @swagger
- * /api/v1/users/current/change-username:
+ * /users/current/change-username:
  *   patch:
  *     summary: Change username
  *     description: Changes the username of the currently authenticated user.
@@ -64,18 +64,16 @@ router.route('/current').get(authController.requireAuth, usersController.getMe);
  *         description: Internal Server Error. Failed to change username.
  */
 
-router
-  .route('/current/change-username')
-  .patch(
-    changeUsernameValidationRules,
-    validateRequest,
-    authController.requireAuth,
-    usersController.changeUsername
-  );
+router.route('/current/change-username').patch(
+  authController.requireAuth,
+  changeUsernameValidationRules,
+  validateRequest,
+  usersController.changeUsername
+);
 
 /**
  * @swagger
- * /api/v1/users/current/change-password:
+ * /users/current/change-password:
  *   patch:
  *     summary: Change password
  *     description: Changes the username of the currently authenticated user.
@@ -113,15 +111,15 @@ router
 router
   .route('/current/change-password')
   .patch(
+    authController.requireAuth,
     changePasswordValidationRules,
     validateRequest,
-    authController.requireAuth,
     usersController.changePassword
   );
 
 /**
  * @swagger
- * /api/v1/users/current/reset-password:
+ * /users/current/reset-password:
  *   patch:
  *     summary: Reset password
  *     description: Reset the password of the currently authenticated user.
@@ -155,16 +153,16 @@ router
 router
   .route('/current/reset-password')
   .patch(
+    authController.requireResetToken,
     resetPasswordValidationRules,
     validateRequest,
-    authController.requireResetToken,
     usersController.resetPassword
   );
 
 /**
  * @swagger
- * /api/v1/users/is-user-found:
- *   patch:
+ * /users/is-user-found:
+ *   post:
  *     summary: Check if user is found
  *     description: Checks if a user with the provided email, phone number, or username is found.
  *     tags:
@@ -192,7 +190,7 @@ router
 
 router
   .route('/is-user-found')
-  .get(
+  .post(
     isuserFoundValidationRules,
     validateRequest,
     usersController.isUserFound

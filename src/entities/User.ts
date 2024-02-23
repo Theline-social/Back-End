@@ -40,7 +40,10 @@ export class User {
   @Column({ type: 'varchar', unique: true, length: 70 })
   phoneNumber: string;
 
-  @Column({ type: 'varchar', select: false, length: 100 })
+  @Column({ type: 'varchar', length: 70, nullable: true })
+  location: string;
+
+  @Column({ type: 'varchar', length: 100 })
   password: string;
 
   @Column({ type: 'varchar', nullable: true })

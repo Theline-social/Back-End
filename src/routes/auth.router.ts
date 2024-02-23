@@ -14,7 +14,7 @@ const router: Router = express.Router();
 
 /**
  * @swagger
- * /api/v1/auth/signup:
+ * /auth/signup:
  *   post:
  *     tags:
  *       - Auth
@@ -63,9 +63,6 @@ const router: Router = express.Router();
  *                   - "MALE"
  *                   - "FEMALE"
  *                 description: The gender of the user.
- *               gRecaptchaResponse:
- *                 type: string
- *                 description: The response to the reCAPTCHA challenge.
  *     responses:
  *       '201':
  *         description: OK. User signed up successfully.
@@ -81,7 +78,7 @@ router
 
 /**
  * @swagger
- * /api/v1/auth/send-otpverification:
+ * /auth/send-otpverification:
  *   post:
  *     tags:
  *       - Auth
@@ -121,7 +118,7 @@ router
 
 /**
  * @swagger
- * /api/v1/auth/check-otpverification:
+ * /auth/check-otpverification:
  *   post:
  *     tags:
  *       - Auth
@@ -161,7 +158,7 @@ router
 
 /**
  * @swagger
- * /api/v1/auth/check-otpverification-send-resettoken:
+ * /auth/check-otpverification-send-resettoken:
  *   post:
  *     tags:
  *       - Auth
@@ -201,7 +198,7 @@ router
 
 /**
  * @swagger
- * /api/v1/auth/signin:
+ * /auth/signin:
  *   post:
  *     tags:
  *       - Auth
@@ -236,7 +233,7 @@ router
 
 /**
  * @swagger
- * /api/v1/auth/validate-recaptcha:
+ * /auth/validate-recaptcha:
  *   post:
  *     tags:
  *       - Auth
@@ -271,7 +268,7 @@ router
 
 /**
  * @swagger
- * /api/v1/auth/signout:
+ * /auth/signout:
  *   get:
  *     summary: Sign out
  *     description: Signs out the currently authenticated user.

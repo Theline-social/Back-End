@@ -65,7 +65,7 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', usersRouter);
 
 // Swagger
-app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/v1/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Docs in JSON format
 app.get('/docs.json', (_req: Request, res: Response) => {

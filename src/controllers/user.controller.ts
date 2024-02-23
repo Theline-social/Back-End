@@ -48,6 +48,9 @@ export const resetPassword = catchAsync(
     const userId = res.locals.currentUser.userId;
     await usersService.resetPassword(userId, req.body);
 
+    res.cookie('reset_token', 'expired', {
+      expires: new Date(Date.now() + 2 * 60 * 1000),
+    });
     res.status(200).json({
       status: true,
       message: 'Password reset successfully',

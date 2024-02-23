@@ -25,14 +25,14 @@ export class Email {
   }
 
   private newTransport(): Transporter {
-    if (process.env.NODE_ENV == 'development') {
+    if (process.env.NODE_ENV == 'production') {
       return nodemailer.createTransport({
-        host: 'theline.social',
-        secure: true,
-        port: 465,
+        host: process.env.CLOUDFLAIRE_SERVER,
+        secure: false,
+        port: Number(process.env.COUDFLAIRE_PORT),
         auth: {
-          user: 'zaki.artabat@gmail.com',
-          pass: 'Line1408',
+          user: process.env.COUDFLAIRE_USER,
+          pass: process.env.COUDFLAIRE_PASSWORD,
         },
         tls: { rejectUnauthorized: false },
       });

@@ -8,6 +8,16 @@ export const options: swaggerJsdoc.Options = {
       version: '1.0.1',
       description: '',
     },
+    servers: [ 
+    {
+      url: 'http://localhost:2023/api/v1', 
+      description: 'Local server',
+    },
+    {
+      url: 'https://theline.social/api/v1', 
+      description: 'Production server',
+    }
+  ],
     components: {
       securitySchemes: {
         bearerAuth: {

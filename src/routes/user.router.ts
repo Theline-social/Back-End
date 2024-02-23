@@ -200,7 +200,7 @@ router
 
 /**
  * @swagger
- * /upload-photo-profile:
+ * /users/current/upload-photo-profile:
  *   post:
  *     summary: Upload and resize user profile photo.
  *     tags:
@@ -223,7 +223,7 @@ router
  */
 
 router
-  .route('/upload-photo-profile')
+  .route('/current/upload-photo-profile')
   .post(
     authController.requireAuth,
     usersController.uploadPhoto,

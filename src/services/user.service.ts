@@ -87,14 +87,17 @@ export class UsersService {
     } else {
       user = await userRepository.findOne({
         where: { username: input },
-        select: { email: true, phoneNumber: true },
+        select: { email: true, phoneNumber: true, name: true },
       });
     }
 
     return {
       isFound: user !== null,
-      data: { email: user?.email, phoneNumber: user?.phoneNumber },
+      data: {
+        email: user?.email,
+        phoneNumber: user?.phoneNumber,
+        name: user?.name,
+      },
     };
   };
-
 }

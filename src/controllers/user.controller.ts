@@ -1,6 +1,10 @@
-import { catchAsync } from '../common';
+import { AppError, catchAsync } from '../common';
 import { Request, Response, NextFunction } from 'express';
 import { UsersService } from '../services/user.service';
+import multer from 'multer';
+// import sharp from 'sharp';
+import { AppDataSource } from '../dataSource';
+import { User } from '../entities';
 
 const usersService = new UsersService();
 
@@ -69,3 +73,51 @@ export const isUserFound = catchAsync(
     });
   }
 );
+
+const storage = multer.memoryStorage();
+
+const fileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback
+) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Not an image! Please upload an image!'));
+  }
+};
+
+const upload = multer({ storage: storage, fileFilter: fileFilter });
+
+export const resizePhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.file) return new AppError('No file Uploaded!', 400);
+  const { userId } = res.locals.currentUser;
+  const uniqueSuffix = Date.now() + '-' + userId;
+
+//   await sharp(req.file.buffer)
+//     .resize(500, 500)
+//     .toFormat('jpeg')
+//     .jpeg({ quality: 90 })
+//     .toFile(
+//       process.env.NODE_ENV !== 'production'
+//         ? `F:/MyRepos/Back-End-SM-Mostaql/assets/users/${req.file.filename}`
+//         : ``
+//     );
+
+  await AppDataSource.getRepository(User).update(
+    { userId },
+    { imageUrl: `user-${uniqueSuffix}.jpeg` }
+  );
+
+  res.status(200).json({
+    status: 200,
+    message: 'Photo Uploaded Successfully',
+  });
+};
+
+export const uploadPhoto = upload.single('image_profile');

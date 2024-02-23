@@ -96,4 +96,5 @@ export class UsersService {
       data: { email: user?.email, phoneNumber: user?.phoneNumber },
     };
   };
+
 }

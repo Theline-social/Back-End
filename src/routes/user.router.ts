@@ -64,12 +64,14 @@ router.route('/current').get(authController.requireAuth, usersController.getMe);
  *         description: Internal Server Error. Failed to change username.
  */
 
-router.route('/current/change-username').patch(
-  authController.requireAuth,
-  changeUsernameValidationRules,
-  validateRequest,
-  usersController.changeUsername
-);
+router
+  .route('/current/change-username')
+  .patch(
+    authController.requireAuth,
+    changeUsernameValidationRules,
+    validateRequest,
+    usersController.changeUsername
+  );
 
 /**
  * @swagger
@@ -194,6 +196,36 @@ router
     isuserFoundValidationRules,
     validateRequest,
     usersController.isUserFound
+  );
+
+/**
+ * @swagger
+ * /upload-photo-profile:
+ *   post:
+ *     summary: Upload and resize user profile photo.
+ *     description: Endpoint to upload and resize user profile photo.
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - in: formData
+ *         name: image_profile
+ *         type: file
+ *         description: The user's profile photo to upload.
+ *     responses:
+ *       '200':
+ *         description: User profile photo uploaded and resized successfully.
+ *       '400':
+ *         description: Bad request. The uploaded file is not an image.
+ *       '500':
+ *         description: Internal server error. Failed to upload or resize the user profile photo.
+ */
+
+router
+  .route('/upload-photo-profile')
+  .post(
+    authController.requireAuth,
+    usersController.uploadPhoto,
+    usersController.resizePhoto
   );
 
 export { router as usersRouter };

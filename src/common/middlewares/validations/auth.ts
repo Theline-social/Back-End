@@ -73,9 +73,12 @@ export const signupValidationRules = [
   }),
   body('jobtitle').isString().withMessage('jobtitle is required'),
   body('dateOfBirth')
-    .isDate({ format: 'YYYY-MM-DD' })
+    .custom((val) => {
+      const date = Date.parse(val);
+      if(date) return true;
+      return false
+    })
     .withMessage('Invalid date format. Use YYYY-MM-DD'),
-
 ];
 
 export const signinValidationRules = [

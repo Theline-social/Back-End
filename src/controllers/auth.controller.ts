@@ -113,6 +113,7 @@ export const checkValidOtpAndAssignResetToken = catchAsync(
 export const sendConfirmationOtp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const lang = req.headers['accept-language'] as string;
+    
     await authService.sendConfirmationOtp(req.body, lang);
 
     res.status(200).json({

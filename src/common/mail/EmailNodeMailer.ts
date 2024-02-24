@@ -31,17 +31,34 @@ export class Email {
         rejectUnauthorized: false,
       });
 
-      const html = `
-        <!-- CONTENT-->
-        <p>Hi ${this.firstName},</p>
-        <p>Welcome to The Line, we're glad to have you 🎉🙏</p>
-        <p>Need to confirm your Email? </p>
-        <strong style="color: blue;">Your OTP is ${data.otp}</strong>
-        <p>It's valid for 10 minutes</p>
-        <hr>
-        <p>If you need any help, please don't hesitate to contact us!</p>
-        <p>The Line Support Team</p>
-      `;
+      let html;
+      if (data.lang === 'ar') {
+        html = `
+        <div dir="rtl">
+            <!-- CONTENT-->
+            <p>مرحبا ${this.firstName}،</p>
+            <p>نرحب بك في ذا لاين، نحن سعداء بوجودك 🎉🙏</p>
+            <p>هل تحتاج إلى تأكيد بريدك الإلكتروني؟</p>
+            <strong style="color: blue;">الرمز الخاص بك هو ${data.otp}</strong>
+            <p>صالح لمدة 10 دقائق</p>
+            <br>
+            <p>فريق دعم ذا لاين</p>
+            <p>إذا كنت بحاجة إلى مساعدة، فلا تتردد في الاتصال بنا!</p>
+        </div>
+        `;
+      } else {
+        html = `
+          <!-- CONTENT-->
+          <p>Hi ${this.firstName},</p>
+          <p>Welcome to The Line, we're glad to have you 🎉🙏</p>
+          <p>Need to confirm your Email? </p>
+          <strong style="color: blue;">Your OTP is ${data.otp}</strong>
+          <p>It's valid for 10 minutes</p>
+          <hr>
+          <p>If you need any help, please don't hesitate to contact us!</p>
+          <p>The Line Support Team</p>
+        `;
+      }
       const resp = await axios.post(url, null, {
         params: {
           mail_from: this.from,
@@ -61,7 +78,7 @@ export class Email {
     }
   }
 
-  async sendConfirmationEmail(otp: string): Promise<void> {
-    await this.sendMailAPI('Confirm your email on TheLine', { otp });
+  async sendConfirmationEmail(otp: string, lang: string): Promise<void> {
+    await this.sendMailAPI('Confirm your email on TheLine', { otp, lang });
   }
 }

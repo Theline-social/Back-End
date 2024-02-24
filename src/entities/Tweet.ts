@@ -5,19 +5,26 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from './User';
+import { Retweet } from './ReTweet';
+import { ReplyTweet } from './ReplyTweet';
+import { ReactTweet } from './ReactTweet';
+import { MentionTweet } from './MentionTweet';
 
 @Entity()
 export class Tweet {
   @PrimaryGeneratedColumn()
   tweetId: number;
 
-  @Column({ type: 'int' })
-  userId: string;
+  @Column({ type: 'varchar', length: 200 })
+  content: string;
 
-  @Column({ type: 'varchar', length: 60 })
-  text: string;
+  @Column({ type: 'varchar', array: true, length: 200, nullable: true })
+  imageUrls: string[];
 
   @CreateDateColumn({
     type: 'timestamp',
@@ -32,6 +39,18 @@ export class Tweet {
   })
   updatedAt: Date;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  post: User;
+  @ManyToOne(() => User, (user) => user.tweets, { onDelete: 'CASCADE' })
+  tweeter: User;
+
+  @OneToMany(() => Retweet, (retweet) => retweet.tweet)
+  retweets: Retweet[];
+
+  @OneToMany(() => ReplyTweet, (reply) => reply.tweet)
+  replies: ReplyTweet[];
+
+  @OneToMany(() => ReactTweet, (reactTweet) => reactTweet.tweet)
+  reacts: ReactTweet[];
+
+  @OneToMany(() => MentionTweet, (mention) => mention.tweet)
+  mentions: MentionTweet[];
 }

@@ -8,6 +8,63 @@ import { User } from '../entities';
 
 const usersService = new UsersService();
 
+const storage = multer.memoryStorage();
+
+export const fileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback
+) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Not an image! Please upload an image!'));
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 1024 * 1024 * 10 },
+});
+
+export const resizePhoto = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.file) return new AppError('No file Uploaded!', 400);
+  const { userId } = res.locals.currentUser;
+  const uniqueSuffix = Date.now() + '-' + userId;
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(
+      process.env.NODE_ENV !== 'production'
+        ? `F:/MyRepos/Back-End-SM-Mostaql/assets/users/user-${uniqueSuffix}.jpeg`
+        : `/home/TheLine/Back-End/assets/users/user-${uniqueSuffix}.jpeg`
+    );
+
+  await AppDataSource.getRepository(User).update(
+    { userId },
+    {
+      imageUrl: `/users/user-${uniqueSuffix}.jpeg`,
+    }
+  );
+
+  res.status(200).json({
+    status: 200,
+    message: 'Photo Uploaded Successfully',
+    data: {
+      imageUrl: `/users/user-${uniqueSuffix}.jpeg`,
+    },
+  });
+};
+
+export const uploadPhoto = upload.single('image_profile');
+
 export const getMe = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
@@ -73,60 +130,39 @@ export const isUserFound = catchAsync(
     });
   }
 );
+export const getFollowers = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { followers } = await usersService.getFollowers(+req.params.userId);
 
-const storage = multer.memoryStorage();
-
-const fileFilter = (
-  req: Request,
-  file: Express.Multer.File,
-  cb: multer.FileFilterCallback
-) => {
-  if (file.mimetype.startsWith('image')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Not an image! Please upload an image!'));
+    res.status(200).json({
+      status: true,
+      data: { followers },
+    });
   }
-};
+);
 
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: { fileSize: 1024 * 1024 * 10 },
-});
+export const getTweetBookmarks = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
 
-export const resizePhoto = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (!req.file) return new AppError('No file Uploaded!', 400);
-  const { userId } = res.locals.currentUser;
-  const uniqueSuffix = Date.now() + '-' + userId;
+    const { tweetBookmarks } = await usersService.getTweetBookmarks(+userId);
 
-  await sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat('jpeg')
-    .jpeg({ quality: 90 })
-    .toFile(
-      process.env.NODE_ENV !== 'production'
-        ? `F:/MyRepos/Back-End-SM-Mostaql/assets/users/${uniqueSuffix}.jpeg`
-        : `/home/TheLine/Back-End/assets/users/${uniqueSuffix}.jpeg`
-    );
+    res.status(200).json({
+      status: true,
+      data: { tweetBookmarks },
+    });
+  }
+);
 
-  await AppDataSource.getRepository(User).update(
-    { userId },
-    {
-      imageUrl: `/home/TheLine/Back-End/assets/users/user-${uniqueSuffix}.jpeg`,
-    }
-  );
+export const getMentions = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
 
-  res.status(200).json({
-    status: 200,
-    message: 'Photo Uploaded Successfully',
-    data: {
-      imageUrl: `/home/TheLine/Back-End/assets/users/user-${uniqueSuffix}.jpeg`,
-    },
-  });
-};
+    const { mentions } = await usersService.getMentions(+userId);
 
-export const uploadPhoto = upload.single('image_profile');
+    res.status(200).json({
+      status: true,
+      data: { mentions },
+    });
+  }
+);

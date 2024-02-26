@@ -10,9 +10,8 @@ import {
   JoinTable,
 } from 'typeorm';
 import { User } from './User';
-import { ReplyReel } from './ReplyReel';
-import { ReactReel } from './ReactReel';
-import { MentionReel } from './MentionReel';
+import { ReelReply } from './ReelReply';
+import { ReelMention } from './ReelMention';
 import { ReReel } from './ReReel';
 import { Topic } from './Topic';
 
@@ -43,18 +42,47 @@ export class Reel {
   @ManyToOne(() => User, (user) => user.reels, { onDelete: 'CASCADE' })
   reeler: User;
 
-  @OneToMany(() => ReplyReel, (reply) => reply.reel)
-  replies: ReplyReel[];
+  @OneToMany(() => ReelReply, (reply) => reply.reel, {
+    onDelete: 'CASCADE',
+  })
+  replies: ReelReply[];
 
-  @OneToMany(() => ReactReel, (reactReel) => reactReel.reel)
-  reacts: ReactReel[];
+  @ManyToMany(() => User, (user) => user.reactedReels, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable()
+  reacts: User[];
 
-  @OneToMany(() => MentionReel, (mention) => mention.reel)
-  mentions: MentionReel[];
+  @OneToMany(() => ReelMention, (mention) => mention.reel, {
+    onDelete: 'CASCADE',
+  })
+  mentions: ReelMention[];
 
-  @OneToMany(() => ReReel, (rereel) => rereel.reel)
+  @OneToMany(() => ReReel, (rereel) => rereel.reel, {
+    onDelete: 'CASCADE',
+  })
   rereels: ReReel[];
 
-  @ManyToMany(() => Topic, (topic) => topic.supportingReels)
+  @ManyToMany(() => Topic, (topic) => topic.supportingReels, {
+    onDelete: 'CASCADE',
+  })
   supportedTopics: Topic[];
+
+  @ManyToMany(() => User, (user) => user.reelBookmarks, {
+    onDelete: 'CASCADE',
+  })
+  bookmarkedBy: User[];
+
+  get reactCount(): number {
+    return this.reacts ? this.reacts.length : 0;
+  }
+  get repliesCount(): number {
+    return this.replies ? this.replies.length : 0;
+  }
+  get bookmarksCount(): number {
+    return this.bookmarkedBy ? this.bookmarkedBy.length : 0;
+  }
+  get reReelCount(): number {
+    return this.rereels ? this.rereels.length : 0;
+  }
 }

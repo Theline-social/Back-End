@@ -1,5 +1,5 @@
 import { Repository, DataSource } from 'typeorm';
-import { Message, Conversation,Notification, User } from '../entities';
+import { Message, Conversation, Notification, User } from '../entities';
 import { AppError } from '../common/utils/AppError';
 import { Server } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
@@ -26,48 +26,57 @@ class SocketService {
 
   async emitNotification(
     senderId: number,
-    receiverId: number,
-    type: string = ''
+    receiverUsername: string,
+    type: string = '',
+    metadata: any = {}
   ): Promise<void> {
     type = type.toUpperCase();
     const userRepository: Repository<User> =
       this.AppDataSource.getRepository(User);
 
     const sender = await userRepository.findOne({
-      select: { name: true, imageUrl: true, username: true },
       where: { userId: senderId },
     });
+
+    if (!sender) throw new AppError('User not found', 404);
+
+    const receiver = await userRepository.findOne({
+      where: { username: receiverUsername },
+    });
+
+    if (!receiver) throw new AppError('User not found', 404);
 
     let content = '';
     switch (type) {
       case 'CHAT':
-        content = `${sender!.name} sent you a message`;
+        content = `${sender.name} sent you a message`;
         break;
       case 'MENTION':
-        content = `${sender!.name} mentioned you`;
+        content = `${sender.name} mentioned you`;
         break;
       case 'FOLLOW':
-        content = `${sender!.name} followed you`;
+        content = `${sender.name} followed you`;
         break;
       case 'UNFOLLOW':
-        content = `${sender!.name} unfollowed you`;
+        content = `${sender.name} unfollowed you`;
         break;
       default:
         throw new AppError('Unknown notification type: ' + type, 400);
     }
 
     const notification = new Notification();
-    notification.senderId = senderId;
+    notification.sender = sender;
     notification.content = content;
-    notification.userId = receiverId;
+    notification.user = receiver;
     notification.isSeen = false;
     notification.type = type;
+    notification.metadata = metadata;
 
     await this.AppDataSource.getRepository(Notification).insert(notification);
 
-    if (receiverId && sender) {
+    if (receiver && sender) {
       this.io?.sockets
-        .in(`user_${receiverId}_room`)
+        .in(`user_${receiver.userId}_room`)
         .emit('notification-receive', {
           notificationId: notification.notificationId,
           content: notification.content,
@@ -216,7 +225,7 @@ class SocketService {
         socket.on('mark-notifications-as-seen', async () => {
           const { userId } = socket.data;
           await this.AppDataSource.getRepository(Notification).update(
-            { isSeen: false, userId },
+            { isSeen: false, user: { userId } },
             { isSeen: true }
           );
         });

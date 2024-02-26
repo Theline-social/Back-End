@@ -1,258 +1,258 @@
 import express, { Router } from 'express';
-import * as tweetsController from '../controllers/tweet.controller';
+import * as reelsController from '../controllers/reel.controller';
 import * as authController from '../controllers/auth.controller';
 
 import { validateRequest } from '../common';
-import { replyIdParamsValidation, tweetIdParamsValidation } from '../common';
+import { replyIdParamsValidation, reelIdParamsValidation } from '../common';
 
 const router: Router = express.Router();
 
 /**
  * @swagger
- * /tweets:
+ * /reels:
  *   post:
- *     summary: Add a new tweet
- *     description: Add a new tweet with content and optional images.
+ *     summary: Add a new reel
+ *     description: Add a new reel with content and optional images.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     consumes:
  *       - multipart/form-data
  *     parameters:
  *       - name: content
  *         in: formData
- *         description: The content of the tweet.
+ *         description: The content of the reel.
  *         required: true
  *         type: string
  *       - name: images
  *         in: formData
- *         description: List of image files to be attached to the tweet.
+ *         description: List of image files to be attached to the reel.
  *         required: false
  *         type: array
  *         items:
  *           type: file
  *     responses:
  *       '200':
- *         description: OK. Tweet successfully added.
+ *         description: OK. Reel successfully added.
  *       '400':
  *         description: Bad Request. Invalid request parameters.
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '500':
- *         description: Internal Server Error. Failed to add the tweet.
+ *         description: Internal Server Error. Failed to add the reel.
  */
 
 router
   .route('/')
   .post(
     authController.requireAuth,
-    tweetsController.uploadTweetImages,
-    tweetsController.resizeTweetImages,
-    tweetsController.addTweet
+    reelsController.uploadReel,
+    reelsController.saveReel,
+    reelsController.addReel
   );
 
 /**
  * @swagger
- * /tweets/{tweetId}:
+ * /reels/{reelId}:
  *   delete:
- *     summary: Delete a tweet
- *     description: Delete a tweet by its ID.
+ *     summary: Delete a reel
+ *     description: Delete a reel by its ID.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to delete.
+ *         description: ID of the reel to delete.
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       '204':
- *         description: No content. Tweet successfully deleted.
+ *         description: No content. Reel successfully deleted.
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not found. Tweet with the provided ID not found.
+ *         description: Not found. Reel with the provided ID not found.
  *       '500':
- *         description: Internal Server Error. Failed to delete the tweet.
+ *         description: Internal Server Error. Failed to delete the reel.
  */
 
 router
-  .route('/:tweetId')
+  .route('/:reelId')
   .delete(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     validateRequest,
-    tweetsController.deleteTweet
+    reelsController.deleteReel
   );
 
 /**
  * @swagger
- * /tweets/{tweetId}/replies:
+ * /reels/{reelId}/replies:
  *   get:
- *     summary: Get replies to a tweet
- *     description: Retrieves replies to a tweet by its ID.
+ *     summary: Get replies to a reel
+ *     description: Retrieves replies to a reel by its ID.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to get replies for.
+ *         description: ID of the reel to get replies for.
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       '200':
- *         description: OK. Replies to the tweet successfully retrieved.
+ *         description: OK. Replies to the reel successfully retrieved.
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not found. Tweet with the provided ID not found.
+ *         description: Not found. Reel with the provided ID not found.
  *       '500':
- *         description: Internal Server Error. Failed to retrieve tweet replies.
+ *         description: Internal Server Error. Failed to retrieve reel replies.
  */
 router
-  .route('/:tweetId/replies')
+  .route('/:reelId/replies')
   .get(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     validateRequest,
-    tweetsController.getTweetReplies
+    reelsController.getReelReplies
   );
 
 /**
  * @swagger
- * /tweets/{tweetId}/reacters:
+ * /reels/{reelId}/reacters:
  *   get:
- *     summary: Get reacters of a tweet
- *     description: Retrieves the users who reacted to a tweet by its ID.
+ *     summary: Get reacters of a reel
+ *     description: Retrieves the users who reacted to a reel by its ID.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to get reacters for.
+ *         description: ID of the reel to get reacters for.
  *         required: true
  *         schema:
  *           type: integer
  *     responses:
  *       '200':
- *         description: OK. Reacters of the tweet successfully retrieved.
+ *         description: OK. Reacters of the reel successfully retrieved.
  *       '400':
  *         description: Bad Request. Invalid request parameters.
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not Found. Tweet with the provided ID not found.
+ *         description: Not Found. Reel with the provided ID not found.
  *       '500':
- *         description: Internal Server Error. Failed to retrieve reacters of the tweet.
+ *         description: Internal Server Error. Failed to retrieve reacters of the reel.
  */
 
 router
-  .route('/:tweetId/reacters')
+  .route('/:reelId/reacters')
   .get(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     validateRequest,
-    tweetsController.getTweetReacters
+    reelsController.getReelReacters
   );
   
 /**
  * @swagger
- * /tweets/{tweetId}/retweeters:
+ * /reels/{reelId}/rereelers:
  *   get:
- *     summary: Get retweeters of a tweet
- *     description: Retrieves the users who retweeted a tweet by its ID.
+ *     summary: Get rereelers of a reel
+ *     description: Retrieves the users who rereeled a reel by its ID.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to get retweeters for.
+ *         description: ID of the reel to get rereelers for.
  *         required: true
  *         schema:
  *           type: integer
  *     responses:
  *       '200':
- *         description: OK. Retweeters of the tweet successfully retrieved.
+ *         description: OK. Rereelers of the reel successfully retrieved.
  *       '400':
  *         description: Bad Request. Invalid request parameters.
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not Found. Tweet with the provided ID not found.
+ *         description: Not Found. Reel with the provided ID not found.
  *       '500':
- *         description: Internal Server Error. Failed to retrieve retweeters of the tweet.
+ *         description: Internal Server Error. Failed to retrieve rereelers of the reel.
  */
 
 router
-  .route('/:tweetId/retweeters')
+  .route('/:reelId/rereelers')
   .get(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     validateRequest,
-    tweetsController.getTweetReTweeters
+    reelsController.getReelReReelers
   );
 /**
  * @swagger
- * /tweets/{tweetId}:
+ * /reels/{reelId}:
  *   get:
- *     summary: Get a single tweet by ID
- *     description: Retrieves a single tweet by its ID.
+ *     summary: Get a single reel by ID
+ *     description: Retrieves a single reel by its ID.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to retrieve.
+ *         description: ID of the reel to retrieve.
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       '200':
- *         description: OK. Tweet successfully retrieved.
+ *         description: OK. Reel successfully retrieved.
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not found. Tweet with the provided ID not found.
+ *         description: Not found. Reel with the provided ID not found.
  *       '500':
- *         description: Internal Server Error. Failed to retrieve the tweet.
+ *         description: Internal Server Error. Failed to retrieve the reel.
  */
 
 router
-  .route('/:tweetId')
+  .route('/:reelId')
   .get(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     validateRequest,
-    tweetsController.getTweet
+    reelsController.getReel
   );
 
 /**
  * @swagger
- * /tweets/{tweetId}/add-reply:
+ * /reels/{reelId}/add-reply:
  *   post:
- *     summary: Add a reply to a tweet
- *     description: Adds a reply to a tweet by its ID.
+ *     summary: Add a reply to a reel
+ *     description: Adds a reply to a reel by its ID.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to add a reply to.
+ *         description: ID of the reel to add a reply to.
  *         required: true
  *         schema:
  *           type: string
@@ -274,34 +274,34 @@ router
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not found. Tweet with the provided ID not found.
+ *         description: Not found. Reel with the provided ID not found.
  *       '500':
  *         description: Internal Server Error. Failed to add the reply.
  */
 
 router
-  .route('/:tweetId/add-reply')
+  .route('/:reelId/add-reply')
   .post(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     validateRequest,
-    tweetsController.addTweetReply
+    reelsController.addReelReply
   );
 
 /**
  * @swagger
- * /tweets/{tweetId}/toggle-react:
+ * /reels/{reelId}/toggle-react:
  *   patch:
- *     summary: Add a reaction to a tweet or remove my react if i reacted already.
- *     description: Adds a reaction to a tweet by its ID.
+ *     summary: Add a reaction to a reel or remove my react if i reacted already.
+ *     description: Adds a reaction to a reel by its ID.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to add a reaction to.
+ *         description: ID of the reel to add a reaction to.
  *         required: true
  *         schema:
  *           type: string
@@ -313,34 +313,34 @@ router
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not found. Tweet with the provided ID not found.
+ *         description: Not found. Reel with the provided ID not found.
  *       '500':
  *         description: Internal Server Error. Failed to add the reaction.
  */
 
 router
-  .route('/:tweetId/toggle-react')
+  .route('/:reelId/toggle-react')
   .patch(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     validateRequest,
-    tweetsController.toggleTweetReact
+    reelsController.toggleReelReact
   );
 
 /**
  * @swagger
- * /tweets/{tweetId}/{replyId}/add-reply:
+ * /reels/{reelId}/{replyId}/add-reply:
  *   post:
- *     summary: Add a reply to a reply of a tweet
- *     description: Adds a reply to a reply of a tweet by their IDs.
+ *     summary: Add a reply to a reply of a reel
+ *     description: Adds a reply to a reply of a reel by their IDs.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to which the reply belongs.
+ *         description: ID of the reel to which the reply belongs.
  *         required: true
  *         schema:
  *           type: string
@@ -370,35 +370,35 @@ router
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not found. Tweet or reply with the provided ID not found.
+ *         description: Not found. Reel or reply with the provided ID not found.
  *       '500':
  *         description: Internal Server Error. Failed to add the reply.
  */
 
 router
-  .route('/:tweetId/:replyId/add-reply')
+  .route('/:reelId/:replyId/add-reply')
   .post(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     replyIdParamsValidation,
     validateRequest,
-    tweetsController.addReplyToReply
+    reelsController.addReplyToReply
   );
 
 /**
  * @swagger
- * /tweets/{tweetId}/{replyId}/toggle-react:
+ * /reels/{reelId}/{replyId}/toggle-react:
  *   patch:
  *     summary: Toggle reaction to a reply
- *     description: Toggles the reaction (add/remove) to a reply of a tweet by their IDs.
+ *     description: Toggles the reaction (add/remove) to a reply of a reel by their IDs.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to which the reply belongs.
+ *         description: ID of the reel to which the reply belongs.
  *         required: true
  *         schema:
  *           type: string
@@ -416,35 +416,35 @@ router
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not found. Tweet or reply with the provided ID not found.
+ *         description: Not found. Reel or reply with the provided ID not found.
  *       '500':
  *         description: Internal Server Error. Failed to toggle the reaction.
  */
 
 router
-  .route('/:tweetId/:replyId/toggle-react')
+  .route('/:reelId/:replyId/toggle-react')
   .patch(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     replyIdParamsValidation,
     validateRequest,
-    tweetsController.toggleReplyReact
+    reelsController.toggleReplyReact
   );
 
 /**
  * @swagger
- * /tweets/{tweetId}/retweet:
+ * /reels/{reelId}/rereel:
  *   post:
- *     summary: Retweet a tweet
- *     description: Retweets a tweet by its ID.
+ *     summary: Rereel a reel
+ *     description: Rereels a reel by its ID.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to retweet.
+ *         description: ID of the reel to rereel.
  *         required: true
  *         schema:
  *           type: string
@@ -457,67 +457,67 @@ router
  *             properties:
  *               quote:
  *                 type: string
- *                 description: Content of the retweet quote.
+ *                 description: Content of the rereel quote.
  *             required:
  *               - quote
  *     responses:
  *       '201':
- *         description: Created. Retweet successfully added.
+ *         description: Created. Rereel successfully added.
  *       '400':
  *         description: Bad Request. Invalid request parameters.
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not found. Tweet with the provided ID not found.
+ *         description: Not found. Reel with the provided ID not found.
  *       '500':
- *         description: Internal Server Error. Failed to add the retweet.
+ *         description: Internal Server Error. Failed to add the rereel.
  */
 
 router
-  .route('/:tweetId/retweet')
+  .route('/:reelId/rereel')
   .post(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     validateRequest,
-    tweetsController.addRetweet
+    reelsController.addRereel
   );
 
 /**
  * @swagger
- * /tweets/{tweetId}/toggle-bookmark:
+ * /reels/{reelId}/toggle-bookmark:
  *   patch:
- *     summary: Bookmark a tweet
- *     description: Marks a tweet as bookmarked by its ID.
+ *     summary: Bookmark a reel
+ *     description: Marks a reel as bookmarked by its ID.
  *     security:
  *       - jwt: []
  *     tags:
- *       - tweets
+ *       - reels
  *     parameters:
- *       - name: tweetId
+ *       - name: reelId
  *         in: path
- *         description: ID of the tweet to bookmark.
+ *         description: ID of the reel to bookmark.
  *         required: true
  *         schema:
  *           type: integer
  *     responses:
  *       '200':
- *         description: OK. Tweet bookmarked successfully.
+ *         description: OK. Reel bookmarked successfully.
  *       '400':
  *         description: Bad Request. Invalid request parameters.
  *       '401':
  *         description: Unauthorized. User authentication failed.
  *       '404':
- *         description: Not Found. Tweet with the provided ID not found.
+ *         description: Not Found. Reel with the provided ID not found.
  *       '500':
- *         description: Internal Server Error. Failed to bookmark the tweet.
+ *         description: Internal Server Error. Failed to bookmark the reel.
  */
 
 router
-  .route('/:tweetId/toggle-bookmark')
+  .route('/:reelId/toggle-bookmark')
   .patch(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    reelIdParamsValidation,
     validateRequest,
-    tweetsController.toggleBookmark
+    reelsController.toggleBookmark
   );
-export { router as tweetsRouter };
+export { router as reelsRouter };

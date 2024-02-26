@@ -6,7 +6,7 @@ import {
   isPhoneValid,
 } from '../common';
 import { AppDataSource } from '../dataSource';
-import { User } from '../entities';
+import { TweetMention, User } from '../entities';
 
 export class UsersService {
   constructor() {}
@@ -69,6 +69,10 @@ export class UsersService {
     await userRepository.save(user);
   };
 
+  isUserFoundById = async (userId: number) => {
+    return await AppDataSource.getRepository(User).existsBy({ userId });
+  };
+
   isUserFound = async (body: { input: string }) => {
     const { input } = body;
     let user: User | null = null;
@@ -77,12 +81,12 @@ export class UsersService {
     if (input.match(emailRegex)) {
       user = await userRepository.findOne({
         where: { email: input },
-        select: { email: true, phoneNumber: true , name: true},
+        select: { email: true, phoneNumber: true, name: true },
       });
     } else if (isPhoneValid(input)) {
       user = await userRepository.findOne({
         where: { phoneNumber: input },
-        select: { email: true, phoneNumber: true , name: true},
+        select: { email: true, phoneNumber: true, name: true },
       });
     } else {
       user = await userRepository.findOne({
@@ -98,6 +102,96 @@ export class UsersService {
         phoneNumber: user?.phoneNumber,
         name: user?.name,
       },
+    };
+  };
+
+  getFollowers = async (userId: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: {
+        followers: {
+          email: true,
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+        },
+      },
+      relations: { followers: true },
+    });
+
+    return { followers: user?.followers };
+  };
+
+  getTweetBookmarks = async (userId: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: {
+        tweetBookmarks: true,
+      },
+      relations: { tweetBookmarks: true },
+    });
+
+    return { tweetBookmarks: user?.tweetBookmarks };
+  };
+
+  getMentions = async (userId: number) => {
+    const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
+
+    const user = new User();
+    user.userId = userId;
+
+    const mentions = await tweetMentionRepository.find({
+      where: { userMentioned: user },
+      select: {
+        tweet: {
+          tweeter: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          replies: true,
+          reacts: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          bookmarkedBy: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+        },
+      },
+      relations: {
+        tweet: {
+          tweeter: true,
+          reacts: true,
+          bookmarkedBy: true,
+          replies: { replies: true },
+        },
+      },
+    });
+
+    return {
+      mentions: mentions.map((mention) => {
+        return {
+          ...mention.tweet,
+          reactCount: mention.tweet?.reactCount,
+          reTweetCount: mention.tweet?.reTweetCount,
+          bookmarksCount: mention.tweet?.bookmarksCount,
+          repliesCount: mention.tweet?.repliesCount,
+        };
+      }),
     };
   };
 }

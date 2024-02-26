@@ -6,12 +6,6 @@ export class Notification {
   @PrimaryGeneratedColumn()
   notificationId: number;
 
-  @Column({ type: 'int' })
-  userId: number;
-
-  @Column({ type: 'int' })
-  senderId: number;
-
   @Column({ type: 'varchar' })
   content: string;
 
@@ -23,6 +17,9 @@ export class Notification {
 
   @Column({ type: 'enum', enum: ['CHAT', 'MENTION', 'FOLLOW', 'UNFOLLOW'] })
   type: string;
+
+  @Column({ type: 'json' })
+  metadata: Object;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   user: User;

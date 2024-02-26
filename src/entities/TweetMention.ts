@@ -8,7 +8,7 @@ import { User } from './User';
 import { Tweet } from './Tweet';
 
 @Entity()
-export class MentionTweet {
+export class TweetMention {
   @PrimaryGeneratedColumn({ type: 'int' })
   mentionId: number;
 

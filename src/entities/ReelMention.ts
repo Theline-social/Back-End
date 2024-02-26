@@ -8,7 +8,7 @@ import {
 import { Reel } from './Reel';
   
   @Entity()
-  export class MentionReel {
+  export class ReelMention {
     @PrimaryGeneratedColumn({ type: 'int' })
     mentionId: number;
   

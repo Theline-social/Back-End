@@ -5,21 +5,21 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { User } from './User';
-import { ReplyReel } from './ReplyReel';
+import { ReelReply } from './ReelReply';
 
 @Entity()
-export class MentionReplyReel {
+export class ReelReplyMention {
   @PrimaryGeneratedColumn({ type: 'int' })
   mentionId: number;
 
-  @ManyToOne(() => User, (user) => user.mentionsMadeInReplyReel)
+  @ManyToOne(() => User, (user) => user.mentionsMadeInReelReply)
   userMakingMention: User;
 
-  @ManyToOne(() => User, (user) => user.mentionsReceivedFromReplyReel)
+  @ManyToOne(() => User, (user) => user.mentionsReceivedFromReelReply)
   userMentioned: User;
 
-  @ManyToOne(() => ReplyReel, (reply) => reply.mentions, { nullable: true })
-  reply: ReplyReel;
+  @ManyToOne(() => ReelReply, (reply) => reply.mentions, { nullable: true })
+  reply: ReelReply;
 
   @CreateDateColumn({
     type: 'timestamp',

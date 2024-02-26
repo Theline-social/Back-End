@@ -10,17 +10,13 @@ import {
 } from 'typeorm';
 import { Tweet } from './Tweet';
 import { Retweet } from './ReTweet';
-import { ReplyTweet } from './ReplyTweet';
-import { ReactTweet } from './ReactTweet';
-import { ReactReplyReel } from './ReactReplyReel';
-import { MentionTweet } from './MentionTweet';
-import { ReactReel } from './ReactReel';
+import { TweetReply } from './TweetReply';
+import { TweetMention } from './TweetMention';
 import { Reel } from './Reel';
-import { ReplyReel } from './ReplyReel';
-import { ReactReplyTweet } from './ReactReplyTweet';
-import { MentionReel } from './MentionReel';
-import { MentionReplyReel } from './MentionReplyReel';
-import { MentionReplyTweet } from './MentionReplyTweet';
+import { ReelReply } from './ReelReply';
+import { ReelMention } from './ReelMention';
+import { ReelReplyMention } from './ReelReplyMention';
+import { TweetReplyMention } from './TweetReplyMention';
 import { ReReel } from './ReReel';
 
 export enum Gender {
@@ -62,7 +58,7 @@ export class User {
   @Column({ type: 'varchar', length: 100 })
   password: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, default: `/users/default.jpeg` })
   imageUrl: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -111,7 +107,7 @@ export class User {
   })
   updatedAt: Date;
 
-  @OneToMany(() => Tweet, (tweet) => tweet.tweeter)
+  @OneToMany(() => Tweet, (tweet) => tweet.tweeter, { onDelete: 'SET NULL' })
   tweets: Tweet[];
 
   @OneToMany(() => Reel, (reel) => reel.reeler)
@@ -123,17 +119,17 @@ export class User {
   @OneToMany(() => ReReel, (rereel) => rereel.user)
   rereels: ReReel[];
 
-  @OneToMany(() => ReplyTweet, (reply) => reply.user)
-  repliesTweets: ReplyTweet[];
+  @OneToMany(() => TweetReply, (reply) => reply.user)
+  repliesTweets: TweetReply[];
 
-  @OneToMany(() => ReplyReel, (reply) => reply.user)
-  repliesReels: ReplyReel[];
+  @OneToMany(() => ReelReply, (reply) => reply.user)
+  repliesReels: ReelReply[];
 
   @ManyToMany(() => User, (user) => user.following)
-  @JoinTable()
   followers: User[];
 
   @ManyToMany(() => User, (user) => user.followers)
+  @JoinTable()
   following: User[];
 
   @ManyToMany(() => User, (user) => user.blocked)
@@ -150,39 +146,47 @@ export class User {
   @ManyToMany(() => User, (user) => user.muting)
   muted: User[];
 
-  @OneToMany(() => ReactTweet, (reactTweet) => reactTweet.user)
-  reactTweets: ReactTweet[];
+  @ManyToMany(() => Tweet, (tweet) => tweet.reacts, { onDelete: 'CASCADE' })
+  reactedTweets: Tweet[];
 
-  @OneToMany(() => ReactReel, (reactReel) => reactReel.user)
-  reactReels: ReactReel[];
+  @ManyToMany(() => Reel, (reel) => reel.reacts)
+  reactedReels: Reel[];
 
-  @OneToMany(() => ReactReplyReel, (reactReply) => reactReply.user)
-  reactReelReplies: ReactReplyReel[];
+  @ManyToMany(() => ReelReply, (replyReel) => replyReel.user)
+  reactedReelReplies: ReelReply[];
 
-  @OneToMany(() => ReactReplyTweet, (reactReply) => reactReply.user)
-  reactTweetReplies: ReactReplyTweet[];
+  @ManyToMany(() => TweetReply, (replyTweet) => replyTweet.user)
+  reactedTweetReplies: TweetReply[];
 
-  @OneToMany(() => MentionTweet, (mention) => mention.userMakingMention)
-  mentionsMadeInTeet: MentionTweet[];
+  @OneToMany(() => TweetMention, (mention) => mention.userMakingMention)
+  mentionsMadeInTeet: TweetMention[];
 
-  @OneToMany(() => MentionReel, (mention) => mention.userMakingMention)
-  mentionsMadeInReel: MentionReel[];
+  @OneToMany(() => ReelMention, (mention) => mention.userMakingMention)
+  mentionsMadeInReel: ReelMention[];
 
-  @OneToMany(() => MentionReplyTweet, (mention) => mention.userMakingMention)
-  mentionsMadeInReplyTweet: MentionReplyTweet[];
+  @OneToMany(() => TweetReplyMention, (mention) => mention.userMakingMention)
+  mentionsMadeInTweetReply: TweetReplyMention[];
 
-  @OneToMany(() => MentionReplyReel, (mention) => mention.userMakingMention)
-  mentionsMadeInReplyReel: MentionReplyReel[];
+  @OneToMany(() => ReelReplyMention, (mention) => mention.userMakingMention)
+  mentionsMadeInReelReply: ReelReplyMention[];
 
-  @OneToMany(() => MentionTweet, (mention) => mention.userMentioned)
-  mentionsReceivedFromTeet: MentionTweet[];
+  @OneToMany(() => TweetMention, (mention) => mention.userMentioned)
+  mentionsReceivedFromTeet: TweetMention[];
 
-  @OneToMany(() => MentionReel, (mention) => mention.userMentioned)
-  mentionsReceivedFromReel: MentionReel[];
+  @OneToMany(() => ReelMention, (mention) => mention.userMentioned)
+  mentionsReceivedFromReel: ReelMention[];
 
-  @OneToMany(() => MentionReplyTweet, (mention) => mention.userMentioned)
-  mentionsReceivedFromReplyTweet: MentionReplyTweet[];
+  @OneToMany(() => TweetReplyMention, (mention) => mention.userMentioned)
+  mentionsReceivedFromTweetReply: TweetReplyMention[];
 
-  @OneToMany(() => MentionReplyReel, (mention) => mention.userMentioned)
-  mentionsReceivedFromReplyReel: MentionReplyReel[];
+  @OneToMany(() => ReelReplyMention, (mention) => mention.userMentioned)
+  mentionsReceivedFromReelReply: ReelReplyMention[];
+
+  @ManyToMany(() => Tweet, (tweet) => tweet.bookmarkedBy)
+  @JoinTable()
+  tweetBookmarks: Tweet[];
+
+  @ManyToMany(() => Reel, (reel) => reel.bookmarkedBy)
+  @JoinTable()
+  reelBookmarks: Reel[];
 }

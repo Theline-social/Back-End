@@ -5,14 +5,15 @@ import {
   CreateDateColumn,
   ManyToOne,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from './User';
 import { Reel } from './Reel';
-import { ReactReplyReel } from './ReactReplyReel';
-import { MentionReplyReel } from './MentionReplyReel';
+import { ReelReplyMention } from './ReelReplyMention';
 
 @Entity()
-export class ReplyReel {
+export class ReelReply {
   @PrimaryGeneratedColumn({ type: 'int' })
   replyId: number;
 
@@ -22,11 +23,11 @@ export class ReplyReel {
   @ManyToOne(() => Reel, (reel) => reel.replies)
   reel: Reel;
 
-  @ManyToOne(() => ReplyReel, (parentReply) => parentReply.replies)
-  parentReply: ReplyReel;
+  @ManyToOne(() => ReelReply, (parentReply) => parentReply.replies)
+  parentReply: ReelReply;
 
-  @OneToMany(() => ReplyReel, (reply) => reply.parentReply)
-  replies: ReplyReel[];
+  @OneToMany(() => ReelReply, (reply) => reply.parentReply)
+  replies: ReelReply[];
 
   @Column({ type: 'text' })
   content: string;
@@ -37,10 +38,10 @@ export class ReplyReel {
   })
   repliedAt: Date;
 
-  @OneToMany(() => ReactReplyReel, (replyReact) => replyReact.reply)
-  reacts: ReactReplyReel[];
+  @ManyToMany(() => User, (user) => user.reactedReelReplies)
+  @JoinTable()
+  reacts: User[];
 
-  
-  @OneToMany(() => MentionReplyReel, (mention) => mention.reply)
-  mentions: MentionReplyReel[];
+  @OneToMany(() => ReelReplyMention, (mention) => mention.reply)
+  mentions: ReelReplyMention[];
 }

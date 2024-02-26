@@ -1,7 +1,11 @@
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 import { passwordRegex } from '../../constants/regex';
 import phoneNumberUtil from 'google-libphonenumber';
+import { UsersService } from '../../../services/user.service';
+
 const phoneUtil = phoneNumberUtil.PhoneNumberUtil.getInstance();
+
+const usersService = new UsersService();
 
 export const isPhoneValid = (phone: string) => {
   try {
@@ -54,4 +58,17 @@ export const resetPasswordValidationRules = [
     }
     return true;
   }),
+];
+
+export const userIdParamsValidation = [
+  param('userId')
+    .exists()
+    .toInt()
+    .custom(async (id) => {
+      const exists = await usersService.isUserFoundById(id);
+      if (!exists) {
+        throw new Error('user does not exist');
+      }
+    })
+    .withMessage('userId is required'),
 ];

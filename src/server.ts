@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 2000;
 let server: http.Server | https.Server;
 
 (async () => {
-  try {
+  try {    
     await AppDataSource.initialize();
     if (AppDataSource.isInitialized) {
       console.log('DB connection established ✔️');

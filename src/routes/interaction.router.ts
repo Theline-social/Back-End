@@ -3,9 +3,9 @@ import * as interactionsController from '../controllers/interaction.controller';
 import * as authController from '../controllers/auth.controller';
 
 import {
-  blockedIdIdParamsValidation,
-  followingIdParamsValidation,
-  mutedIdIdParamsValidation,
+  blockedUsernameParamsValidation,
+  followingUsernameParamsValidation,
+  mutedUsernameParamsValidation,
   validateRequest,
 } from '../common';
 
@@ -13,7 +13,7 @@ const router: Router = express.Router();
 
 /**
  * @swagger
- * /users/current/toggle-follow/{followingId}:
+ * /users/current/toggle-follow/{followingUsername}:
  *   patch:
  *     summary: Toggle follow status
  *     description: Toggles the follow status between the authenticated user and the specified user.
@@ -22,12 +22,12 @@ const router: Router = express.Router();
  *     tags:
  *       - interactions
  *     parameters:
- *       - name: followingId
+ *       - name: followingUsername
  *         in: path
- *         description: ID of the user to follow/unfollow.
+ *         description: Username of the user to follow/unfollow.
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: OK. Follow status toggled successfully.
@@ -42,17 +42,17 @@ const router: Router = express.Router();
  */
 
 router
-  .route('/toggle-follow/:followingId')
+  .route('/toggle-follow/:followingUsername')
   .patch(
     authController.requireAuth,
-    followingIdParamsValidation,
+    followingUsernameParamsValidation,
     validateRequest,
     interactionsController.toggleFollow
   );
 
 /**
  * @swagger
- * /users/current/toggle-mute/{mutedId}:
+ * /users/current/toggle-mute/{mutedUsername}:
  *   patch:
  *     summary: Toggle mute status
  *     description: Toggles the mute status between the authenticated user and the specified user.
@@ -61,12 +61,12 @@ router
  *     tags:
  *       - interactions
  *     parameters:
- *       - name: mutedId
+ *       - name: mutedUsername
  *         in: path
- *         description: ID of the user to mute/unmute.
+ *         description: Username of the user to mute/unmute.
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: OK. Mute status toggled successfully.
@@ -80,17 +80,17 @@ router
  *         description: Internal Server Error. Failed to toggle mute status.
  */
 router
-  .route('/toggle-mute/:mutedId')
+  .route('/toggle-mute/:mutedUsername')
   .patch(
     authController.requireAuth,
-    mutedIdIdParamsValidation,
+    mutedUsernameParamsValidation,
     validateRequest,
     interactionsController.toggleMute
   );
 
 /**
  * @swagger
- * /users/current/toggle-block/{blockedId}:
+ * /users/current/toggle-block/{blockedUsername}:
  *   patch:
  *     summary: Toggle block status
  *     description: Toggles the block status between the authenticated user and the specified user.
@@ -99,12 +99,12 @@ router
  *     tags:
  *       - interactions
  *     parameters:
- *       - name: blockedId
+ *       - name: blockedUsername
  *         in: path
- *         description: ID of the user to block/unblock.
+ *         description: Username of the user to block/unblock.
  *         required: true
  *         schema:
- *           type: integer
+ *           type: string
  *     responses:
  *       '200':
  *         description: OK. Block status toggled successfully.
@@ -118,10 +118,10 @@ router
  *         description: Internal Server Error. Failed to toggle block status.
  */
 router
-  .route('/toggle-block/:blockedId')
+  .route('/toggle-block/:blockedUsername')
   .patch(
     authController.requireAuth,
-    blockedIdIdParamsValidation,
+    blockedUsernameParamsValidation,
     validateRequest,
     interactionsController.toggleBlock
   );

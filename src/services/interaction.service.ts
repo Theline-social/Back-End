@@ -5,7 +5,7 @@ import { User } from '../entities';
 export class InteractionsService {
   constructor() {}
 
-  toggleFollow = async (userId: number, followingId: number) => {
+  toggleFollow = async (userId: number, followingUsername: string) => {
     const userRepository = AppDataSource.getRepository(User);
     let user = await userRepository.findOne({
       where: { userId },
@@ -15,21 +15,23 @@ export class InteractionsService {
     if (!user) throw new AppError('User not found', 404);
 
     const userIndex = user.following.findIndex(
-      (user) => user.userId === followingId
+      (user) => user.username === followingUsername
     );
 
     if (userIndex !== -1) {
       user.following.splice(userIndex, 1);
     } else {
-      let follwingUser = new User();
-      follwingUser.userId = followingId;
-      user.following.push(follwingUser);
+      let followingUser = (await userRepository.findOne({
+        where: { username: followingUsername },
+        select: { userId: true },
+      })) as User;
+      user.following.push(followingUser);
     }
 
     await userRepository.save(user);
   };
 
-  toggleBlock = async (userId: number, blockedId: number) => {
+  toggleBlock = async (userId: number, blockedUsername: string) => {
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({
       where: { userId },
@@ -39,21 +41,23 @@ export class InteractionsService {
     if (!user) throw new AppError('User not found', 404);
 
     const userIndex = user.blocking.findIndex(
-      (user) => user.userId === blockedId
+      (user) => user.username === blockedUsername
     );
 
     if (userIndex !== -1) {
       user.blocking.splice(userIndex, 1);
     } else {
-      let blockeduser = new User();
-      blockeduser.userId = blockedId;
+      let blockeduser = (await userRepository.findOne({
+        where: { username: blockedUsername },
+        select: { userId: true },
+      })) as User;
       user.blocking.push(blockeduser);
     }
 
     await userRepository.save(user);
   };
 
-  toggleMute = async (userId: number, mutedId: number) => {
+  toggleMute = async (userId: number, mutedUsername: string) => {
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({
       where: { userId },
@@ -62,13 +66,17 @@ export class InteractionsService {
 
     if (!user) throw new AppError('User not found', 404);
 
-    const userIndex = user.muting.findIndex((user) => user.userId === mutedId);
+    const userIndex = user.muting.findIndex(
+      (user) => user.username === mutedUsername
+    );
 
     if (userIndex !== -1) {
       user.muting.splice(userIndex, 1);
     } else {
-      let mutedUser = new User();
-      mutedUser.userId = mutedId;
+      let mutedUser = (await userRepository.findOne({
+        where: { username: mutedUsername },
+        select: { userId: true },
+      })) as User;
       user.muting.push(mutedUser);
     }
 

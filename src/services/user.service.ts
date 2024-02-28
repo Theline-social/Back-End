@@ -73,6 +73,10 @@ export class UsersService {
     return await AppDataSource.getRepository(User).existsBy({ userId });
   };
 
+  isUserFoundByUsername = async (username: string) => {
+    return await AppDataSource.getRepository(User).existsBy({ username });
+  };
+
   isUserFound = async (body: { input: string }) => {
     const { input } = body;
     let user: User | null = null;

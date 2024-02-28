@@ -3,27 +3,25 @@ import { UsersService } from '../../../services/user.service';
 
 const usersService = new UsersService();
 
-export const followingIdParamsValidation = [
-  param('followingId')
+export const followingUsernameParamsValidation = [
+  param('followingUsername')
     .notEmpty()
     .exists()
-    .toInt()
-    .custom(async (id) => {
-      const exists = await usersService.isUserFoundById(id);
+    .custom(async (username) => { 
+      const exists = await usersService.isUserFoundByUsername(username);
       if (!exists) {
-        throw new Error('followed user does not exist');
+        throw new Error('following user does not exist');
       }
     })
     .withMessage('following user does not exist'),
 ];
 
-export const mutedIdIdParamsValidation = [
-  param('mutedId')
+export const mutedUsernameParamsValidation = [
+  param('mutedUsername')
     .notEmpty()
     .exists()
-    .toInt()
-    .custom(async (id) => {
-      const exists = await usersService.isUserFoundById(id);
+    .custom(async (username) => {
+      const exists = await usersService.isUserFoundByUsername(username);
       if (!exists) {
         throw new Error('muted user does not exist');
       }
@@ -31,13 +29,12 @@ export const mutedIdIdParamsValidation = [
     .withMessage('muted user does not exist'),
 ];
 
-export const blockedIdIdParamsValidation = [
-  param('blockedId')
+export const blockedUsernameParamsValidation = [
+  param('blockedUsername')
     .notEmpty()
     .exists()
-    .toInt()
-    .custom(async (id) => {
-      const exists = await usersService.isUserFoundById(id);
+    .custom(async (username) => {
+      const exists = await usersService.isUserFoundByUsername(username);
       if (!exists) {
         throw new Error('blocked user does not exist');
       }

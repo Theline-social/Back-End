@@ -40,7 +40,7 @@ export class User {
     length: 60,
     unique: true,
     nullable: false,
-    default: `@user-${Date.now()}`,
+    default: `user${Date.now()}`,
   })
   username: string;
 

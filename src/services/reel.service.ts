@@ -51,7 +51,7 @@ export class ReelsService {
 
     let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
 
-    if (!usernames) return;
+    if (!usernames) return { reel };
 
     usernames = usernames.map((username) => username.replace('@', ''));
 
@@ -78,6 +78,8 @@ export class ReelsService {
     //     reelId: reel.reelId,
     //   });
     // }
+
+    return { reel };
   };
 
   async exists(id: number) {

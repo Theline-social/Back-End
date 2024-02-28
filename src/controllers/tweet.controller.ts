@@ -80,11 +80,12 @@ export const addTweet = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    await tweetsService.addTweet(userId, req.body);
+    const { tweet } = await tweetsService.addTweet(userId, req.body);
 
     res.status(201).json({
       status: true,
       message: 'Tweet added successfully',
+      data: { tweet },
     });
   }
 );

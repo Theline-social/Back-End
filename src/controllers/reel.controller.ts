@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
       process.env.NODE_ENV !== 'production'
         ? 'F:/MyRepos/Back-End-SM-Mostaql/assets/reels'
         : '/home/TheLine/Back-End/assets/reels';
-        
+
     cb(null, destinationPath);
   },
   filename: (req, file, cb) => {
@@ -49,11 +49,12 @@ export const addReel = catchAsync(
     const userId = res.locals.currentUser.userId;
     const reelUrl = req.body.reelUrl;
 
-    await reelsService.addReel(userId, reelUrl, req.body);
+    const { reel } = await reelsService.addReel(userId, reelUrl, req.body);
 
     res.status(201).json({
       status: true,
       message: 'Reel added successfully',
+      data: { reel },
     });
   }
 );

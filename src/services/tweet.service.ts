@@ -47,7 +47,7 @@ export class TweetsService {
       let usernames =
         (body.content.match(usernameRegex) as Array<string>) || [];
 
-      if (!usernames) return;
+      if (!usernames) return { tweet };
 
       usernames = usernames.map((username) => username.replace('@', ''));
 
@@ -77,6 +77,8 @@ export class TweetsService {
     } catch (error) {
       console.error('Error scheduling tweet:', error);
     }
+
+    return { tweet };
   };
 
   addPoll = async (
@@ -162,7 +164,8 @@ export class TweetsService {
       where: { tweet: { tweetId } },
       select: {
         mentions: {
-                   mentionedAt: true, userMentioned: { username: true },
+          mentionedAt: true,
+          userMentioned: { username: true },
         },
         reacts: {
           email: true,
@@ -236,7 +239,8 @@ export class TweetsService {
             imageUrl: true,
           },
           mentions: {
-                     mentionedAt: true, userMentioned: { username: true },
+            mentionedAt: true,
+            userMentioned: { username: true },
           },
           replies: true,
           reacts: {
@@ -312,7 +316,8 @@ export class TweetsService {
           userId: true,
         },
         mentions: {
-                   mentionedAt: true, userMentioned: { username: true },
+          mentionedAt: true,
+          userMentioned: { username: true },
         },
         replies: false,
         reacts: {

@@ -51,7 +51,7 @@ class AuthService {
     user.dateOfBirth = body.dateOfBirth;
     user.phoneNumber = body.phoneNumber;
     user.name = body.name;
-    user.username = `@user${body.phoneNumber}`
+    user.username = `user${body.phoneNumber}`;
 
     await userRepository.insert(user);
 
@@ -126,7 +126,10 @@ class AuthService {
 
     try {
       if (provider === OtpProvider.EMAIL) {
-        await new Email({ email: input, name }).sendConfirmationEmail(otp, lang);
+        await new Email({ email: input, name }).sendConfirmationEmail(
+          otp,
+          lang
+        );
       } else if (provider === OtpProvider.PHONE) {
         await new MsegatSmsRepository().sendOtpVerification(input, otp, lang);
       }

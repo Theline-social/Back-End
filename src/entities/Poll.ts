@@ -48,7 +48,10 @@ export class PollOption {
   @Column({ type: 'varchar', length: 200 })
   text: string;
 
-  @ManyToMany(() => User, (user) => user.votedOptions)
+  @ManyToMany(() => User, (user) => user.votedOptions, {
+    eager: true,
+    cascade: true,
+  })
   voters: User[];
 
   @ManyToOne(() => Poll, (poll) => poll.options)

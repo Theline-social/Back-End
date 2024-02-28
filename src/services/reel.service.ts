@@ -25,16 +25,18 @@ export class ReelsService {
     const topicRepository = AppDataSource.getRepository(Topic);
     const reelMentionRepository = AppDataSource.getRepository(ReelMention);
 
-    const supportedtopics = await topicRepository.find({
-      where: [
-        {
-          description_ar: In([...body.topics]),
-        },
-        {
-          description_en: In([...body.topics]),
-        },
-      ],
-    });
+    const supportedtopics = body.topics
+      ? await topicRepository.find({
+          where: [
+            {
+              topic_ar: In([...body.topics]),
+            },
+            {
+              topic_en: In([...body.topics]),
+            },
+          ],
+        })
+      : [];
 
     const user = new User();
     user.userId = userId;
@@ -47,12 +49,11 @@ export class ReelsService {
 
     await reelRepository.save(reel);
 
-    let usernames =
-      (body.content.match(usernameRegex) as Array<string>).map((username) =>
-        username.replace('@', '')
-      ) || [];
+    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
 
     if (!usernames) return;
+
+    usernames = usernames.map((username) => username.replace('@', ''));
 
     const users = await userRepository.find({
       where: { username: In([...usernames]) },
@@ -96,11 +97,29 @@ export class ReelsService {
 
     const replies = await reelReplyRepository.find({
       where: { reel: { reelId } },
-      relations: { replies: true, reacts: true },
+      select: {
+        mentions: {
+          mentionedAt: true,
+          userMentioned: { username: true },
+        },
+        reacts: {
+          email: true,
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+          userId: true,
+        },
+      },
+      relations: { reacts: true, mentions: true, parentReply: true },
     });
 
+    const topLevelReplies = replies.filter(
+      (reply) => reply.parentReply === null
+    );
+
     return {
-      replies: replies.map((reply) => {
+      replies: topLevelReplies.map((reply) => {
         const isReacted = reply.reacts.some(
           (user: User) => user.userId === userId
         );
@@ -125,6 +144,7 @@ export class ReelsService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
       },
       relations: { user: true },
@@ -141,12 +161,17 @@ export class ReelsService {
     const reels = await reelRepository.findOne({
       where: { reelId: id },
       select: {
+        mentions: {
+          mentionedAt: true,
+          userMentioned: { username: true },
+        },
         reacts: {
           email: true,
           username: true,
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
       },
       relations: { reacts: true },
@@ -163,21 +188,25 @@ export class ReelsService {
     const reel = await reelRepository.findOne({
       where: { reelId },
       select: {
+        mentions: {
+          mentionedAt: true,
+        },
         reeler: {
           email: true,
           username: true,
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
-
-        replies: true,
+        replies: false,
         reacts: {
           email: true,
           username: true,
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
         bookmarkedBy: {
           email: true,
@@ -185,16 +214,17 @@ export class ReelsService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
-        rereels: true,
       },
       relations: {
-        replies: { replies: true },
+        replies: true,
         reacts: true,
         reeler: true,
         rereels: true,
         supportedTopics: true,
         bookmarkedBy: true,
+        mentions: { userMentioned: true },
       },
     });
 
@@ -242,12 +272,11 @@ export class ReelsService {
 
     await reelReplyRepository.save(reelReply);
 
-    let usernames =
-      (body.content.match(usernameRegex) as Array<string>).map((username) =>
-        username.replace('@', '')
-      ) || [];
+    let usernames = body.content.match(usernameRegex) as Array<string>;
 
     if (usernames) {
+      usernames = usernames.map((username) => username.replace('@', ''));
+
       const users = await userRepository.find({
         where: { username: In([...usernames]) },
       });
@@ -319,12 +348,11 @@ export class ReelsService {
 
     await reelReplyRepository.save(newreelReply);
 
-    let usernames =
-      (body.content.match(usernameRegex) as Array<string>).map((username) =>
-        username.replace('@', '')
-      ) || [];
+    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
 
     if (usernames) {
+      usernames = usernames.map((username) => username.replace('@', ''));
+
       const users = await userRepository.find({
         where: { username: In([...usernames]) },
       });

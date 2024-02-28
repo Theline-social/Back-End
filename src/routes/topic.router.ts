@@ -12,7 +12,7 @@ const router: Router = express.Router();
  *     description: Retrieves a list of all topics.
  *     security:
  *       - jwt: []
- *     tags: [Topics]
+ *     tags: [topics]
  *     responses:
  *       '200':
  *         description: OK. Topics successfully retrieved.
@@ -26,7 +26,7 @@ const router: Router = express.Router();
  *     description: Adds a new topic.
  *     security:
  *       - jwt: []
- *     tags: [Topics]
+ *     tags: [topics]
  *     requestBody:
  *       required: true
  *       content:
@@ -34,7 +34,13 @@ const router: Router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               topic:
+ *               topic_ar:
+ *                 type: string
+ *               topic_en:
+ *                 type: string 
+ *               description_ar:
+ *                 type: string
+ *               description_en:
  *                 type: string
  *     responses:
  *       '201':
@@ -59,7 +65,7 @@ router
  *     description: Retrieves reels for a specific topic.
  *     security:
  *       - jwt: []
- *     tags: [Topics]
+ *     tags: [topics]
  *     parameters:
  *       - in: path
  *         name: topic
@@ -84,7 +90,7 @@ router
  *     description: Deletes a topic.
  *     security:
  *       - jwt: []
- *     tags: [Topics]
+ *     tags: [topics]
  *     parameters:
  *       - in: path
  *         name: topic

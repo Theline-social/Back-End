@@ -116,6 +116,7 @@ export class UsersService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
       },
       relations: { followers: true },
@@ -135,6 +136,7 @@ export class UsersService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
       },
       relations: { following: true },
@@ -150,6 +152,10 @@ export class UsersService {
       where: { userId },
       select: {
         tweetBookmarks: {
+          content: true,
+          gifUrl: true,
+          createdAt: true,
+          imageUrls: true,
           tweeter: {
             email: true,
             username: true,
@@ -158,6 +164,7 @@ export class UsersService {
             imageUrl: true,
           },
           mentions: {
+            mentionedAt: true,
             userMentioned: { username: true },
           },
           replies: true,
@@ -175,6 +182,21 @@ export class UsersService {
             name: true,
             imageUrl: true,
           },
+          poll: {
+            question: true,
+            length: true,
+            options: {
+              text: true,
+              voters: {
+                userId: true,
+                email: true,
+                username: true,
+                jobtitle: true,
+                name: true,
+                imageUrl: true,
+              },
+            },
+          },
         },
       },
       relations: {
@@ -185,6 +207,7 @@ export class UsersService {
           bookmarkedBy: true,
           replies: true,
           retweets: true,
+          poll: { options: { voters: true } },
         },
       },
     });
@@ -214,6 +237,10 @@ export class UsersService {
       where: { userMentioned: user },
       select: {
         tweet: {
+          content: true,
+          gifUrl: true,
+          createdAt: true,
+          imageUrls: true,
           tweeter: {
             email: true,
             username: true,
@@ -222,6 +249,7 @@ export class UsersService {
             imageUrl: true,
           },
           mentions: {
+            mentionedAt: true,
             userMentioned: { username: true },
           },
           replies: true,
@@ -239,6 +267,21 @@ export class UsersService {
             name: true,
             imageUrl: true,
           },
+          poll: {
+            question: true,
+            length: true,
+            options: {
+              text: true,
+              voters: {
+                userId: true,
+                email: true,
+                username: true,
+                jobtitle: true,
+                name: true,
+                imageUrl: true,
+              },
+            },
+          },
         },
       },
       relations: {
@@ -249,6 +292,7 @@ export class UsersService {
           mentions: { userMentioned: true },
           replies: true,
           retweets: true,
+          poll: { options: { voters: true } },
         },
       },
     });
@@ -273,6 +317,9 @@ export class UsersService {
       where: { userId },
       select: {
         reelBookmarks: {
+          content: true,
+          reelUrl: true,
+          createdAt: true,
           reeler: {
             email: true,
             username: true,
@@ -281,6 +328,7 @@ export class UsersService {
             imageUrl: true,
           },
           mentions: {
+            mentionedAt: true,
             userMentioned: { username: true },
           },
           replies: true,
@@ -312,7 +360,7 @@ export class UsersService {
       },
     });
 
-    if (!user?.reelBookmarks) return { reelBookmarks: [] };
+    if (!user?.reelBookmarks) return { bookmarks: [] };
 
     return {
       bookmarks: user.reelBookmarks.map((tweet) => {
@@ -337,6 +385,9 @@ export class UsersService {
       where: { userMentioned: user },
       select: {
         reel: {
+          content: true,
+          reelUrl: true,
+          createdAt: true,
           reeler: {
             email: true,
             username: true,
@@ -345,6 +396,7 @@ export class UsersService {
             imageUrl: true,
           },
           mentions: {
+            mentionedAt: true,
             userMentioned: { username: true },
           },
           replies: true,

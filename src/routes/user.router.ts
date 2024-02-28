@@ -361,7 +361,7 @@ router
   .get(authController.requireAuth, usersController.getReelBookmarks);
 /**
  * @swagger
- * /current/tweet-mentions:
+ * /users/current/tweet-mentions:
  *   get:
  *     summary: Get tweets mentioned user
  *     description: Retrieves tweets where the authenticated user is mentioned.
@@ -384,7 +384,7 @@ router
 
 /**
  * @swagger
- * /current/reel-mentions:
+ * /users/current/reel-mentions:
  *   get:
  *     summary: Get reels mentioned user
  *     description: Retrieves reels where the authenticated user is mentioned.

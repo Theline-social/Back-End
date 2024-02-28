@@ -45,11 +45,11 @@ export class TweetsService {
       console.log('Tweet scheduled successfully.');
 
       let usernames =
-        (body.content.match(usernameRegex) as Array<string>).map((username) =>
-          username.replace('@', '')
-        ) || [];
+        (body.content.match(usernameRegex) as Array<string>) || [];
 
       if (!usernames) return;
+
+      usernames = usernames.map((username) => username.replace('@', ''));
 
       const users = await userRepository.find({
         where: { username: In([...usernames]) },
@@ -160,7 +160,20 @@ export class TweetsService {
 
     const replies = await tweetReplyRepository.find({
       where: { tweet: { tweetId } },
-      relations: { replies: true, reacts: true },
+      select: {
+        mentions: {
+                   mentionedAt: true, userMentioned: { username: true },
+        },
+        reacts: {
+          email: true,
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+          userId: true,
+        },
+      },
+      relations: { replies: { replies: true }, reacts: true, mentions: true },
     });
 
     return {
@@ -189,6 +202,7 @@ export class TweetsService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
       },
       relations: { retweeter: true },
@@ -211,6 +225,7 @@ export class TweetsService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
         tweet: {
           tweeter: {
@@ -221,7 +236,7 @@ export class TweetsService {
             imageUrl: true,
           },
           mentions: {
-            userMentioned: { username: true },
+                     mentionedAt: true, userMentioned: { username: true },
           },
           replies: true,
           reacts: {
@@ -271,6 +286,7 @@ export class TweetsService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
       },
       relations: { reacts: true },
@@ -293,17 +309,19 @@ export class TweetsService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
         mentions: {
-          userMentioned: { username: true },
+                   mentionedAt: true, userMentioned: { username: true },
         },
-        replies: true,
+        replies: false,
         reacts: {
           email: true,
           username: true,
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
         bookmarkedBy: {
           email: true,
@@ -311,6 +329,7 @@ export class TweetsService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
         retweets: true,
         poll: {
@@ -382,12 +401,11 @@ export class TweetsService {
 
     await tweetReplyRepository.save(tweetReply);
 
-    let usernames =
-      (body.content.match(usernameRegex) as Array<string>).map((username) =>
-        username.replace('@', '')
-      ) || [];
+    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
 
     if (usernames) {
+      usernames = usernames.map((username) => username.replace('@', ''));
+
       const users = await userRepository.find({
         where: { username: In([...usernames]) },
       });
@@ -459,12 +477,11 @@ export class TweetsService {
 
     await tweetReplyRepository.save(newtweetReply);
 
-    let usernames =
-      (body.content.match(usernameRegex) as Array<string>).map((username) =>
-        username.replace('@', '')
-      ) || [];
+    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
 
     if (usernames) {
+      usernames = usernames.map((username) => username.replace('@', ''));
+
       const users = await userRepository.find({
         where: { username: In([...usernames]) },
       });

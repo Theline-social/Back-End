@@ -201,9 +201,8 @@ router
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               input:
  *                 type: string
- *                 format: email
  *                 description: The email address of the user.
  *               password:
  *                 type: string

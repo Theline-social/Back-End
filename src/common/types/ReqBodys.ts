@@ -22,7 +22,7 @@ export interface SendConfirmOtpBody {
 }
 
 export interface SignedInOtpBody {
-  email: string;
+  input: string;
   password: string;
 }
 

@@ -75,18 +75,14 @@ export const signupValidationRules = [
   body('dateOfBirth')
     .custom((val) => {
       const date = Date.parse(val);
-      if(date) return true;
-      return false
+      if (date) return true;
+      return false;
     })
     .withMessage('Invalid date format. Use YYYY-MM-DD'),
 ];
 
 export const signinValidationRules = [
-  body('email')
-    .toLowerCase()
-    .notEmpty()
-    .isEmail()
-    .withMessage('Invalid email address'),
+  body('input').toLowerCase().notEmpty().withMessage('input is required  '),
   body('password').isString().notEmpty().withMessage('Password is required'),
 ];
 

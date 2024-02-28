@@ -15,11 +15,14 @@ import {
 import { AuthProvider, User } from '../entities';
 import { OtpCodes, OtpProvider } from '../entities/OtpCodes';
 import moment from 'moment';
+import { UsersService } from './user.service';
 
 /**
  * @class AuthService
  * @description Provides authentication-related functionalities for user registration, login, and related actions.
  */
+
+const usersService = new UsersService();
 
 class AuthService {
   constructor() {}
@@ -140,16 +143,21 @@ class AuthService {
   };
 
   login = async (body: SignedInOtpBody) => {
-    const { email, password } = body;
+    const { input, password } = body;
+
+    const { isFound, data } = await usersService.isUserFound({ input });
+
+    if (!isFound) throw new AppError('No User Found', 404);
+
     const user = await AppDataSource.getRepository(User).findOne({
-      where: { email },
+      where: { email: data.email },
     });
 
-    if (!user) throw new AppError('No User With Email', 400);
+    if (!user) throw new AppError('No User Found', 404);
 
     const isCorrectPassword = await Password.comparePassword(
       password,
-      user.password
+      user!.password
     );
 
     if (!isCorrectPassword) throw new AppError('Wrong Password', 400);

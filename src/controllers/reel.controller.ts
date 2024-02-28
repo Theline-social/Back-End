@@ -7,17 +7,32 @@ import { ReelsService } from '../services/reel.service';
 
 const reelsService = new ReelsService();
 
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const destinationPath =
+      process.env.NODE_ENV !== 'production'
+        ? 'F:/MyRepos/Back-End-SM-Mostaql/assets/reels'
+        : '/home/TheLine/Back-End/assets/reels';
+        
+    cb(null, destinationPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    req.body.reelUrl = `/reels/reel-${uniqueSuffix}.jpeg`;
+
+    cb(null, `reel-${uniqueSuffix}.mp4`);
+  },
+});
 
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
-  if (file.mimetype.startsWith('video')) {
+  if (file.mimetype === 'video/mp4') {
     cb(null, true);
   } else {
-    cb(new Error('Not a video! Please upload a video file.'));
+    cb(new Error('un supported video format'));
   }
 };
 
@@ -27,32 +42,12 @@ const upload = multer({
   limits: { fileSize: 1024 * 1024 * 50, files: 1 },
 });
 
-export const saveReel = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  if (!req.file) return new AppError('No file Uploaded!', 400);
-  const { userId } = res.locals.currentUser;
-
-  const uniqueSuffix = Date.now() + '-' + userId;
-
-  await sharp(req.file.buffer).toFile(
-    process.env.NODE_ENV !== 'production'
-      ? `F:/MyRepos/Back-End-SM-Mostaql/assets/reels/reel-${uniqueSuffix}.jpeg`
-      : `/home/TheLine/Back-End/assets/reels/reel-${uniqueSuffix}.jpeg`
-  );
-
-  res.locals.reelUrl = `/reels/reel-${uniqueSuffix}.jpeg`;
-  next();
-};
-
 export const uploadReel = upload.single('reel');
 
 export const addReel = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
-    const reelUrl = res.locals.reelUrl;
+    const reelUrl = req.body.reelUrl;
 
     await reelsService.addReel(userId, reelUrl, req.body);
 

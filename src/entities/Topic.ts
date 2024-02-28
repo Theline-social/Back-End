@@ -25,6 +25,5 @@ export class Topic {
   description_ar: string;
 
   @ManyToMany(() => Reel, (reel) => reel.supportedTopics)
-  @JoinTable()
   supportingReels: Reel[];
 }

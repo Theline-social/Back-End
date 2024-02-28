@@ -66,6 +66,7 @@ export class Reel {
   @ManyToMany(() => Topic, (topic) => topic.supportingReels, {
     onDelete: 'CASCADE',
   })
+  @JoinTable()
   supportedTopics: Topic[];
 
   @ManyToMany(() => User, (user) => user.reelBookmarks, {

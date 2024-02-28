@@ -25,13 +25,18 @@ const router: Router = express.Router();
  *         description: The content of the reel.
  *         required: true
  *         type: string
- *       - name: images
+ *       - name: topics
  *         in: formData
- *         description: List of image files to be attached to the reel.
+ *         description: List of topics related to the reel.
  *         required: false
  *         type: array
  *         items:
- *           type: file
+ *           type: string
+ *       - name: reel
+ *         in: formData
+ *         description: List of image files to be attached to the reel.
+ *         required: false
+ *         type: file
  *     responses:
  *       '200':
  *         description: OK. Reel successfully added.
@@ -48,7 +53,6 @@ router
   .post(
     authController.requireAuth,
     reelsController.uploadReel,
-    reelsController.saveReel,
     reelsController.addReel
   );
 
@@ -163,7 +167,7 @@ router
     validateRequest,
     reelsController.getReelReacters
   );
-  
+
 /**
  * @swagger
  * /reels/{reelId}/rereelers:

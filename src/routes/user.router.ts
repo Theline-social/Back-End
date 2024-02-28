@@ -271,6 +271,44 @@ router
 
 /**
  * @swagger
+ * /users/{userId}/followings:
+ *   get:
+ *     summary: Get followings of a user
+ *     description: Retrieves the followings of a user by their user ID.
+ *     security:
+ *       - jwt: []
+ *     tags:
+ *       - users
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         description: ID of the user to get followings for.
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: OK. followings successfully retrieved.
+ *       '400':
+ *         description: Bad Request. Invalid request parameters.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '404':
+ *         description: Not Found. Specified user not found.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve followers.
+ */
+router
+  .route('/:userId/followings')
+  .get(
+    authController.requireAuth,
+    userIdParamsValidation,
+    validateRequest,
+    usersController.getFollowings
+  );
+
+/**
+ * @swagger
  * /users/current/tweet-bookmarks:
  *   get:
  *     summary: Get tweet bookmarks of a user
@@ -298,6 +336,31 @@ router
 
 /**
  * @swagger
+ * /users/current/reel-bookmarks:
+ *   get:
+ *     summary: Get reel bookmarks of a user
+ *     description: Retrieves the reel bookmarks of a user by their user ID.
+ *     security:
+ *       - jwt: []
+ *     tags:
+ *       - users
+ *     responses:
+ *       '200':
+ *         description: OK. reel bookmarks successfully retrieved.
+ *       '400':
+ *         description: Bad Request. Invalid request parameters.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '404':
+ *         description: Not Found. Specified user not found.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve tweet bookmarks.
+ */
+router
+  .route('/current/reel-bookmarks')
+  .get(authController.requireAuth, usersController.getReelBookmarks);
+/**
+ * @swagger
  * /current/tweet-mentions:
  *   get:
  *     summary: Get tweets mentioned user
@@ -317,6 +380,29 @@ router
 
 router
   .route('/current/tweet-mentions')
-  .get(authController.requireAuth, usersController.getMentions);
+  .get(authController.requireAuth, usersController.getTweetMentions);
+
+/**
+ * @swagger
+ * /current/reel-mentions:
+ *   get:
+ *     summary: Get reels mentioned user
+ *     description: Retrieves reels where the authenticated user is mentioned.
+ *     security:
+ *       - jwt: []
+ *     tags:
+ *       - users
+ *     responses:
+ *       '200':
+ *         description: OK. Reels successfully retrieved.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve tweets.
+ */
+
+router
+  .route('/current/reel-mentions')
+  .get(authController.requireAuth, usersController.getReelMentions);
 
 export { router as usersRouter };

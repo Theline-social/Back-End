@@ -18,6 +18,7 @@ import { ReelMention } from './ReelMention';
 import { ReelReplyMention } from './ReelReplyMention';
 import { TweetReplyMention } from './TweetReplyMention';
 import { ReReel } from './ReReel';
+import { PollOption } from './Poll';
 
 export enum Gender {
   MALE = 'MALE',
@@ -113,7 +114,7 @@ export class User {
   @OneToMany(() => Reel, (reel) => reel.reeler)
   reels: Reel[];
 
-  @OneToMany(() => Retweet, (retweet) => retweet.user)
+  @OneToMany(() => Retweet, (retweet) => retweet.retweeter)
   retweets: Retweet[];
 
   @OneToMany(() => ReReel, (rereel) => rereel.user)
@@ -189,4 +190,8 @@ export class User {
   @ManyToMany(() => Reel, (reel) => reel.bookmarkedBy)
   @JoinTable()
   reelBookmarks: Reel[];
+
+  @ManyToMany(() => PollOption, (option) => option.voters)
+  @JoinTable()
+  votedOptions: PollOption[];
 }

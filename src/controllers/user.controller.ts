@@ -141,24 +141,61 @@ export const getFollowers = catchAsync(
   }
 );
 
-export const getTweetBookmarks = catchAsync(
+export const getFollowings = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const userId = res.locals.currentUser.userId;
-
-    const { tweetBookmarks } = await usersService.getTweetBookmarks(+userId);
+    const { followings } = await usersService.getFollowings(+req.params.userId);
 
     res.status(200).json({
       status: true,
-      data: { tweetBookmarks },
+      data: { followings },
     });
   }
 );
 
-export const getMentions = catchAsync(
+export const getTweetBookmarks = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { mentions } = await usersService.getMentions(+userId);
+    const { bookmarks } = await usersService.getTweetBookmarks(+userId);
+
+    res.status(200).json({
+      status: true,
+      data: { bookmarks },
+    });
+  }
+);
+
+export const getReelBookmarks = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { bookmarks } = await usersService.getReelBookmarks(+userId);
+
+    res.status(200).json({
+      status: true,
+      data: { bookmarks },
+    });
+  }
+);
+
+export const getTweetMentions = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { mentions } = await usersService.getTweetMentions(+userId);
+
+    res.status(200).json({
+      status: true,
+      data: { mentions },
+    });
+  }
+);
+
+export const getReelMentions = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { mentions } = await usersService.getReelMentions(+userId);
 
     res.status(200).json({
       status: true,

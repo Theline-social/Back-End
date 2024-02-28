@@ -15,3 +15,4 @@ export * from './ReelReply';
 export * from './Reel';
 export * from './ReReel';
 export * from './ReTweet';
+export * from './Poll';

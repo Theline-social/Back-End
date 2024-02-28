@@ -16,6 +16,8 @@ import {
   ReReel,
   Topic,
   Reel,
+  Poll,
+  PollOption,
 } from './entities';
 
 const AppDataSource = new DataSource({
@@ -51,6 +53,8 @@ const AppDataSource = new DataSource({
     ReelMention,
     Topic,
     Reel,
+    Poll,
+    PollOption,
   ],
   subscribers: [],
   migrations: [],

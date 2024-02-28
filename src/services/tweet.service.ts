@@ -1,6 +1,8 @@
 import { In } from 'typeorm';
-import { AppError, usernameRegex } from '../common';
+import { AppError, options, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
+import { CronJob } from 'cron';
+
 import {
   Retweet,
   Tweet,
@@ -10,6 +12,7 @@ import {
   User,
 } from '../entities';
 import socketService from './socket.service';
+import { Poll, PollOption } from '../entities/Poll';
 
 export class TweetsService {
   constructor() {}
@@ -18,8 +21,7 @@ export class TweetsService {
 
   addTweet = async (
     userId: number,
-    imageUrls: string[] = [],
-    body: { content: string }
+    body: { content: string; imageUrls: string[]; gifUrl: string }
   ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
     const userRepository = AppDataSource.getRepository(User);
@@ -34,48 +36,118 @@ export class TweetsService {
 
     const tweet = new Tweet();
     tweet.content = body.content;
-    tweet.imageUrls = imageUrls;
+    tweet.imageUrls = body.imageUrls || [];
+    tweet.gifUrl = body.gifUrl || '';
+    tweet.tweeter = user;
+
+    try {
+      await tweetRepository.save(tweet);
+      console.log('Tweet scheduled successfully.');
+
+      let usernames =
+        (body.content.match(usernameRegex) as Array<string>).map((username) =>
+          username.replace('@', '')
+        ) || [];
+
+      if (!usernames) return;
+
+      const users = await userRepository.find({
+        where: { username: In([...usernames]) },
+      });
+
+      let tweetMentions: TweetMention[] = [];
+
+      tweetMentions = users.map((mentioned) => {
+        let newTweetMention = new TweetMention();
+
+        newTweetMention.tweet = tweet;
+        newTweetMention.userMakingMention = user;
+        newTweetMention.userMentioned = mentioned;
+
+        return newTweetMention;
+      });
+
+      await tweetMentionRepository.insert(tweetMentions);
+
+      // for (const username of usernames) {
+      //   await socketService.emitNotification(userId, username, 'MENTION', {
+      //     tweetId: tweet.tweetId,
+      //   });
+      // }
+    } catch (error) {
+      console.error('Error scheduling tweet:', error);
+    }
+  };
+
+  addPoll = async (
+    userId: number,
+    body: { question: string; options: string[]; length: Date }
+  ) => {
+    const tweetRepository = AppDataSource.getRepository(Tweet);
+
+    const poll = new Poll();
+    poll.question = body.question;
+    poll.length = body.length;
+
+    poll.options = body.options.map((option) => {
+      const pollOption = new PollOption();
+      pollOption.text = option;
+
+      return pollOption;
+    });
+
+    const user = new User();
+    user.userId = userId;
+
+    const tweet = new Tweet();
+    tweet.poll = poll;
     tweet.tweeter = user;
 
     await tweetRepository.save(tweet);
-
-    user.tweets.push(tweet);
-    await userRepository.save(user);
-
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
-
-    if (!usernames) return;
-
-    const users = await userRepository.find({
-      where: { username: In([...usernames]) },
-    });
-
-    let tweetMentions: TweetMention[] = [];
-
-    tweetMentions = users.map((mentioned) => {
-      let newTweetMention = new TweetMention();
-
-      newTweetMention.tweet = tweet;
-      newTweetMention.userMakingMention = user;
-      newTweetMention.userMentioned = mentioned;
-
-      return newTweetMention;
-    });
-
-    await tweetMentionRepository.insert(tweetMentions);
-
-    // for (const username of usernames) {
-    //   await socketService.emitNotification(userId, username, 'MENTION', {
-    //     tweetId: tweet.tweetId,
-    //   });
-    // }
   };
 
-  async exists(id: number) {
+  toggleVote = async (
+    userId: number,
+    tweetId: number,
+    body: { optionIdx: number }
+  ) => {
+    const pollRepository = AppDataSource.getRepository(Poll);
+
+    if (!body.optionIdx) throw new AppError('option index is required', 400);
+
+    const poll = await pollRepository.findOne({
+      where: { tweet: { tweetId } },
+    });
+
+    if (!poll) throw new AppError('Poll not found', 404);
+
+    const user = new User();
+    user.userId = userId;
+
+    if (poll.options.length <= body.optionIdx)
+      throw new AppError('Option index out of range', 400);
+
+    const selectedOptionVoters = poll.options[body.optionIdx].voters || [];
+
+    const existingVoteIndex = selectedOptionVoters.findIndex(
+      (voter) => voter.userId === userId
+    );
+
+    if (existingVoteIndex !== -1) {
+      selectedOptionVoters.splice(existingVoteIndex, 1);
+    } else {
+      selectedOptionVoters.push(user);
+    }
+
+    poll.options[body.optionIdx].voters = selectedOptionVoters;
+    await pollRepository.save(poll);
+  };
+
+  exists = async (id: number) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
     return await tweetRepository.exists({ where: { tweetId: id } });
-  }
+  };
 
   deleteTweet = async (id: number) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
@@ -111,7 +183,7 @@ export class TweetsService {
     const retweets = await retweetRepository.find({
       where: { tweet: { tweetId: id } },
       select: {
-        user: {
+        retweeter: {
           email: true,
           username: true,
           jobtitle: true,
@@ -119,11 +191,71 @@ export class TweetsService {
           imageUrl: true,
         },
       },
-      relations: { user: true },
+      relations: { retweeter: true },
     });
 
     return {
-      retweeters: retweets.map((retweet) => retweet.user),
+      retweeters: retweets.map((retweet) => retweet.retweeter),
+    };
+  };
+
+  getTweetReTweets = async (id: number) => {
+    const retweetRepository = AppDataSource.getRepository(Retweet);
+
+    const retweets = await retweetRepository.find({
+      where: { tweet: { tweetId: id } },
+      select: {
+        retweeter: {
+          email: true,
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+        },
+        tweet: {
+          tweeter: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          mentions: {
+            userMentioned: { username: true },
+          },
+          replies: true,
+          reacts: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          bookmarkedBy: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          retweets: true,
+        },
+      },
+      relations: {
+        retweeter: true,
+        tweet: {
+          replies: true,
+          reacts: true,
+          tweeter: true,
+          retweets: true,
+          bookmarkedBy: true,
+          mentions: { userMentioned: true },
+        },
+      },
+    });
+
+    return {
+      retweets,
     };
   };
 
@@ -162,7 +294,9 @@ export class TweetsService {
           name: true,
           imageUrl: true,
         },
-
+        mentions: {
+          userMentioned: { username: true },
+        },
         replies: true,
         reacts: {
           email: true,
@@ -179,13 +313,27 @@ export class TweetsService {
           imageUrl: true,
         },
         retweets: true,
+        poll: {
+          options: {
+            voters: {
+              email: true,
+              username: true,
+              jobtitle: true,
+              name: true,
+              imageUrl: true,
+            },
+          },
+        },
       },
+
       relations: {
-        replies: { replies: true },
+        replies: true,
         reacts: true,
         tweeter: true,
         retweets: true,
         bookmarkedBy: true,
+        mentions: { userMentioned: true },
+        poll: { options: { voters: true } },
       },
     });
 
@@ -204,6 +352,7 @@ export class TweetsService {
         reTweetCount: tweet?.reTweetCount,
         bookmarksCount: tweet?.bookmarksCount,
         repliesCount: tweet?.repliesCount,
+        votesCount: tweet.poll?.totalVoters,
         isBookmarked,
         isReacted,
       },
@@ -233,7 +382,10 @@ export class TweetsService {
 
     await tweetReplyRepository.save(tweetReply);
 
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
+    let usernames =
+      (body.content.match(usernameRegex) as Array<string>).map((username) =>
+        username.replace('@', '')
+      ) || [];
 
     if (usernames) {
       const users = await userRepository.find({
@@ -307,7 +459,10 @@ export class TweetsService {
 
     await tweetReplyRepository.save(newtweetReply);
 
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
+    let usernames =
+      (body.content.match(usernameRegex) as Array<string>).map((username) =>
+        username.replace('@', '')
+      ) || [];
 
     if (usernames) {
       const users = await userRepository.find({
@@ -372,7 +527,7 @@ export class TweetsService {
     user.userId = userId;
 
     const retweet = new Retweet();
-    retweet.user = user;
+    retweet.retweeter = user;
     retweet.tweet = tweet;
     retweet.quote = body.quote;
 

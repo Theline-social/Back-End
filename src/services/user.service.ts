@@ -6,7 +6,7 @@ import {
   isPhoneValid,
 } from '../common';
 import { AppDataSource } from '../dataSource';
-import { TweetMention, User } from '../entities';
+import { ReelMention, TweetMention, User } from '../entities';
 
 export class UsersService {
   constructor() {}
@@ -20,7 +20,7 @@ export class UsersService {
 
     if (!existingUser) throw new AppError(`User ${userId} does not exist`, 404);
 
-    existingUser.username = body.newUsername;
+    existingUser.username = body.newUsername.replace('@', '');
     await userRepository.save(existingUser);
   };
 
@@ -124,21 +124,87 @@ export class UsersService {
     return { followers: user?.followers };
   };
 
+  getFollowings = async (userId: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: {
+        following: {
+          email: true,
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+        },
+      },
+      relations: { following: true },
+    });
+
+    return { followings: user?.following };
+  };
+
   getTweetBookmarks = async (userId: number) => {
     const userRepository = AppDataSource.getRepository(User);
 
     const user = await userRepository.findOne({
       where: { userId },
       select: {
-        tweetBookmarks: true,
+        tweetBookmarks: {
+          tweeter: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          mentions: {
+            userMentioned: { username: true },
+          },
+          replies: true,
+          reacts: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          bookmarkedBy: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+        },
       },
-      relations: { tweetBookmarks: true },
+      relations: {
+        tweetBookmarks: {
+          tweeter: true,
+          mentions: { userMentioned: true },
+          reacts: true,
+          bookmarkedBy: true,
+          replies: true,
+          retweets: true,
+        },
+      },
     });
 
-    return { tweetBookmarks: user?.tweetBookmarks };
+    if (!user?.reelBookmarks) return { tweetBookmarks: [] };
+
+    return {
+      bookmarks: user.tweetBookmarks.map((tweet) => {
+        return {
+          ...tweet,
+          reactCount: tweet.reactCount,
+          reTweetCount: tweet.reTweetCount,
+          bookmarksCount: tweet.bookmarksCount,
+          repliesCount: tweet.repliesCount,
+        };
+      }),
+    };
   };
 
-  getMentions = async (userId: number) => {
+  getTweetMentions = async (userId: number) => {
     const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
 
     const user = new User();
@@ -154,6 +220,9 @@ export class UsersService {
             jobtitle: true,
             name: true,
             imageUrl: true,
+          },
+          mentions: {
+            userMentioned: { username: true },
           },
           replies: true,
           reacts: {
@@ -177,7 +246,9 @@ export class UsersService {
           tweeter: true,
           reacts: true,
           bookmarkedBy: true,
-          replies: { replies: true },
+          mentions: { userMentioned: true },
+          replies: true,
+          retweets: true,
         },
       },
     });
@@ -190,6 +261,129 @@ export class UsersService {
           reTweetCount: mention.tweet?.reTweetCount,
           bookmarksCount: mention.tweet?.bookmarksCount,
           repliesCount: mention.tweet?.repliesCount,
+        };
+      }),
+    };
+  };
+
+  getReelBookmarks = async (userId: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: {
+        reelBookmarks: {
+          reeler: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          mentions: {
+            userMentioned: { username: true },
+          },
+          replies: true,
+          reacts: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          bookmarkedBy: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+        },
+      },
+      relations: {
+        reelBookmarks: {
+          reeler: true,
+          rereels: true,
+          mentions: { userMentioned: true },
+          bookmarkedBy: true,
+          reacts: true,
+          replies: true,
+        },
+      },
+    });
+
+    if (!user?.reelBookmarks) return { reelBookmarks: [] };
+
+    return {
+      bookmarks: user.reelBookmarks.map((tweet) => {
+        return {
+          ...tweet,
+          reactCount: tweet.reactCount,
+          reTweetCount: tweet.reReelCount,
+          bookmarksCount: tweet.bookmarksCount,
+          repliesCount: tweet.repliesCount,
+        };
+      }),
+    };
+  };
+
+  getReelMentions = async (userId: number) => {
+    const reelMentionRepository = AppDataSource.getRepository(ReelMention);
+
+    const user = new User();
+    user.userId = userId;
+
+    const mentions = await reelMentionRepository.find({
+      where: { userMentioned: user },
+      select: {
+        reel: {
+          reeler: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          mentions: {
+            userMentioned: { username: true },
+          },
+          replies: true,
+          reacts: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+          bookmarkedBy: {
+            email: true,
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+          },
+        },
+      },
+      relations: {
+        reel: {
+          reeler: true,
+          reacts: true,
+          bookmarkedBy: true,
+          replies: true,
+          mentions: { userMentioned: true },
+          rereels: true,
+        },
+      },
+    });
+
+    return {
+      mentions: mentions.map((mention) => {
+        return {
+          ...mention.reel,
+          reactCount: mention.reel?.reactCount,
+          reTweetCount: mention.reel?.reReelCount,
+          bookmarksCount: mention.reel?.bookmarksCount,
+          repliesCount: mention.reel?.repliesCount,
         };
       }),
     };

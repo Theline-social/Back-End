@@ -14,7 +14,7 @@ export class Retweet {
   retweetId: number;
 
   @ManyToOne(() => User, (user) => user.retweets)
-  user: User;
+  retweeter: User;
 
   @ManyToOne(() => Tweet, (tweet) => tweet.retweets)
   tweet: Tweet;

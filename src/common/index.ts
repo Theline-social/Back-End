@@ -18,5 +18,6 @@ export * from './middlewares/validations/user';
 export * from './middlewares/validations/reel';
 export * from './middlewares/validations/interaction';
 export * from './middlewares/validations/tweet';
+export * from './middlewares/validations/topic';
 
 export * from './constants/regex';

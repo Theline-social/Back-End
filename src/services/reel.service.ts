@@ -47,7 +47,10 @@ export class ReelsService {
 
     await reelRepository.save(reel);
 
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
+    let usernames =
+      (body.content.match(usernameRegex) as Array<string>).map((username) =>
+        username.replace('@', '')
+      ) || [];
 
     if (!usernames) return;
 
@@ -239,7 +242,10 @@ export class ReelsService {
 
     await reelReplyRepository.save(reelReply);
 
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
+    let usernames =
+      (body.content.match(usernameRegex) as Array<string>).map((username) =>
+        username.replace('@', '')
+      ) || [];
 
     if (usernames) {
       const users = await userRepository.find({
@@ -313,7 +319,10 @@ export class ReelsService {
 
     await reelReplyRepository.save(newreelReply);
 
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
+    let usernames =
+      (body.content.match(usernameRegex) as Array<string>).map((username) =>
+        username.replace('@', '')
+      ) || [];
 
     if (usernames) {
       const users = await userRepository.find({

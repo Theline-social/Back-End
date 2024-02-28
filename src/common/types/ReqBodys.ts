@@ -1,4 +1,4 @@
-import {  OtpProvider } from '../../entities';
+import { OtpProvider } from '../../entities';
 
 export interface SignupRequestBody {
   name: string;
@@ -26,8 +26,14 @@ export interface SignedInOtpBody {
   password: string;
 }
 
-
 export interface ChangePasswordBody {
-    currPassword: string;
-    newPassword: string;
+  currPassword: string;
+  newPassword: string;
+}
+
+export interface AddTopicBody {
+  description_ar: string;
+  description_en: string;
+  topic_en: string;
+  topic_ar: string;
 }

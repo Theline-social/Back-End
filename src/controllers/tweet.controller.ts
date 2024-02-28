@@ -12,11 +12,12 @@ const storage = multer.memoryStorage();
 
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
-export const uploadTweetImages = upload.fields([
+export const uploadTweetMedia = upload.fields([
   { name: 'images', maxCount: 4 },
+  { name: 'gif', maxCount: 1 },
 ]);
 
-export const resizeTweetImages = async (
+export const processTweetMedia = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -51,6 +52,24 @@ export const resizeTweetImages = async (
       req.body.imagesUrl = imageUrls;
     }
 
+    const gif = (req.files as Record<string, any>)[
+      'gif'
+    ] as Express.Multer.File;
+
+    if (gif) {
+      const fileName = `/tweets/gif-${Date.now()}`;
+
+      await sharp(gif.buffer)
+        .toFormat('gif')
+        .toFile(
+          process.env.NODE_ENV !== 'production'
+            ? `F:/MyRepos/Back-End-SM-Mostaql/assets/tweets/gif-${fileName}.gif`
+            : `/home/TheLine/Back-End/assets/tweets/gif-${fileName}.gif`
+        );
+
+      req.body.gifUrl = `/tweets/gif-${fileName}.gif`;
+    }
+
     next();
   } catch (error) {
     next(error);
@@ -60,13 +79,38 @@ export const resizeTweetImages = async (
 export const addTweet = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
-    const imageUrls = req.body.imageUrls || [];
 
-    await tweetsService.addTweet(userId, imageUrls, req.body);
+    await tweetsService.addTweet(userId, req.body);
 
     res.status(201).json({
       status: true,
       message: 'Tweet added successfully',
+    });
+  }
+);
+
+export const addPoll = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    await tweetsService.addPoll(userId, req.body);
+
+    res.status(201).json({
+      status: true,
+      message: 'Poll added successfully',
+    });
+  }
+);
+
+export const toggleVote = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    await tweetsService.toggleVote(userId, +req.params.tweetId, req.body);
+
+    res.status(201).json({
+      status: true,
+      message: 'vote toggled successfully',
     });
   }
 );
@@ -124,6 +168,19 @@ export const getTweetReacters = catchAsync(
   }
 );
 
+export const getTweetReTweets = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { retweets } = await tweetsService.getTweetReTweets(
+      +req.params.tweetId
+    );
+
+    res.status(200).json({
+      status: true,
+      data: { retweets },
+    });
+  }
+);
+
 export const getTweet = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
@@ -147,8 +204,8 @@ export const addTweetReply = catchAsync(
     const userId = res.locals.currentUser.userId;
 
     const { tweetReply } = await tweetsService.addTweetReply(
-      +(userId),
-      +(req.params.tweetId),
+      +userId,
+      +req.params.tweetId,
       req.body
     );
 
@@ -164,10 +221,7 @@ export const toggleTweetReact = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    await tweetsService.toggleTweetReact(
-      +(userId),
-      +(req.params.tweetId)
-    );
+    await tweetsService.toggleTweetReact(+userId, +req.params.tweetId);
 
     res.status(200).json({
       status: true,

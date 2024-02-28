@@ -2,14 +2,14 @@ import express, { Router } from 'express';
 import * as tweetsController from '../controllers/tweet.controller';
 import * as authController from '../controllers/auth.controller';
 
-import { validateRequest } from '../common';
+import { addPollValidationRules, validateRequest } from '../common';
 import { replyIdParamsValidation, tweetIdParamsValidation } from '../common';
 
 const router: Router = express.Router();
 
 /**
  * @swagger
- * /tweets:
+ * /tweets/add-tweet:
  *   post:
  *     summary: Add a new tweet
  *     description: Add a new tweet with content and optional images.
@@ -44,12 +44,101 @@ const router: Router = express.Router();
  */
 
 router
-  .route('/')
+  .route('/add-tweet')
   .post(
     authController.requireAuth,
-    tweetsController.uploadTweetImages,
-    tweetsController.resizeTweetImages,
+    tweetsController.uploadTweetMedia,
+    tweetsController.processTweetMedia,
     tweetsController.addTweet
+  );
+
+/**
+ * @swagger
+ *  /tweets/add-poll:
+ *   post:
+ *     summary: Add a new poll
+ *     tags:
+ *       - tweets
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               question:
+ *                 type: string
+ *               length:
+ *                 type: string 
+ *               options:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       '200':
+ *         description: Poll added successfully
+ *       '401':
+ *         description: Unauthorized, user not logged in
+ *       '422':
+ *         description: Validation failed
+ */
+router
+  .route('/add-poll')
+  .post(
+    authController.requireAuth,
+    addPollValidationRules,
+    validateRequest,
+    tweetsController.addPoll
+  );
+
+/**
+ * @swagger
+ * /tweets/{tweetId}/toggle-vote:
+ *   patch:
+ *     summary: Toggle vote on a tweet
+ *     description: Toggles the user's vote (like/dislike) on a specific tweet by its ID.
+ *     security:
+ *       - jwt: []
+ *     tags:
+ *       - tweets
+ *     parameters:
+ *       - in: path
+ *         name: tweetId
+ *         description: The ID of the tweet.
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               optionIdx:
+ *                 type: string
+
+ *     responses:
+ *       '200':
+ *         description: OK. Vote on the tweet successfully toggled.
+ *       '400':
+ *         description: Bad Request. Invalid request parameters.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '404':
+ *         description: Not Found. Tweet not found.
+ *       '500':
+ *         description: Internal Server Error. Failed to toggle vote on the tweet.
+ */
+router
+  .route('/:tweetId/toggle-vote')
+  .patch(
+    authController.requireAuth,
+    tweetIdParamsValidation,
+    validateRequest,
+    tweetsController.toggleVote
   );
 
 /**
@@ -163,7 +252,7 @@ router
     validateRequest,
     tweetsController.getTweetReacters
   );
-  
+
 /**
  * @swagger
  * /tweets/{tweetId}/retweeters:
@@ -201,6 +290,42 @@ router
     tweetIdParamsValidation,
     validateRequest,
     tweetsController.getTweetReTweeters
+  );
+
+/**
+ * @swagger
+ * /tweets/{tweetId}/retweets:
+ *   get:
+ *     summary: Get a single tweet by ID
+ *     description: Retrieves a single tweet by its ID.
+ *     security:
+ *       - jwt: []
+ *     tags:
+ *       - tweets
+ *     parameters:
+ *       - name: tweetId
+ *         in: path
+ *         description: ID of the tweet to retrieve.
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: OK. Tweet successfully retrieved.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '404':
+ *         description: Not found. Tweet with the provided ID not found.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve the tweet.
+ */
+router
+  .route('/:tweetId/retweets')
+  .get(
+    authController.requireAuth,
+    tweetIdParamsValidation,
+    validateRequest,
+    tweetsController.getTweetReTweets
   );
 /**
  * @swagger

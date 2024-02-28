@@ -19,3 +19,16 @@ export const tweetIdParamsValidation = [
 export const replyIdParamsValidation = [
   param('replyId').exists().toInt().withMessage('tweet does not exist'),
 ];
+
+export const addPollValidationRules = [
+  body('question').notEmpty().isString(),
+  body('length').notEmpty().isString(),
+  body('options')
+    .isArray()
+    .custom((value, { req }) => {
+      if (value.length > 4) {
+        throw new Error('Maximum number of options is 4');
+      }
+      return true;
+    }),
+];

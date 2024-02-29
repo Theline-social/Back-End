@@ -1,7 +1,6 @@
 import { In } from 'typeorm';
 import { AppError, options, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
-import { CronJob } from 'cron';
 
 import {
   Retweet,
@@ -335,9 +334,13 @@ export class TweetsService {
         },
         retweets: true,
         poll: {
+          pollId: true,
+          question: true,
+          length: true,
           options: {
+            optionId: true,
+            text: true,
             voters: {
-              email: true,
               username: true,
               jobtitle: true,
               name: true,
@@ -350,7 +353,12 @@ export class TweetsService {
       relations: {
         replies: true,
         reacts: true,
-        tweeter: { followers: true, following: true, blocked: true, muted: true },
+        tweeter: {
+          followers: true,
+          following: true,
+          blocked: true,
+          muted: true,
+        },
         retweets: { retweeter: true },
         bookmarkedBy: true,
         mentions: { userMentioned: true },
@@ -381,6 +389,7 @@ export class TweetsService {
         imageUrls: tweet.imageUrls,
         content: tweet.content,
         createdAt: tweet.createdAt,
+        poll: { ...tweet.poll, votesCount: tweet.poll?.totalVoters },
         tweeter: {
           imageUrl: tweet.tweeter.imageUrl,
           username: tweet.tweeter.username,
@@ -399,7 +408,6 @@ export class TweetsService {
         reactCount: tweet.reactCount,
         reTweetCount: tweet.reTweetCount,
         repliesCount: tweet.repliesCount,
-        votesCount: tweet.poll?.totalVoters,
         isBookmarked,
         isReacted,
         isRetweeted,

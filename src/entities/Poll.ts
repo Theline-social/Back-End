@@ -21,7 +21,6 @@ export class Poll {
 
   @OneToMany(() => PollOption, (option) => option.poll, {
     cascade: true,
-    eager: true,
   })
   options: PollOption[];
 
@@ -49,7 +48,6 @@ export class PollOption {
   text: string;
 
   @ManyToMany(() => User, (user) => user.votedOptions, {
-    eager: true,
     cascade: true,
   })
   voters: User[];

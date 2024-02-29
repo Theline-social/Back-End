@@ -64,7 +64,6 @@ export class Tweet {
     onDelete: 'CASCADE',
     nullable: true,
     cascade: true,
-    eager: true,
   })
   poll: Poll;
 

@@ -49,25 +49,27 @@ export const processTweetMedia = async (
         })
       );
 
-      req.body.imagesUrl = imageUrls;
+      req.body.imageUrls = imageUrls;
     }
 
     const gif = (req.files as Record<string, any>)[
       'gif'
-    ] as Express.Multer.File;
+    ] as Express.Multer.File[];
 
     if (gif) {
-      const fileName = `/tweets/gif-${Date.now()}`;
+      const gifUrl = `/tweets/gif-${
+        Date.now() + '-' + Math.round(Math.random() * 1e9)
+      }.gif`;
 
-      await sharp(gif.buffer)
+      await sharp(gif[0].buffer, { animated: true })
         .toFormat('gif')
         .toFile(
           process.env.NODE_ENV !== 'production'
-            ? `F:/MyRepos/Back-End-SM-Mostaql/assets/tweets/gif-${fileName}.gif`
-            : `/home/TheLine/Back-End/assets/tweets/gif-${fileName}.gif`
+            ? `F:/MyRepos/Back-End-SM-Mostaql/assets${gifUrl}`
+            : `/home/TheLine/Back-End/assets${gifUrl}`
         );
 
-      req.body.gifUrl = `/tweets/gif-${fileName}.gif`;
+      req.body.gifUrl = gifUrl;
     }
 
     next();

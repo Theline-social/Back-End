@@ -20,6 +20,10 @@ export const replyIdParamsValidation = [
   param('replyId').exists().toInt().withMessage('tweet does not exist'),
 ];
 
+export const contentValidation = [
+  body('content').exists().toInt().withMessage('content does not exist'),
+];
+
 export const addPollValidationRules = [
   body('question').notEmpty().isString(),
   body('length').notEmpty().isString(),

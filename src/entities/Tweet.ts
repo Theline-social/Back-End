@@ -36,20 +36,13 @@ export class Tweet {
   })
   createdAt: Date;
 
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
-  updatedAt: Date;
-
   @ManyToOne(() => User, (user) => user.tweets, { onDelete: 'CASCADE' })
   tweeter: User;
 
   @OneToMany(() => Retweet, (retweet) => retweet.tweet, { onDelete: 'CASCADE' })
   retweets: Retweet[];
 
-  @OneToMany(() => TweetReply, (reply) => reply.tweet, { onDelete: 'CASCADE' })
+  @OneToMany(() => TweetReply, (reply) => reply.tweet, { onDelete: 'CASCADE' , nullable: true})
   replies: TweetReply[];
 
   @ManyToMany(() => User, (user) => user.reactedTweets, { onDelete: 'CASCADE' })

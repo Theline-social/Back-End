@@ -268,8 +268,8 @@ export const addRetweet = catchAsync(
     const userId = res.locals.currentUser.userId;
 
     const { retweet } = await tweetsService.addRetweet(
-      Number(userId),
-      Number(req.params.tweetId),
+      +(userId),
+      +(req.params.tweetId),
       req.body
     );
 

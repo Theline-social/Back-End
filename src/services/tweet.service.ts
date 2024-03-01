@@ -290,6 +290,7 @@ export class TweetsService {
         imageUrls: tweet.imageUrls,
         content: tweet.content,
         createdAt: tweet.createdAt,
+        type: tweet.type,
         poll: { ...tweet.poll, votesCount: tweet.poll?.totalVoters },
         tweeter: {
           imageUrl: tweet.tweeter.imageUrl,
@@ -381,6 +382,7 @@ export class TweetsService {
       tweet: {
         tweetId: tweet.tweetId,
         createdAt: tweet.createdAt,
+        type: tweet.type,
         poll: tweet.poll
           ? {
               pollId: tweet.poll.pollId,
@@ -409,6 +411,7 @@ export class TweetsService {
 
     const poll = await pollRepository.findOne({
       where: { tweet: { tweetId } },
+      relations: { options: { voters: true } },
     });
 
     if (!poll) throw new AppError('Poll not found', 404);
@@ -692,7 +695,15 @@ export class TweetsService {
           blocked: true,
           muted: true,
         },
-        retweetTo: { tweeter: true },
+        retweetTo: {
+          tweeter: {
+            followers: true,
+            following: true,
+            blocked: true,
+            muted: true,
+          },
+          poll: { options: { voters: true } },
+        },
         replies: true,
         reacts: true,
         retweets: true,
@@ -741,15 +752,20 @@ export class TweetsService {
           retweetId: retweet.tweetId,
           createdAt: retweet.createdAt,
           content: retweet.content,
+          type: retweet.type,
           isBookmarked,
           isReacted,
           isRetweeted,
+          reactCount: retweet.reactCount,
+          reTweetCount: retweet.reTweetCount,
+          repliesCount: retweet.repliesCount,
           tweet: {
             tweetId: retweet.retweetTo.tweetId,
             gifUrl: retweet.retweetTo.gifUrl,
             imageUrls: retweet.retweetTo.imageUrls,
             content: retweet.retweetTo.content,
             createdAt: retweet.retweetTo.createdAt,
+            type: retweet.retweetTo.type,
             poll: retweet.retweetTo.poll
               ? {
                   pollId: retweet.retweetTo.poll.pollId,
@@ -965,6 +981,7 @@ export class TweetsService {
         imageUrls: tweet.imageUrls,
         content: tweet.content,
         createdAt: tweet.createdAt,
+        type: tweet.type,
         poll: tweet.poll
           ? {
               pollId: tweet.poll.pollId,
@@ -1034,17 +1051,37 @@ export class TweetsService {
     body: { content: string }
   ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
+    const userRepository = AppDataSource.getRepository(User);
 
     const orgTweet = new Tweet();
     orgTweet.tweetId = tweetId;
+
+    const user = new User();
+    user.userId = userId;
 
     const { tweet } = await this.createTweet(userId, body);
     tweet.retweetTo = orgTweet;
     tweet.type = TweetType.ReTweet;
 
-    await tweetRepository.save(tweet);
+    // if (!orgTweet.retweetedBy) orgTweet.retweetedBy = [user];
+    // else orgTweet.retweetedBy.push(user);
 
-    return { retweet: tweet };
+    if (!user.retweetedTweets) user.retweetedTweets = [tweet];
+    else user.retweetedTweets.push(tweet);
+
+    await tweetRepository.save(tweet);
+    await userRepository.save(user);
+
+    return {
+      retweet: {
+        retweetId: tweet.tweetId,
+        createdAt: tweet.createdAt,
+        content: tweet.content,
+        tweet: {
+          tweetId,
+        },
+      },
+    };
   };
 
   toggleBookmark = async (userId: number, tweetId: number) => {

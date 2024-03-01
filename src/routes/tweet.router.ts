@@ -528,7 +528,7 @@ router
  *           schema:
  *             type: object
  *             properties:
- *               quote:
+ *               content:
  *                 type: string
  *                 description: Content of the retweet quote.
  *             required:

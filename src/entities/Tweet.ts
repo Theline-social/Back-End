@@ -18,6 +18,7 @@ export enum TweetType {
   Reply = 'Reply',
   ReTweet = 'ReTweet',
 }
+
 @Entity()
 export class Tweet {
   @PrimaryGeneratedColumn()
@@ -44,14 +45,13 @@ export class Tweet {
   @ManyToOne(() => User, (user) => user.tweets, { onDelete: 'CASCADE' })
   tweeter: User;
 
-  @OneToMany(() => Tweet, (tweet) => tweet.retweetTo)
+  @OneToMany(() => Tweet, (tweet) => tweet.retweetTo,  { onDelete: 'CASCADE' })
   retweets: Tweet[];
 
-  @ManyToOne(() => Tweet, (tweet) => tweet.retweets)
+  @ManyToOne(() => Tweet, (tweet) => tweet.retweets,{ onDelete: 'CASCADE' })
   retweetTo: Tweet;
 
-  @ManyToMany(() => User, (user) => user.retweetedTweets)
-  @JoinTable()
+  @ManyToMany(() => User, (user) => user.retweetedTweets, { onDelete: 'CASCADE' })
   retweetedBy: User[];
 
   @ManyToOne(() => Tweet, (tweet) => tweet.replies, {
@@ -60,7 +60,7 @@ export class Tweet {
   })
   replyTo: Tweet;
 
-  @OneToMany(() => Tweet, (tweet) => tweet.replyTo)
+  @OneToMany(() => Tweet, (tweet) => tweet.replyTo, { onDelete: 'CASCADE' })
   replies: Tweet[];
 
   @ManyToMany(() => User, (user) => user.reactedTweets, { onDelete: 'CASCADE' })

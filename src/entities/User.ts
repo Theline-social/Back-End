@@ -12,7 +12,6 @@ import { Tweet } from './Tweet';
 import { TweetMention } from './TweetMention';
 import { Reel } from './Reel';
 import { ReelMention } from './ReelMention';
-import { ReReel } from './ReReel';
 import { PollOption } from './Poll';
 
 export enum Gender {
@@ -113,8 +112,9 @@ export class User {
   @JoinTable()
   retweetedTweets: Tweet[];
 
-  @OneToMany(() => ReReel, (rereel) => rereel.rereeler)
-  rereels: ReReel[];
+  @ManyToMany(() => Reel, (reel) => reel.rereelBy)
+  @JoinTable()
+  rereeledReels: Reel[];
 
   @ManyToMany(() => User, (user) => user.following)
   followers: User[];

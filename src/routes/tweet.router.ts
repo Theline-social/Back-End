@@ -37,6 +37,13 @@ const router: Router = express.Router();
  *         type: array
  *         items:
  *           type: file
+ *       - name: gif
+ *         in: formData
+ *         description: List of image gifs to be attached to the tweet.
+ *         required: false
+ *         type: array
+ *         items:
+ *           type: file
  *     responses:
  *       '200':
  *         description: OK. Tweet successfully added.
@@ -60,7 +67,7 @@ router
 /**
  * @swagger
  * /tweets/timeline:
- *   post:
+ *   get:
  *     summary: Get timeline tweets
  *     description: Retrieve timeline tweets with pagination
  *     tags:
@@ -91,7 +98,7 @@ router
 
 router
   .route('/timeline')
-  .post(
+  .get(
     authController.requireAuth,
     validatePagination,
     validateRequest,
@@ -423,20 +430,27 @@ router
  *     consumes:
  *       - multipart/form-data
  *     parameters:
- *       - name: content
- *         in: formData
- *         description: The content of the tweet.
- *         required: true
- *         type: string
  *       - name: tweetId
  *         in: path
  *         description: ID of the tweet to add a reply to.
  *         required: true
  *         schema:
  *           type: string
+ *       - name: content
+ *         in: formData
+ *         description: The content of the tweet.
+ *         required: true
+ *         type: string
  *       - name: images
  *         in: formData
  *         description: List of image files to be attached to the tweet.
+ *         required: false
+ *         type: array
+ *         items:
+ *           type: file
+ *       - name: gif
+ *         in: formData
+ *         description: List of image gifs to be attached to the tweet.
  *         required: false
  *         type: array
  *         items:
@@ -514,6 +528,8 @@ router
  *       - jwt: []
  *     tags:
  *       - tweets
+ *     consumes:
+ *       - multipart/form-data
  *     parameters:
  *       - name: tweetId
  *         in: path
@@ -521,18 +537,25 @@ router
  *         required: true
  *         schema:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               content:
- *                 type: string
- *                 description: Content of the retweet quote.
- *             required:
- *               - quote
+ *       - name: content
+ *         in: formData
+ *         description: The content of the tweet.
+ *         required: true
+ *         type: string
+ *       - name: images
+ *         in: formData
+ *         description: List of image files to be attached to the tweet.
+ *         required: false
+ *         type: array
+ *         items:
+ *           type: file
+ *       - name: gif
+ *         in: formData
+ *         description: List of image gifs to be attached to the tweet.
+ *         required: false
+ *         type: array
+ *         items:
+ *           type: file
  *     responses:
  *       '201':
  *         description: Created. Retweet successfully added.
@@ -552,6 +575,8 @@ router
     authController.requireAuth,
     tweetIdParamsValidation,
     validateRequest,
+    tweetsController.uploadTweetMedia,
+    tweetsController.processTweetMedia,
     tweetsController.addRetweet
   );
 

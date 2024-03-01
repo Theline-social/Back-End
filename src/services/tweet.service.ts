@@ -216,14 +216,20 @@ export class TweetsService {
 
   createTweet = async (
     userId: number,
-    body: { content: string; imageUrls?: string[]; gifUrl?: string }
+    body: { content: string; imageUrls?: string[]; gifUrl?: string },
+    type: TweetType = TweetType.Tweet
   ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
     const userRepository = AppDataSource.getRepository(User);
     const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
 
-    if (!body.content && !body.imageUrls && !body.gifUrl)
-      throw new AppError('Must provide content or images', 400);
+    if (
+      type !== TweetType.ReTweet &&
+      !body.content &&
+      !body.imageUrls &&
+      !body.gifUrl
+    )
+      throw new AppError('Must provide content or media', 400);
 
     const user = await userRepository.findOne({
       where: { userId },
@@ -236,6 +242,7 @@ export class TweetsService {
     tweet.imageUrls = body.imageUrls || [];
     tweet.gifUrl = body.gifUrl || '';
     tweet.tweeter = user;
+    tweet.type = type;
 
     try {
       await tweetRepository.save(tweet);
@@ -716,6 +723,9 @@ export class TweetsService {
         content: true,
         createdAt: true,
         tweetId: true,
+        imageUrls: true,
+        gifUrl: true,
+        type: true,
         mentions: {
           mentionedAt: true,
           userMentioned: { username: true },
@@ -802,6 +812,8 @@ export class TweetsService {
           createdAt: retweet.createdAt,
           content: retweet.content,
           type: retweet.type,
+          imageUrls: retweet.imageUrls,
+          gifUrl: retweet.gifUrl,
           isBookmarked,
           isReacted,
           isRetweeted,
@@ -1097,7 +1109,7 @@ export class TweetsService {
   addRetweet = async (
     userId: number,
     tweetId: number,
-    body: { content: string }
+    body: { content: string; imageUrls?: string[]; gifUrl?: string }
   ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
     const userRepository = AppDataSource.getRepository(User);
@@ -1105,15 +1117,13 @@ export class TweetsService {
     const orgTweet = new Tweet();
     orgTweet.tweetId = tweetId;
 
-    const user = new User();
-    user.userId = userId;
+    const user = (await userRepository.findOne({
+      where: { userId },
+      relations: { retweetedTweets: true },
+    })) as User;
 
-    const { tweet } = await this.createTweet(userId, body);
+    const { tweet } = await this.createTweet(userId, body, TweetType.ReTweet);
     tweet.retweetTo = orgTweet;
-    tweet.type = TweetType.ReTweet;
-
-    // if (!orgTweet.retweetedBy) orgTweet.retweetedBy = [user];
-    // else orgTweet.retweetedBy.push(user);
 
     if (!user.retweetedTweets) user.retweetedTweets = [tweet];
     else user.retweetedTweets.push(tweet);

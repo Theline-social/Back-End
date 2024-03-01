@@ -9,5 +9,4 @@ export * from './TweetMention';
 export * from './User';
 export * from './Topic';
 export * from './Reel';
-export * from './ReReel';
 export * from './Poll';

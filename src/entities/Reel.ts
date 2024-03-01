@@ -11,8 +11,13 @@ import {
 } from 'typeorm';
 import { User } from './User';
 import { ReelMention } from './ReelMention';
-import { ReReel } from './ReReel';
 import { Topic } from './Topic';
+
+export enum ReelType {
+  Reel = 'Reel',
+  Reply = 'Reply',
+  ReReel = 'ReReel',
+}
 
 @Entity()
 export class Reel {
@@ -22,7 +27,7 @@ export class Reel {
   @Column({ type: 'varchar', length: 200 })
   content: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar',nullable: true  })
   reelUrl: string;
 
   @CreateDateColumn({
@@ -31,12 +36,8 @@ export class Reel {
   })
   createdAt: Date;
 
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
-  updatedAt: Date;
+  @Column({ type: 'enum', enum: ReelType, default: ReelType.Reel })
+  type: ReelType;
 
   @ManyToOne(() => User, (user) => user.reels, { onDelete: 'CASCADE' })
   reeler: User;
@@ -52,10 +53,14 @@ export class Reel {
   })
   mentions: ReelMention[];
 
-  @OneToMany(() => ReReel, (rereel) => rereel.reel, {
-    onDelete: 'CASCADE',
-  })
-  rereels: ReReel[];
+  @OneToMany(() => Reel, (reel) => reel.rereelTo, { onDelete: 'CASCADE' })
+  rereels: Reel[];
+
+  @ManyToOne(() => Reel, (reel) => reel.rereels,{ onDelete: 'CASCADE' })
+  rereelTo: Reel;
+
+  @ManyToMany(() => User, (user) => user.rereeledReels, { onDelete: 'CASCADE' })
+  rereelBy: User[];
 
   @ManyToOne(() => Reel, (reel) => reel.replies, {
     onDelete: 'CASCADE',
@@ -63,7 +68,7 @@ export class Reel {
   })
   replyTo: Reel;
 
-  @OneToMany(() => Reel, (reel) => reel.replyTo)
+  @OneToMany(() => Reel, (reel) => reel.replyTo, { onDelete: 'CASCADE' })
   replies: Reel[];
 
   @ManyToMany(() => Topic, (topic) => topic.supportingReels, {

@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    req.body.reelUrl = `/reels/reel-${uniqueSuffix}.jpeg`;
+    req.body.reelUrl = `/reels/reel-${uniqueSuffix}.mp4`;
 
     cb(null, `reel-${uniqueSuffix}.mp4`);
   },
@@ -44,6 +44,26 @@ const upload = multer({
 });
 
 export const uploadReel = upload.single('reel');
+
+export const getTimelineReels = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { page, limit } = req.query;
+
+    const { timelineReels } = await reelsService.getTimelineReels(
+      userId,
+      +(page as string),
+      +(limit as string)
+    );
+
+    res.status(201).json({
+      status: true,
+      message: 'Tweets fetched successfully',
+      data: { timelineReels },
+    });
+  }
+);
 
 export const addReel = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -88,7 +108,10 @@ export const getReelReplies = catchAsync(
 
 export const getReelReReelers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
     const { rereelers } = await reelsService.getReelReReelers(
+      +userId,
       +req.params.reelId
     );
 
@@ -101,11 +124,32 @@ export const getReelReReelers = catchAsync(
 
 export const getReelReacters = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { reacters } = await reelsService.getReelReacters(+req.params.reelId);
+    const userId = res.locals.currentUser.userId;
+
+    const { reacters } = await reelsService.getReelReacters(
+      +userId,
+      +req.params.reelId
+    );
 
     res.status(200).json({
       status: true,
       data: { reacters },
+    });
+  }
+);
+
+export const getReelReReels = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { rereels } = await reelsService.getReelReReels(
+      +userId,
+      +req.params.reelId
+    );
+
+    res.status(200).json({
+      status: true,
+      data: { rereels },
     });
   }
 );
@@ -151,7 +195,7 @@ export const toggleReelReact = catchAsync(
 
     res.status(200).json({
       status: true,
-      message: 'React added successfully',
+      message: 'React toggled successfully',
     });
   }
 );
@@ -160,7 +204,7 @@ export const addRereel = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { rereel } = await reelsService.addReReel(
+    const { rereel } = await reelsService.addRereel(
       +userId,
       +req.params.reelId,
       req.body

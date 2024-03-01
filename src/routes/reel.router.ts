@@ -2,14 +2,55 @@ import express, { Router } from 'express';
 import * as reelsController from '../controllers/reel.controller';
 import * as authController from '../controllers/auth.controller';
 
-import { validateRequest } from '../common';
+import { validatePagination, validateRequest } from '../common';
 import { replyIdParamsValidation, reelIdParamsValidation } from '../common';
 
 const router: Router = express.Router();
 
 /**
  * @swagger
- * /reels:
+ * /reels/timeline:
+ *   get:
+ *     summary: Get timeline reels
+ *     description: Retrieve timeline tweets with pagination
+ *     tags:
+ *       - reels
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *       '400':
+ *         description: Invalid request parameters
+ *       '401':
+ *         description: Unauthorized - Invalid or missing authentication token
+ *       '500':
+ *         description: Internal server error
+ */
+
+router
+  .route('/timeline')
+  .get(
+    authController.requireAuth,
+    validatePagination,
+    validateRequest,
+    reelsController.getTimelineReels
+  );
+
+/**
+ * @swagger
+ * /reels/add-reel:
  *   post:
  *     summary: Add a new reel
  *     description: Add a new reel with content and optional images.
@@ -49,7 +90,7 @@ const router: Router = express.Router();
  */
 
 router
-  .route('/')
+  .route('/add-reel')
   .post(
     authController.requireAuth,
     reelsController.uploadReel,
@@ -234,6 +275,42 @@ router
  *         description: Internal Server Error. Failed to retrieve the reel.
  */
 
+/**
+ * @swagger
+ * /reels/{reelId}/rereels:
+ *   get:
+ *     summary: Get a rereels of a reel
+ *     description: Retrieves a single tweet by its ID.
+ *     security:
+ *       - jwt: []
+ *     tags:
+ *       - reels
+ *     parameters:
+ *       - name: reelId
+ *         in: path
+ *         description: ID of the tweet to retrieve.
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: OK. Tweet successfully retrieved.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '404':
+ *         description: Not found. Tweet with the provided ID not found.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve the tweet.
+ */
+router
+  .route('/:reelId/rereels')
+  .get(
+    authController.requireAuth,
+    reelIdParamsValidation,
+    validateRequest,
+    reelsController.getReelReReels
+  );
+
 router
   .route('/:reelId')
   .get(
@@ -253,23 +330,26 @@ router
  *       - jwt: []
  *     tags:
  *       - reels
+ *     consumes:
+ *       - multipart/form-data
  *     parameters:
- *       - name: reelId
- *         in: path
- *         description: ID of the reel to add a reply to.
+ *       - name: content
+ *         in: formData
+ *         description: The content of the reel.
  *         required: true
- *         schema:
+ *         type: string
+ *       - name: topics
+ *         in: formData
+ *         description: List of topics related to the reel.
+ *         required: false
+ *         type: array
+ *         items:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               content:
- *                 type: string
- *                 description: Content of the reply.
+ *       - name: reel
+ *         in: formData
+ *         description: List of image files to be attached to the reel.
+ *         required: false
+ *         type: file
  *     responses:
  *       '201':
  *         description: Created. Reply successfully added.
@@ -342,25 +422,26 @@ router
  *       - jwt: []
  *     tags:
  *       - reels
+ *     consumes:
+ *       - multipart/form-data
  *     parameters:
- *       - name: reelId
- *         in: path
- *         description: ID of the reel to rereel.
+ *       - name: content
+ *         in: formData
+ *         description: The content of the reel.
  *         required: true
- *         schema:
+ *         type: string
+ *       - name: topics
+ *         in: formData
+ *         description: List of topics related to the reel.
+ *         required: false
+ *         type: array
+ *         items:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               quote:
- *                 type: string
- *                 description: Content of the rereel quote.
- *             required:
- *               - quote
+ *       - name: reel
+ *         in: formData
+ *         description: List of image files to be attached to the reel.
+ *         required: false
+ *         type: file
  *     responses:
  *       '201':
  *         description: Created. Rereel successfully added.
@@ -380,6 +461,7 @@ router
     authController.requireAuth,
     reelIdParamsValidation,
     validateRequest,
+    reelsController.uploadReel,
     reelsController.addRereel
   );
 

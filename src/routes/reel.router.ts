@@ -289,6 +289,7 @@ router
     authController.requireAuth,
     reelIdParamsValidation,
     validateRequest,
+    reelsController.uploadReel,
     reelsController.addReelReply
   );
 
@@ -329,110 +330,6 @@ router
     reelIdParamsValidation,
     validateRequest,
     reelsController.toggleReelReact
-  );
-
-/**
- * @swagger
- * /reels/{reelId}/{replyId}/add-reply:
- *   post:
- *     summary: Add a reply to a reply of a reel
- *     description: Adds a reply to a reply of a reel by their IDs.
- *     security:
- *       - jwt: []
- *     tags:
- *       - reels
- *     parameters:
- *       - name: reelId
- *         in: path
- *         description: ID of the reel to which the reply belongs.
- *         required: true
- *         schema:
- *           type: string
- *       - name: replyId
- *         in: path
- *         description: ID of the reply to which a new reply will be added.
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               content:
- *                 type: string
- *                 description: Content of the reply.
- *             required:
- *               - content
- *     responses:
- *       '201':
- *         description: Created. Reply successfully added.
- *       '400':
- *         description: Bad Request. Invalid request parameters.
- *       '401':
- *         description: Unauthorized. User authentication failed.
- *       '404':
- *         description: Not found. Reel or reply with the provided ID not found.
- *       '500':
- *         description: Internal Server Error. Failed to add the reply.
- */
-
-router
-  .route('/:reelId/:replyId/add-reply')
-  .post(
-    authController.requireAuth,
-    reelIdParamsValidation,
-    replyIdParamsValidation,
-    validateRequest,
-    reelsController.addReplyToReply
-  );
-
-/**
- * @swagger
- * /reels/{reelId}/{replyId}/toggle-react:
- *   patch:
- *     summary: Toggle reaction to a reply
- *     description: Toggles the reaction (add/remove) to a reply of a reel by their IDs.
- *     security:
- *       - jwt: []
- *     tags:
- *       - reels
- *     parameters:
- *       - name: reelId
- *         in: path
- *         description: ID of the reel to which the reply belongs.
- *         required: true
- *         schema:
- *           type: string
- *       - name: replyId
- *         in: path
- *         description: ID of the reply to toggle the reaction.
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       '200':
- *         description: OK. Reaction toggled successfully.
- *       '400':
- *         description: Bad Request. Invalid request parameters.
- *       '401':
- *         description: Unauthorized. User authentication failed.
- *       '404':
- *         description: Not found. Reel or reply with the provided ID not found.
- *       '500':
- *         description: Internal Server Error. Failed to toggle the reaction.
- */
-
-router
-  .route('/:reelId/:replyId/toggle-react')
-  .patch(
-    authController.requireAuth,
-    reelIdParamsValidation,
-    replyIdParamsValidation,
-    validateRequest,
-    reelsController.toggleReplyReact
   );
 
 /**

@@ -4,24 +4,26 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
-  UpdateDateColumn,
   OneToMany,
   ManyToMany,
   JoinTable,
   OneToOne,
 } from 'typeorm';
 import { User } from './User';
-import { Retweet } from './ReTweet';
-import { TweetReply } from './TweetReply';
 import { TweetMention } from './TweetMention';
 import { Poll } from './Poll';
 
+export enum TweetType {
+  Tweet = 'Tweet',
+  Reply = 'Reply',
+  ReTweet = 'ReTweet',
+}
 @Entity()
 export class Tweet {
   @PrimaryGeneratedColumn()
   tweetId: number;
 
-  @Column({ type: 'varchar', length: 200 , nullable: true})
+  @Column({ type: 'varchar', length: 200, nullable: true })
   content: string;
 
   @Column({ type: 'varchar', array: true, length: 200, nullable: true })
@@ -36,14 +38,30 @@ export class Tweet {
   })
   createdAt: Date;
 
+  @Column({ type: 'enum', enum: TweetType, default: TweetType.Tweet })
+  type: TweetType;
+
   @ManyToOne(() => User, (user) => user.tweets, { onDelete: 'CASCADE' })
   tweeter: User;
 
-  @OneToMany(() => Retweet, (retweet) => retweet.tweet, { onDelete: 'CASCADE' })
-  retweets: Retweet[];
+  @OneToMany(() => Tweet, (tweet) => tweet.retweetTo)
+  retweets: Tweet[];
 
-  @OneToMany(() => TweetReply, (reply) => reply.tweet, { onDelete: 'CASCADE' , nullable: true})
-  replies: TweetReply[];
+  @ManyToOne(() => Tweet, (tweet) => tweet.retweets)
+  retweetTo: Tweet;
+
+  @ManyToMany(() => User, (user) => user.retweetedTweets)
+  @JoinTable()
+  retweetedBy: User[];
+
+  @ManyToOne(() => Tweet, (tweet) => tweet.replies, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  replyTo: Tweet;
+
+  @OneToMany(() => Tweet, (tweet) => tweet.replyTo)
+  replies: Tweet[];
 
   @ManyToMany(() => User, (user) => user.reactedTweets, { onDelete: 'CASCADE' })
   @JoinTable()

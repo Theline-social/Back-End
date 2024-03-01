@@ -1,26 +1,222 @@
-import { In } from 'typeorm';
+import { In, Not } from 'typeorm';
 import { AppError, options, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
-
-import {
-  Retweet,
-  Tweet,
-  TweetMention,
-  TweetReply,
-  TweetReplyMention,
-  User,
-} from '../entities';
-import socketService from './socket.service';
 import { Poll, PollOption } from '../entities/Poll';
+import { Tweet, TweetMention, TweetType, User } from '../entities';
+
+import socketService from './socket.service';
 
 export class TweetsService {
   constructor() {}
 
-  getTweets = async () => {};
-
-  addTweet = async (
+  getTimelineTweets = async (
     userId: number,
-    body: { content: string; imageUrls: string[]; gifUrl: string }
+    page: number = 1,
+    limit: number = 30
+  ) => {
+    const tweetRepository = AppDataSource.getRepository(Tweet);
+    const userRepository = AppDataSource.getRepository(User);
+
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: { following: { userId: true } },
+      relations: { following: true },
+    });
+
+    if (!user) throw new AppError('User not found', 404);
+
+    const followingsIds = user.following.map((following) => following.userId);
+
+    const tweetsOfFollowings = await tweetRepository.find({
+      where: {
+        tweeter: { userId: In([...followingsIds]) },
+        type: In([TweetType.Tweet, TweetType.ReTweet]),
+      },
+      select: {
+        imageUrls: true,
+        tweetId: true,
+        gifUrl: true,
+        content: true,
+        createdAt: true,
+        type: true,
+        tweeter: {
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+          userId: true,
+          bio: true,
+        },
+        mentions: {
+          mentionedAt: true,
+          userMentioned: { username: true },
+        },
+        reacts: {
+          userId: true,
+        },
+        bookmarkedBy: {
+          userId: true,
+        },
+        retweets: true,
+        poll: {
+          pollId: true,
+          question: true,
+          length: true,
+          options: {
+            optionId: true,
+            text: true,
+            voters: {
+              username: true,
+              jobtitle: true,
+              name: true,
+              imageUrl: true,
+              userId: true,
+            },
+          },
+        },
+      },
+      relations: {
+        replies: true,
+        reacts: true,
+        tweeter: {
+          followers: true,
+          following: true,
+          blocked: true,
+          muted: true,
+        },
+        retweets: { tweeter: true },
+        bookmarkedBy: true,
+        mentions: { userMentioned: true },
+        poll: { options: { voters: true } },
+      },
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const randomTweets = await tweetRepository.find({
+      where: {
+        tweeter: { userId: Not(In([...followingsIds])) },
+        type: In([TweetType.Tweet, TweetType.ReTweet]),
+      },
+      select: {
+        imageUrls: true,
+        tweetId: true,
+        gifUrl: true,
+        content: true,
+        createdAt: true,
+        type: true,
+        tweeter: {
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+          userId: true,
+          bio: true,
+        },
+        mentions: {
+          mentionedAt: true,
+          userMentioned: { username: true },
+        },
+        reacts: {
+          userId: true,
+        },
+        bookmarkedBy: {
+          userId: true,
+        },
+        retweets: true,
+        poll: {
+          pollId: true,
+          question: true,
+          length: true,
+          options: {
+            optionId: true,
+            text: true,
+            voters: {
+              username: true,
+              jobtitle: true,
+              name: true,
+              imageUrl: true,
+              userId: true,
+            },
+          },
+        },
+      },
+      relations: {
+        replies: true,
+        reacts: true,
+        tweeter: {
+          followers: true,
+          following: true,
+          blocked: true,
+          muted: true,
+        },
+        retweets: { tweeter: true },
+        bookmarkedBy: true,
+        mentions: { userMentioned: true },
+        poll: { options: { voters: true } },
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+      take: limit - tweetsOfFollowings.length,
+    });
+
+    const timelineTweets = [...tweetsOfFollowings, ...randomTweets].map(
+      (tweet) => ({
+        tweetId: tweet.tweetId,
+        gifUrl: tweet.gifUrl,
+        imageUrls: tweet.imageUrls,
+        content: tweet.content,
+        createdAt: tweet.createdAt,
+        type: tweet.type,
+        poll: tweet.poll
+          ? {
+              pollId: tweet.poll.pollId,
+              question: tweet.poll.question,
+              length: tweet.poll.length,
+              options: tweet.poll.options.map((option) => ({
+                optionId: option.optionId,
+                text: option.text,
+                votesCount: option.voters.length,
+              })),
+              totalVotesCount: tweet.poll.totalVoters,
+            }
+          : {},
+        tweeter: {
+          userId: tweet.tweeter.userId,
+          imageUrl: tweet.tweeter.imageUrl,
+          username: tweet.tweeter.username,
+          jobtitle: tweet.tweeter.jobtitle,
+          name: tweet.tweeter.name,
+          bio: tweet.tweeter.bio,
+          followersCount: tweet.tweeter.followers.length,
+          followingsCount: tweet.tweeter.following.length,
+          isMuted: tweet.tweeter.muted.some((user) => user.userId === userId),
+          isBlocked: tweet.tweeter.blocked.some(
+            (user) => user.userId === userId
+          ),
+        },
+        mentions: tweet.mentions
+          ? tweet.mentions.map((mention) => mention.userMentioned.username)
+          : [],
+        reactCount: tweet.reactCount,
+        reTweetCount: tweet.reTweetCount,
+        repliesCount: tweet.repliesCount,
+        isBookmarked: tweet.bookmarkedBy.some((user) => user.userId === userId),
+        isReacted: tweet.reacts.some((user) => user.userId === userId),
+        isRetweeted: tweet.retweets.some(
+          (retweet) => retweet.tweeter.userId === userId
+        ),
+      })
+    );
+
+    return { timelineTweets };
+  };
+
+  createTweet = async (
+    userId: number,
+    body: { content: string; imageUrls?: string[]; gifUrl?: string }
   ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
     const userRepository = AppDataSource.getRepository(User);
@@ -31,7 +227,6 @@ export class TweetsService {
 
     const user = await userRepository.findOne({
       where: { userId },
-      relations: { tweets: true },
     });
 
     if (!user) throw new AppError('User not found', 404);
@@ -44,7 +239,6 @@ export class TweetsService {
 
     try {
       await tweetRepository.save(tweet);
-      console.log('Tweet scheduled successfully.');
 
       let usernames =
         (body.content.match(usernameRegex) as Array<string>) || [];
@@ -83,6 +277,80 @@ export class TweetsService {
     return { tweet };
   };
 
+  addTweet = async (
+    userId: number,
+    body: { content: string; imageUrls?: string[]; gifUrl?: string }
+  ) => {
+    const { tweet } = await this.createTweet(userId, body);
+
+    return {
+      tweet: {
+        tweetId: tweet.tweetId,
+        gifUrl: tweet.gifUrl,
+        imageUrls: tweet.imageUrls,
+        content: tweet.content,
+        createdAt: tweet.createdAt,
+        poll: { ...tweet.poll, votesCount: tweet.poll?.totalVoters },
+        tweeter: {
+          imageUrl: tweet.tweeter.imageUrl,
+          username: tweet.tweeter.username,
+          jobtitle: tweet.tweeter.jobtitle,
+          name: tweet.tweeter.name,
+          bio: tweet.tweeter.bio,
+        },
+        mentions: tweet.mentions
+          ? tweet.mentions.map((mention) => {
+              return mention.userMentioned.username;
+            })
+          : [],
+      },
+    };
+  };
+
+  addTweetReply = async (
+    userId: number,
+    tweetId: number,
+    body: { content: string; imageUrls: string[]; gifUrl: string }
+  ) => {
+    const tweetReplyRepository = AppDataSource.getRepository(Tweet);
+
+    let originaltweet = new Tweet();
+    originaltweet.tweetId = tweetId;
+
+    let user = new User();
+    user.userId = userId;
+    console.log(body);
+
+    const { tweet } = await this.createTweet(userId, body);
+    tweet.replyTo = originaltweet;
+    tweet.type = TweetType.Reply;
+
+    await tweetReplyRepository.save(tweet);
+
+    return {
+      tweetReply: {
+        replyId: tweetId,
+        gifUrl: tweet.gifUrl,
+        imageUrls: tweet.imageUrls,
+        content: tweet.content,
+        createdAt: tweet.createdAt,
+        poll: { ...tweet.poll, votesCount: tweet.poll?.totalVoters },
+        tweeter: {
+          imageUrl: tweet.tweeter.imageUrl,
+          username: tweet.tweeter.username,
+          jobtitle: tweet.tweeter.jobtitle,
+          name: tweet.tweeter.name,
+          bio: tweet.tweeter.bio,
+        },
+        mentions: tweet.mentions
+          ? tweet.mentions.map((mention) => {
+              return mention.userMentioned.username;
+            })
+          : [],
+      },
+    };
+  };
+
   addPoll = async (
     userId: number,
     body: { question: string; options: string[]; length: Date }
@@ -108,6 +376,26 @@ export class TweetsService {
     tweet.tweeter = user;
 
     await tweetRepository.save(tweet);
+
+    return {
+      tweet: {
+        tweetId: tweet.tweetId,
+        createdAt: tweet.createdAt,
+        poll: tweet.poll
+          ? {
+              pollId: tweet.poll.pollId,
+              question: tweet.poll.question,
+              length: tweet.poll.length,
+              options: tweet.poll.options.map((option) => ({
+                optionId: option.optionId,
+                text: option.text,
+                votesCount: 0,
+              })),
+              totalVotesCount: 0,
+            }
+          : {},
+      },
+    };
   };
 
   toggleVote = async (
@@ -160,49 +448,144 @@ export class TweetsService {
   };
 
   getTweetReplies = async (userId: number, tweetId: number) => {
-    const tweetReplyRepository = AppDataSource.getRepository(TweetReply);
+    const tweetRepository = AppDataSource.getRepository(Tweet);
 
-    const replies = await tweetReplyRepository.find({
-      where: { tweet: { tweetId } },
+    const replies = await tweetRepository.find({
+      where: { replyTo: { tweetId } },
       select: {
+        imageUrls: true,
+        tweetId: true,
+        gifUrl: true,
+        content: true,
+        createdAt: true,
+        tweeter: {
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+          userId: true,
+          bio: true,
+        },
         mentions: {
           mentionedAt: true,
           userMentioned: { username: true },
         },
         reacts: {
-          email: true,
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
           userId: true,
         },
+        bookmarkedBy: {
+          userId: true,
+        },
+        retweets: true,
+        poll: {
+          pollId: true,
+          question: true,
+          length: true,
+          options: {
+            optionId: true,
+            text: true,
+            voters: {
+              username: true,
+              jobtitle: true,
+              name: true,
+              imageUrl: true,
+            },
+          },
+        },
       },
-      relations: { replies: { replies: true }, reacts: true, mentions: true },
+      relations: {
+        replies: true,
+        reacts: true,
+        tweeter: {
+          followers: true,
+          following: true,
+          blocked: true,
+          muted: true,
+        },
+        retweets: { tweeter: true },
+        bookmarkedBy: true,
+        mentions: { userMentioned: true },
+        poll: { options: { voters: true } },
+      },
     });
 
     return {
       replies: replies.map((reply) => {
+        const isBookmarked = reply.bookmarkedBy.some(
+          (user: User) => user.userId === userId
+        );
         const isReacted = reply.reacts.some(
           (user: User) => user.userId === userId
         );
+        const isTweeterBlocked = reply.tweeter.blocked.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterMuted = reply.tweeter.muted.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterFollowed = reply.tweeter.followers.some(
+          (user: User) => user.userId === userId
+        );
+        const isRetweeted = reply.retweets.some(
+          (retweet: Tweet) => retweet.tweeter.userId === userId
+        );
+
         return {
-          ...reply,
+          replyId: reply.tweetId,
+          gifUrl: reply.gifUrl,
+          imageUrls: reply.imageUrls,
+          content: reply.content,
+          createdAt: reply.createdAt,
+          poll: reply.poll
+            ? {
+                pollId: reply.poll.pollId,
+                question: reply.poll.question,
+                length: reply.poll.length,
+                options: reply.poll.options.map((option) => ({
+                  optionId: option.optionId,
+                  text: option.text,
+                  votesCount: option.voters.length,
+                })),
+                totalVotesCount: reply.poll.totalVoters,
+              }
+            : {},
+          replier: {
+            imageUrl: reply.tweeter.imageUrl,
+            username: reply.tweeter.username,
+            jobtitle: reply.tweeter.jobtitle,
+            name: reply.tweeter.name,
+            bio: reply.tweeter.bio,
+            followersCount: reply.tweeter.followers.length,
+            followingsCount: reply.tweeter.following.length,
+            isTweeterFollowed,
+            isTweeterMuted,
+            isTweeterBlocked,
+          },
+          replies: reply.replies,
+          mentions: reply.mentions
+            ? reply.mentions.map((mention) => {
+                return mention.userMentioned.username;
+              })
+            : [],
+          reactCount: reply.reactCount,
+          reTweetCount: reply.reTweetCount,
+          repliesCount: reply.repliesCount,
+          isBookmarked,
           isReacted,
-          reactCount: reply.reacts.length,
+          isRetweeted,
         };
       }),
     };
   };
 
-  getTweetReTweeters = async (id: number) => {
-    const retweetRepository = AppDataSource.getRepository(Retweet);
+  getTweetReTweeters = async (userId: number, tweetId: number) => {
+    const tweetRepository = AppDataSource.getRepository(Tweet);
 
-    const retweets = await retweetRepository.find({
-      where: { tweet: { tweetId: id } },
+    const retweets = await tweetRepository.find({
+      where: { retweetTo: { tweetId } },
       select: {
-        retweeter: {
-          email: true,
+        tweeter: {
+          bio: true,
           username: true,
           jobtitle: true,
           name: true,
@@ -210,83 +593,220 @@ export class TweetsService {
           userId: true,
         },
       },
-      relations: { retweeter: true },
+      relations: {
+        tweeter: {
+          followers: true,
+          following: true,
+          blocked: true,
+          muted: true,
+        },
+      },
     });
 
     return {
-      retweeters: retweets.map((retweet) => retweet.retweeter),
+      retweeters: retweets?.map((retweet) => {
+        const isTweeterBlocked = retweet.tweeter.blocked.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterMuted = retweet.tweeter.muted.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterFollowed = retweet.tweeter.followers.some(
+          (user: User) => user.userId === userId
+        );
+
+        return {
+          imageUrl: retweet.tweeter.imageUrl,
+          username: retweet.tweeter.username,
+          jobtitle: retweet.tweeter.jobtitle,
+          name: retweet.tweeter.name,
+          bio: retweet.tweeter.bio,
+          followersCount: retweet.tweeter.followers.length,
+          followingsCount: retweet.tweeter.following.length,
+          isTweeterFollowed,
+          isTweeterMuted,
+          isTweeterBlocked,
+        };
+      }),
     };
   };
 
-  getTweetReTweets = async (id: number) => {
-    const retweetRepository = AppDataSource.getRepository(Retweet);
+  getTweetReTweets = async (userId: number, tweetId: number) => {
+    const retweetRepository = AppDataSource.getRepository(Tweet);
 
     const retweets = await retweetRepository.find({
-      where: { tweet: { tweetId: id } },
+      where: { retweetTo: { tweetId } },
       select: {
-        retweeter: {
+        tweeter: {
           email: true,
           username: true,
           jobtitle: true,
           name: true,
           imageUrl: true,
           userId: true,
+          bio: true,
         },
-        tweet: {
+        retweetTo: {
+          content: true,
+          createdAt: true,
+          gifUrl: true,
+          imageUrls: true,
           tweeter: {
             email: true,
             username: true,
             jobtitle: true,
             name: true,
             imageUrl: true,
+            userId: true,
+            bio: true,
           },
-          mentions: {
-            mentionedAt: true,
-            userMentioned: { username: true },
-          },
-          replies: true,
-          reacts: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          bookmarkedBy: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          retweets: true,
         },
+        content: true,
+        createdAt: true,
+        tweetId: true,
+        mentions: {
+          mentionedAt: true,
+          userMentioned: { username: true },
+        },
+        replies: true,
+        reacts: {
+          email: true,
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+        },
+        bookmarkedBy: {
+          email: true,
+          username: true,
+          jobtitle: true,
+          name: true,
+          imageUrl: true,
+        },
+        retweets: true,
       },
       relations: {
-        retweeter: true,
-        tweet: {
-          replies: true,
-          reacts: true,
-          tweeter: true,
-          retweets: true,
-          bookmarkedBy: true,
-          mentions: { userMentioned: true },
+        tweeter: {
+          followers: true,
+          following: true,
+          blocked: true,
+          muted: true,
         },
+        retweetTo: { tweeter: true },
+        replies: true,
+        reacts: true,
+        retweets: true,
+        bookmarkedBy: true,
+        mentions: { userMentioned: true },
       },
     });
 
     return {
-      retweets,
+      retweets: retweets.map((retweet) => {
+        const isBookmarked = retweet.bookmarkedBy.some(
+          (user: User) => user.userId === userId
+        );
+
+        const isRetweeted = retweet.retweets.some(
+          (retweet: Tweet) => retweet.tweeter.userId === userId
+        );
+
+        const isReacted = retweet.reacts.some(
+          (user: User) => user.userId === userId
+        );
+
+        const isReTweeterBlocked = retweet.tweeter.blocked.some(
+          (user: User) => user.userId === userId
+        );
+
+        const isReTweeterMuted = retweet.tweeter.muted.some(
+          (user: User) => user.userId === userId
+        );
+
+        const isReTweeterFollowed = retweet.tweeter.followers.some(
+          (user: User) => user.userId === userId
+        );
+
+        const isTweeterBlocked = retweet.retweetTo.tweeter.blocked.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterMuted = retweet.retweetTo.tweeter.muted.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterFollowed = retweet.retweetTo.tweeter.followers.some(
+          (user: User) => user.userId === userId
+        );
+
+        return {
+          retweetId: retweet.tweetId,
+          createdAt: retweet.createdAt,
+          content: retweet.content,
+          isBookmarked,
+          isReacted,
+          isRetweeted,
+          tweet: {
+            tweetId: retweet.retweetTo.tweetId,
+            gifUrl: retweet.retweetTo.gifUrl,
+            imageUrls: retweet.retweetTo.imageUrls,
+            content: retweet.retweetTo.content,
+            createdAt: retweet.retweetTo.createdAt,
+            poll: retweet.retweetTo.poll
+              ? {
+                  pollId: retweet.retweetTo.poll.pollId,
+                  question: retweet.retweetTo.poll.question,
+                  length: retweet.retweetTo.poll.length,
+                  options: retweet.retweetTo.poll.options.map((option) => ({
+                    optionId: option.optionId,
+                    text: option.text,
+                    votesCount: option.voters.length,
+                  })),
+                  totalVotesCount: retweet.retweetTo.poll.totalVoters,
+                }
+              : {},
+
+            mentions: retweet.retweetTo.mentions
+              ? retweet.retweetTo.mentions.map((mention) => {
+                  return mention.userMentioned.username;
+                })
+              : [],
+          },
+          tweeter: {
+            imageUrl: retweet.retweetTo.tweeter.imageUrl,
+            username: retweet.retweetTo.tweeter.username,
+            jobtitle: retweet.retweetTo.tweeter.jobtitle,
+            name: retweet.retweetTo.tweeter.name,
+            bio: retweet.retweetTo.tweeter.bio,
+            followersCount: retweet.retweetTo.tweeter.followers.length,
+            followingsCount: retweet.retweetTo.tweeter.following.length,
+            isReTweeterFollowed,
+            isReTweeterMuted,
+            isReTweeterBlocked,
+          },
+          retweeter: {
+            imageUrl: retweet.tweeter.imageUrl,
+            username: retweet.tweeter.username,
+            jobtitle: retweet.tweeter.jobtitle,
+            name: retweet.tweeter.name,
+            bio: retweet.tweeter.bio,
+            followersCount: retweet.tweeter.followers.length,
+            followingsCount: retweet.tweeter.following.length,
+            isTweeterFollowed,
+            isTweeterMuted,
+            isTweeterBlocked,
+          },
+        };
+      }),
     };
   };
 
-  getTweetReacters = async (id: number) => {
+  getTweetReacters = async (userId: number, tweetId: number) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
     const tweets = await tweetRepository.findOne({
-      where: { tweetId: id },
+      where: { tweetId },
       select: {
         reacts: {
+          bio: true,
           email: true,
           username: true,
           jobtitle: true,
@@ -295,15 +815,45 @@ export class TweetsService {
           userId: true,
         },
       },
-      relations: { reacts: true },
+      relations: {
+        reacts: {
+          followers: true,
+          following: true,
+          blocked: true,
+          muted: true,
+        },
+      },
     });
 
     return {
-      reacters: tweets?.reacts,
+      reacters: tweets?.reacts.map((reacter) => {
+        const isTweeterBlocked = reacter.blocked.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterMuted = reacter.muted.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterFollowed = reacter.followers.some(
+          (user: User) => user.userId === userId
+        );
+
+        return {
+          imageUrl: reacter.imageUrl,
+          username: reacter.username,
+          jobtitle: reacter.jobtitle,
+          name: reacter.name,
+          bio: reacter.bio,
+          followersCount: reacter.followers.length,
+          followingsCount: reacter.following.length,
+          isTweeterFollowed,
+          isTweeterMuted,
+          isTweeterBlocked,
+        };
+      }),
     };
   };
 
-  getTweet = async (userId: number, tweetId: number) => {
+  queryTweet = async (userId: number, tweetId: number) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
     const tweet = await tweetRepository.findOne({
@@ -349,7 +899,6 @@ export class TweetsService {
           },
         },
       },
-
       relations: {
         replies: true,
         reacts: true,
@@ -359,7 +908,7 @@ export class TweetsService {
           blocked: true,
           muted: true,
         },
-        retweets: { retweeter: true },
+        retweets: { tweeter: true },
         bookmarkedBy: true,
         mentions: { userMentioned: true },
         poll: { options: { voters: true } },
@@ -372,15 +921,42 @@ export class TweetsService {
       (user: User) => user.userId === userId
     );
     const isReacted = tweet.reacts.some((user: User) => user.userId === userId);
-    const isBlocked = tweet.tweeter.blocked.some(
+    const isTweeterBlocked = tweet.tweeter.blocked.some(
       (user: User) => user.userId === userId
     );
-    const isMuted = tweet.tweeter.muted.some(
+    const isTweeterMuted = tweet.tweeter.muted.some(
       (user: User) => user.userId === userId
     );
+
+    const isTweeterFollowed = tweet.tweeter.followers.some(
+      (user: User) => user.userId === userId
+    );
+
     const isRetweeted = tweet.retweets.some(
-      (retweet: Retweet) => retweet.retweeter.userId === userId
+      (retweet: Tweet) => retweet.tweeter.userId === userId
     );
+
+    return {
+      tweet,
+      isTweeterBlocked,
+      isTweeterMuted,
+      isTweeterFollowed,
+      isReacted,
+      isRetweeted,
+      isBookmarked,
+    };
+  };
+
+  getTweet = async (userId: number, tweetId: number) => {
+    const {
+      tweet,
+      isTweeterBlocked,
+      isTweeterFollowed,
+      isTweeterMuted,
+      isReacted,
+      isBookmarked,
+      isRetweeted,
+    } = await this.queryTweet(userId, tweetId);
 
     return {
       tweet: {
@@ -389,16 +965,30 @@ export class TweetsService {
         imageUrls: tweet.imageUrls,
         content: tweet.content,
         createdAt: tweet.createdAt,
-        poll: { ...tweet.poll, votesCount: tweet.poll?.totalVoters },
+        poll: tweet.poll
+          ? {
+              pollId: tweet.poll.pollId,
+              question: tweet.poll.question,
+              length: tweet.poll.length,
+              options: tweet.poll.options.map((option) => ({
+                optionId: option.optionId,
+                text: option.text,
+                votesCount: option.voters.length,
+              })),
+              totalVotesCount: tweet.poll.totalVoters,
+            }
+          : {},
         tweeter: {
           imageUrl: tweet.tweeter.imageUrl,
           username: tweet.tweeter.username,
           jobtitle: tweet.tweeter.jobtitle,
           name: tweet.tweeter.name,
+          bio: tweet.tweeter.bio,
           followersCount: tweet.tweeter.followers.length,
           followingsCount: tweet.tweeter.following.length,
-          isMuted,
-          isBlocked,
+          isTweeterFollowed,
+          isTweeterMuted,
+          isTweeterBlocked,
         },
         mentions: tweet.mentions
           ? tweet.mentions.map((mention) => {
@@ -413,54 +1003,6 @@ export class TweetsService {
         isRetweeted,
       },
     };
-  };
-
-  addTweetReply = async (
-    userId: number,
-    tweetId: number,
-    body: { content: string }
-  ) => {
-    const tweetReplyRepository = AppDataSource.getRepository(TweetReply);
-    const userRepository = AppDataSource.getRepository(User);
-    const tweetReplyMentionRepository =
-      AppDataSource.getRepository(TweetReplyMention);
-
-    let tweet = new Tweet();
-    tweet.tweetId = tweetId;
-
-    let user = new User();
-    user.userId = userId;
-
-    const tweetReply = new TweetReply();
-    tweetReply.content = body.content;
-    tweetReply.user = user;
-    tweetReply.tweet = tweet;
-
-    await tweetReplyRepository.save(tweetReply);
-
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
-
-    if (usernames) {
-      usernames = usernames.map((username) => username.replace('@', ''));
-
-      const users = await userRepository.find({
-        where: { username: In([...usernames]) },
-      });
-
-      let replyMentions: TweetReplyMention[] = [];
-
-      replyMentions = users.map((mentioned) => {
-        let newTweetMention = new TweetReplyMention();
-
-        newTweetMention.reply = tweetReply;
-        newTweetMention.userMakingMention = user;
-        newTweetMention.userMentioned = mentioned;
-        return newTweetMention;
-      });
-
-      await tweetReplyMentionRepository.insert(replyMentions);
-    }
-    return { tweetReply };
   };
 
   toggleTweetReact = async (userId: number, tweetId: number) => {
@@ -486,108 +1028,23 @@ export class TweetsService {
     await tweetRepository.save(tweet);
   };
 
-  addReplyToReply = async (
-    userId: number,
-    tweetId: number,
-    replyTweetId: number,
-    body: { content: string }
-  ) => {
-    const tweetReplyRepository = AppDataSource.getRepository(TweetReply);
-    const userRepository = AppDataSource.getRepository(User);
-    const tweetReplyMentionRepository =
-      AppDataSource.getRepository(TweetReplyMention);
-
-    const user = new User();
-    user.userId = userId;
-
-    let tweet = new Tweet();
-    tweet.tweetId = tweetId;
-
-    let parentReply = new TweetReply();
-    parentReply.replyId = replyTweetId;
-
-    const newtweetReply = new TweetReply();
-    newtweetReply.content = body.content;
-    newtweetReply.user = user;
-    newtweetReply.tweet = tweet;
-    newtweetReply.parentReply = parentReply;
-
-    await tweetReplyRepository.save(newtweetReply);
-
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
-
-    if (usernames) {
-      usernames = usernames.map((username) => username.replace('@', ''));
-
-      const users = await userRepository.find({
-        where: { username: In([...usernames]) },
-      });
-
-      let replyMentions: TweetReplyMention[] = [];
-
-      replyMentions = users.map((mentioned) => {
-        let newTweetMention = new TweetReplyMention();
-
-        newTweetMention.reply = newtweetReply;
-        newTweetMention.userMakingMention = user;
-        newTweetMention.userMentioned = mentioned;
-        return newTweetMention;
-      });
-
-      await tweetReplyMentionRepository.insert(replyMentions);
-    }
-  };
-
-  toggleReplyReact = async (
-    userId: number,
-    tweetId: number,
-    replyId: number
-  ) => {
-    const tweetReplyRepository = AppDataSource.getRepository(TweetReply);
-
-    const tweetReply = await tweetReplyRepository.findOne({
-      where: { replyId },
-      relations: ['reacts'],
-    });
-
-    if (!tweetReply) throw new AppError('No tweet reply found', 404);
-
-    const userIndex = tweetReply.reacts.findIndex(
-      (user) => user.userId === userId
-    );
-
-    if (userIndex !== -1) {
-      tweetReply.reacts.splice(userIndex, 1);
-    } else {
-      let user = new User();
-      user.userId = userId;
-      tweetReply.reacts.push(user);
-    }
-
-    await tweetReplyRepository.save(tweetReply);
-  };
-
   addRetweet = async (
     userId: number,
     tweetId: number,
-    body: { quote: string }
+    body: { content: string }
   ) => {
-    const retweetRepository = AppDataSource.getRepository(Retweet);
+    const tweetRepository = AppDataSource.getRepository(Tweet);
 
-    const tweet = new Tweet();
-    tweet.tweetId = tweetId;
+    const orgTweet = new Tweet();
+    orgTweet.tweetId = tweetId;
 
-    const user = new User();
-    user.userId = userId;
+    const { tweet } = await this.createTweet(userId, body);
+    tweet.retweetTo = orgTweet;
+    tweet.type = TweetType.ReTweet;
 
-    const retweet = new Retweet();
-    retweet.retweeter = user;
-    retweet.tweet = tweet;
-    retweet.quote = body.quote;
+    await tweetRepository.save(tweet);
 
-    await retweetRepository.save(retweet);
-
-    return { retweet };
+    return { retweet: tweet };
   };
 
   toggleBookmark = async (userId: number, tweetId: number) => {

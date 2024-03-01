@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
 
     cb(null, destinationPath);
   },
-  
+
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     req.body.reelUrl = `/reels/reel-${uniqueSuffix}.jpeg`;
@@ -48,9 +48,8 @@ export const uploadReel = upload.single('reel');
 export const addReel = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
-    const reelUrl = req.body.reelUrl;
 
-    const { reel } = await reelsService.addReel(userId, reelUrl, req.body);
+    const { reel } = await reelsService.addReel(userId, req.body);
 
     res.status(201).json({
       status: true,
@@ -153,41 +152,6 @@ export const toggleReelReact = catchAsync(
     res.status(200).json({
       status: true,
       message: 'React added successfully',
-    });
-  }
-);
-
-export const addReplyToReply = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const userId = res.locals.currentUser.userId;
-
-    await reelsService.addReplyToReply(
-      Number(userId),
-      Number(req.params.reelId),
-      Number(req.params.replyId),
-      req.body
-    );
-
-    res.status(200).json({
-      status: true,
-      message: 'Reply added successfully',
-    });
-  }
-);
-
-export const toggleReplyReact = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const userId = res.locals.currentUser.userId;
-
-    await reelsService.toggleReplyReact(
-      +userId,
-      +req.params.reelId,
-      +req.params.replyId
-    );
-
-    res.status(200).json({
-      status: true,
-      message: 'Reply react added successfully',
     });
   }
 );

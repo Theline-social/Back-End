@@ -1,15 +1,7 @@
 import { In } from 'typeorm';
 import { AppError, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
-import {
-  ReReel,
-  Reel,
-  ReelMention,
-  ReelReply,
-  ReelReplyMention,
-  Topic,
-  User,
-} from '../entities';
+import { ReReel, Reel, ReelMention, Topic, User } from '../entities';
 import socketService from './socket.service';
 
 export class ReelsService {
@@ -17,8 +9,7 @@ export class ReelsService {
 
   addReel = async (
     userId: number,
-    reelUrl: string,
-    body: { content: string; topics: string[] }
+    body: { content: string; reelUrl: string;  topics: string[] }
   ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
     const userRepository = AppDataSource.getRepository(User);
@@ -43,7 +34,7 @@ export class ReelsService {
 
     const reel = new Reel();
     reel.content = body.content;
-    reel.reelUrl = reelUrl;
+    reel.reelUrl = body.reelUrl;
     reel.reeler = user;
     reel.supportedTopics = supportedtopics;
 
@@ -95,40 +86,100 @@ export class ReelsService {
   };
 
   getReelReplies = async (userId: number, reelId: number) => {
-    const reelReplyRepository = AppDataSource.getRepository(ReelReply);
+    const reelRepository = AppDataSource.getRepository(Reel);
 
-    const replies = await reelReplyRepository.find({
-      where: { reel: { reelId } },
+    const replies = await reelRepository.find({
+      where: { replyTo: { reelId } },
       select: {
-        mentions: {
-          mentionedAt: true,
-          userMentioned: { username: true },
-        },
-        reacts: {
-          email: true,
+        reelUrl: true,
+        reelId: true,
+        content: true,
+        createdAt: true,
+        reeler: {
           username: true,
           jobtitle: true,
           name: true,
           imageUrl: true,
           userId: true,
+          bio: true,
         },
+        mentions: {
+          mentionedAt: true,
+          userMentioned: { username: true },
+        },
+        reacts: {
+          userId: true,
+        },
+        bookmarkedBy: {
+          userId: true,
+        },
+        rereels: true,
       },
-      relations: { reacts: true, mentions: true, parentReply: true },
+      relations: {
+        replies: true,
+        reacts: true,
+        reeler: {
+          followers: true,
+          following: true,
+          blocked: true,
+          muted: true,
+        },
+        rereels: { rereeler: true },
+        bookmarkedBy: true,
+        mentions: { userMentioned: true },
+      },
     });
 
-    const topLevelReplies = replies.filter(
-      (reply) => reply.parentReply === null
-    );
-
     return {
-      replies: topLevelReplies.map((reply) => {
+      replies: replies.map((reply) => {
+        const isBookmarked = reply.bookmarkedBy.some(
+          (user: User) => user.userId === userId
+        );
         const isReacted = reply.reacts.some(
           (user: User) => user.userId === userId
         );
+        const isTweeterBlocked = reply.reeler.blocked.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterMuted = reply.reeler.muted.some(
+          (user: User) => user.userId === userId
+        );
+        const isTweeterFollowed = reply.reeler.followers.some(
+          (user: User) => user.userId === userId
+        );
+        const isRetweeted = reply.rereels.some(
+          (retweet: ReReel) => retweet.rereeler.userId === userId
+        );
+
         return {
-          ...reply,
+          replyId: reply.reelId,
+          reelUrl: reply.reelUrl,
+          content: reply.content,
+          createdAt: reply.createdAt,
+          replier: {
+            imageUrl: reply.reeler.imageUrl,
+            username: reply.reeler.username,
+            jobtitle: reply.reeler.jobtitle,
+            name: reply.reeler.name,
+            bio: reply.reeler.bio,
+            followersCount: reply.reeler.followers.length,
+            followingsCount: reply.reeler.following.length,
+            isTweeterFollowed,
+            isTweeterMuted,
+            isTweeterBlocked,
+          },
+          replies: reply.replies,
+          mentions: reply.mentions
+            ? reply.mentions.map((mention) => {
+                return mention.userMentioned.username;
+              })
+            : [],
+          reactCount: reply.reactCount,
+          reTweetCount: reply.reReelCount,
+          repliesCount: reply.repliesCount,
+          isBookmarked,
           isReacted,
-          reactCount: reply.reacts.length,
+          isRetweeted,
         };
       }),
     };
@@ -140,7 +191,7 @@ export class ReelsService {
     const rereels = await rereelRepository.find({
       where: { reel: { reelId: id } },
       select: {
-        user: {
+        rereeler: {
           email: true,
           username: true,
           jobtitle: true,
@@ -149,11 +200,11 @@ export class ReelsService {
           userId: true,
         },
       },
-      relations: { user: true },
+      relations: { rereeler: true },
     });
 
     return {
-      rereelers: rereels.map((rereel) => rereel.user),
+      rereelers: rereels.map((rereel) => rereel.rereeler),
     };
   };
 
@@ -254,49 +305,21 @@ export class ReelsService {
   addReelReply = async (
     userId: number,
     reelId: number,
-    body: { content: string }
+    body: { content: string, topics: string[], reelUrl: string}
   ) => {
-    const reelReplyRepository = AppDataSource.getRepository(ReelReply);
-    const userRepository = AppDataSource.getRepository(User);
-    const reelReplyMentionRepository =
-      AppDataSource.getRepository(ReelReplyMention);
+    const reelRepository = AppDataSource.getRepository(Reel);
 
-    let reel = new Reel();
-    reel.reelId = reelId;
+    let orgreel = new Reel();
+    orgreel.reelId = reelId;
 
     let user = new User();
     user.userId = userId;
+    const { reel } = await this.addReel(userId, body);
 
-    const reelReply = new ReelReply();
-    reelReply.content = body.content;
-    reelReply.user = user;
-    reelReply.reel = reel;
+    reel.replyTo = orgreel;
+    await reelRepository.save(reel);
 
-    await reelReplyRepository.save(reelReply);
-
-    let usernames = body.content.match(usernameRegex) as Array<string>;
-
-    if (usernames) {
-      usernames = usernames.map((username) => username.replace('@', ''));
-
-      const users = await userRepository.find({
-        where: { username: In([...usernames]) },
-      });
-
-      let replyMentions: ReelReplyMention[] = [];
-
-      replyMentions = users.map((mentioned) => {
-        let newReelMention = new ReelReplyMention();
-
-        newReelMention.reply = reelReply;
-        newReelMention.userMakingMention = user;
-        newReelMention.userMentioned = mentioned;
-        return newReelMention;
-      });
-
-      await reelReplyMentionRepository.insert(replyMentions);
-    }
-    return { reelReply };
+    return { reelReply: reel };
   };
 
   toggleReelReact = async (userId: number, reelId: number) => {
@@ -322,87 +345,6 @@ export class ReelsService {
     await reelRepository.save(reel);
   };
 
-  addReplyToReply = async (
-    userId: number,
-    reelId: number,
-    replyReelId: number,
-    body: { content: string }
-  ) => {
-    const reelReplyRepository = AppDataSource.getRepository(ReelReply);
-    const userRepository = AppDataSource.getRepository(User);
-    const reelReplyMentionRepository =
-      AppDataSource.getRepository(ReelReplyMention);
-
-    const user = new User();
-    user.userId = userId;
-
-    let reel = new Reel();
-    reel.reelId = reelId;
-
-    let parentReply = new ReelReply();
-    parentReply.replyId = replyReelId;
-
-    const newreelReply = new ReelReply();
-    newreelReply.content = body.content;
-    newreelReply.user = user;
-    newreelReply.reel = reel;
-    newreelReply.parentReply = parentReply;
-
-    await reelReplyRepository.save(newreelReply);
-
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
-
-    if (usernames) {
-      usernames = usernames.map((username) => username.replace('@', ''));
-
-      const users = await userRepository.find({
-        where: { username: In([...usernames]) },
-      });
-
-      let replyMentions: ReelReplyMention[] = [];
-
-      replyMentions = users.map((mentioned) => {
-        let newReelMention = new ReelReplyMention();
-
-        newReelMention.reply = newreelReply;
-        newReelMention.userMakingMention = user;
-        newReelMention.userMentioned = mentioned;
-        return newReelMention;
-      });
-
-      await reelReplyMentionRepository.insert(replyMentions);
-    }
-  };
-
-  toggleReplyReact = async (
-    userId: number,
-    reelId: number,
-    replyId: number
-  ) => {
-    const reelReplyRepository = AppDataSource.getRepository(ReelReply);
-
-    const reelReply = await reelReplyRepository.findOne({
-      where: { replyId },
-      relations: ['reacts'],
-    });
-
-    if (!reelReply) throw new AppError('No reel reply found', 404);
-
-    const userIndex = reelReply.reacts.findIndex(
-      (user) => user.userId === userId
-    );
-
-    if (userIndex !== -1) {
-      reelReply.reacts.splice(userIndex, 1);
-    } else {
-      let user = new User();
-      user.userId = userId;
-      reelReply.reacts.push(user);
-    }
-
-    await reelReplyRepository.save(reelReply);
-  };
-
   addReReel = async (
     userId: number,
     reelId: number,
@@ -417,7 +359,7 @@ export class ReelsService {
     user.userId = userId;
 
     const rereel = new ReReel();
-    rereel.user = user;
+    rereel.rereeler = user;
     rereel.reel = reel;
     rereel.quote = body.quote;
 

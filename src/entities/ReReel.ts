@@ -14,7 +14,7 @@ export class ReReel {
   rereelId: number;
 
   @ManyToOne(() => User, (user) => user.rereels)
-  user: User;
+  rereeler: User;
 
   @ManyToOne(() => Reel, (reel) => reel.rereels)
   reel: Reel;

@@ -10,7 +10,6 @@ import {
   JoinTable,
 } from 'typeorm';
 import { User } from './User';
-import { ReelReply } from './ReelReply';
 import { ReelMention } from './ReelMention';
 import { ReReel } from './ReReel';
 import { Topic } from './Topic';
@@ -42,11 +41,6 @@ export class Reel {
   @ManyToOne(() => User, (user) => user.reels, { onDelete: 'CASCADE' })
   reeler: User;
 
-  @OneToMany(() => ReelReply, (reply) => reply.reel, {
-    onDelete: 'CASCADE',
-  })
-  replies: ReelReply[];
-
   @ManyToMany(() => User, (user) => user.reactedReels, {
     onDelete: 'CASCADE',
   })
@@ -62,6 +56,15 @@ export class Reel {
     onDelete: 'CASCADE',
   })
   rereels: ReReel[];
+
+  @ManyToOne(() => Reel, (reel) => reel.replies, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  replyTo: Reel;
+
+  @OneToMany(() => Reel, (reel) => reel.replyTo)
+  replies: Reel[];
 
   @ManyToMany(() => Topic, (topic) => topic.supportingReels, {
     onDelete: 'CASCADE',

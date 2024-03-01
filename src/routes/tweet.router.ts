@@ -2,8 +2,13 @@ import express, { Router } from 'express';
 import * as tweetsController from '../controllers/tweet.controller';
 import * as authController from '../controllers/auth.controller';
 
-import { addPollValidationRules, validateRequest } from '../common';
+import {
+  addPollValidationRules,
+  validatePagination,
+  validateRequest,
+} from '../common';
 import { replyIdParamsValidation, tweetIdParamsValidation } from '../common';
+import { TweetsService } from '../services/tweet.service';
 
 const router: Router = express.Router();
 
@@ -54,6 +59,47 @@ router
 
 /**
  * @swagger
+ * /tweets/timeline:
+ *   post:
+ *     summary: Get timeline tweets
+ *     description: Retrieve timeline tweets with pagination
+ *     tags:
+ *       - tweets
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
+ *     responses:
+ *       '200':
+ *         description: Successful operation
+ *       '400':
+ *         description: Invalid request parameters
+ *       '401':
+ *         description: Unauthorized - Invalid or missing authentication token
+ *       '500':
+ *         description: Internal server error
+ */
+
+router
+  .route('/timeline')
+  .post(
+    authController.requireAuth,
+    validatePagination,
+    validateRequest,
+    tweetsController.getTimelineTweets
+  );
+
+/**
+ * @swagger
  *  /tweets/add-poll:
  *   post:
  *     summary: Add a new poll
@@ -71,7 +117,7 @@ router
  *               question:
  *                 type: string
  *               length:
- *                 type: string 
+ *                 type: string
  *               options:
  *                 type: array
  *                 items:
@@ -374,23 +420,27 @@ router
  *       - jwt: []
  *     tags:
  *       - tweets
+ *     consumes:
+ *       - multipart/form-data
  *     parameters:
+ *       - name: content
+ *         in: formData
+ *         description: The content of the tweet.
+ *         required: true
+ *         type: string
  *       - name: tweetId
  *         in: path
  *         description: ID of the tweet to add a reply to.
  *         required: true
  *         schema:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               content:
- *                 type: string
- *                 description: Content of the reply.
+ *       - name: images
+ *         in: formData
+ *         description: List of image files to be attached to the tweet.
+ *         required: false
+ *         type: array
+ *         items:
+ *           type: file
  *     responses:
  *       '201':
  *         description: Created. Reply successfully added.
@@ -410,6 +460,8 @@ router
     authController.requireAuth,
     tweetIdParamsValidation,
     validateRequest,
+    tweetsController.uploadTweetMedia,
+    tweetsController.processTweetMedia,
     tweetsController.addTweetReply
   );
 
@@ -450,110 +502,6 @@ router
     tweetIdParamsValidation,
     validateRequest,
     tweetsController.toggleTweetReact
-  );
-
-/**
- * @swagger
- * /tweets/{tweetId}/{replyId}/add-reply:
- *   post:
- *     summary: Add a reply to a reply of a tweet
- *     description: Adds a reply to a reply of a tweet by their IDs.
- *     security:
- *       - jwt: []
- *     tags:
- *       - tweets
- *     parameters:
- *       - name: tweetId
- *         in: path
- *         description: ID of the tweet to which the reply belongs.
- *         required: true
- *         schema:
- *           type: string
- *       - name: replyId
- *         in: path
- *         description: ID of the reply to which a new reply will be added.
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               content:
- *                 type: string
- *                 description: Content of the reply.
- *             required:
- *               - content
- *     responses:
- *       '201':
- *         description: Created. Reply successfully added.
- *       '400':
- *         description: Bad Request. Invalid request parameters.
- *       '401':
- *         description: Unauthorized. User authentication failed.
- *       '404':
- *         description: Not found. Tweet or reply with the provided ID not found.
- *       '500':
- *         description: Internal Server Error. Failed to add the reply.
- */
-
-router
-  .route('/:tweetId/:replyId/add-reply')
-  .post(
-    authController.requireAuth,
-    tweetIdParamsValidation,
-    replyIdParamsValidation,
-    validateRequest,
-    tweetsController.addReplyToReply
-  );
-
-/**
- * @swagger
- * /tweets/{tweetId}/{replyId}/toggle-react:
- *   patch:
- *     summary: Toggle reaction to a reply
- *     description: Toggles the reaction (add/remove) to a reply of a tweet by their IDs.
- *     security:
- *       - jwt: []
- *     tags:
- *       - tweets
- *     parameters:
- *       - name: tweetId
- *         in: path
- *         description: ID of the tweet to which the reply belongs.
- *         required: true
- *         schema:
- *           type: string
- *       - name: replyId
- *         in: path
- *         description: ID of the reply to toggle the reaction.
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       '200':
- *         description: OK. Reaction toggled successfully.
- *       '400':
- *         description: Bad Request. Invalid request parameters.
- *       '401':
- *         description: Unauthorized. User authentication failed.
- *       '404':
- *         description: Not found. Tweet or reply with the provided ID not found.
- *       '500':
- *         description: Internal Server Error. Failed to toggle the reaction.
- */
-
-router
-  .route('/:tweetId/:replyId/toggle-react')
-  .patch(
-    authController.requireAuth,
-    tweetIdParamsValidation,
-    replyIdParamsValidation,
-    validateRequest,
-    tweetsController.toggleReplyReact
   );
 
 /**

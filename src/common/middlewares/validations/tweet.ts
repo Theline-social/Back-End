@@ -1,7 +1,12 @@
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import { TweetsService } from '../../../services/tweet.service';
 
 const tweetsService = new TweetsService();
+
+export const validatePagination = [
+  query('page').optional().isInt({ min: 1 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt(),
+];
 
 export const tweetIdParamsValidation = [
   param('tweetId')

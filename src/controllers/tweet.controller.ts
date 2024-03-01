@@ -92,15 +92,36 @@ export const addTweet = catchAsync(
   }
 );
 
+export const getTimelineTweets = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { page, limit } = req.query;
+
+    const { timelineTweets } = await tweetsService.getTimelineTweets(
+      userId,
+      +(page as string),
+      +(limit as string)
+    );
+
+    res.status(201).json({
+      status: true,
+      message: 'Tweets fetched successfully',
+      data: { timelineTweets },
+    });
+  }
+);
+
 export const addPoll = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    await tweetsService.addPoll(userId, req.body);
+    const { tweet } = await tweetsService.addPoll(userId, req.body);
 
     res.status(201).json({
       status: true,
       message: 'Poll added successfully',
+      data: { tweet },
     });
   }
 );
@@ -147,7 +168,10 @@ export const getTweetReplies = catchAsync(
 
 export const getTweetReTweeters = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
     const { retweeters } = await tweetsService.getTweetReTweeters(
+      +userId,
       +req.params.tweetId
     );
 
@@ -160,7 +184,10 @@ export const getTweetReTweeters = catchAsync(
 
 export const getTweetReacters = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
     const { reacters } = await tweetsService.getTweetReacters(
+      +userId,
       +req.params.tweetId
     );
 
@@ -173,7 +200,10 @@ export const getTweetReacters = catchAsync(
 
 export const getTweetReTweets = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
     const { retweets } = await tweetsService.getTweetReTweets(
+      +userId,
       +req.params.tweetId
     );
 
@@ -228,42 +258,7 @@ export const toggleTweetReact = catchAsync(
 
     res.status(200).json({
       status: true,
-      message: 'React added successfully',
-    });
-  }
-);
-
-export const addReplyToReply = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const userId = res.locals.currentUser.userId;
-
-    await tweetsService.addReplyToReply(
-      Number(userId),
-      Number(req.params.tweetId),
-      Number(req.params.replyId),
-      req.body
-    );
-
-    res.status(200).json({
-      status: true,
-      message: 'Reply added successfully',
-    });
-  }
-);
-
-export const toggleReplyReact = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const userId = res.locals.currentUser.userId;
-
-    await tweetsService.toggleReplyReact(
-      +userId,
-      +req.params.tweetId,
-      +req.params.replyId
-    );
-
-    res.status(200).json({
-      status: true,
-      message: 'Reply react added successfully',
+      message: 'React toggled successfully',
     });
   }
 );

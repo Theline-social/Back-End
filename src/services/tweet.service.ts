@@ -330,7 +330,8 @@ export class TweetsService {
 
     return {
       tweetReply: {
-        replyId: tweetId,
+        tweetId,
+        replyId: tweet.tweetId,
         gifUrl: tweet.gifUrl,
         imageUrls: tweet.imageUrls,
         content: tweet.content,
@@ -497,7 +498,18 @@ export class TweetsService {
         },
       },
       relations: {
-        replies: true,
+        replies: {
+          bookmarkedBy: true,
+          retweets: true,
+          reacts: true,
+          mentions: { userMentioned: true },
+          tweeter: {
+            muted: true,
+            followers: true,
+            following: true,
+            blocked: true,
+          },
+        },
         reacts: true,
         tweeter: {
           followers: true,
@@ -514,31 +526,14 @@ export class TweetsService {
 
     return {
       replies: replies.map((reply) => {
-        const isBookmarked = reply.bookmarkedBy.some(
-          (user: User) => user.userId === userId
-        );
-        const isReacted = reply.reacts.some(
-          (user: User) => user.userId === userId
-        );
-        const isTweeterBlocked = reply.tweeter.blocked.some(
-          (user: User) => user.userId === userId
-        );
-        const isTweeterMuted = reply.tweeter.muted.some(
-          (user: User) => user.userId === userId
-        );
-        const isTweeterFollowed = reply.tweeter.followers.some(
-          (user: User) => user.userId === userId
-        );
-        const isRetweeted = reply.retweets.some(
-          (retweet: Tweet) => retweet.tweeter.userId === userId
-        );
-
         return {
+          tweetId,
           replyId: reply.tweetId,
           gifUrl: reply.gifUrl,
           imageUrls: reply.imageUrls,
           content: reply.content,
           createdAt: reply.createdAt,
+          type: TweetType.Reply,
           poll: reply.poll
             ? {
                 pollId: reply.poll.pollId,
@@ -560,11 +555,61 @@ export class TweetsService {
             bio: reply.tweeter.bio,
             followersCount: reply.tweeter.followers.length,
             followingsCount: reply.tweeter.following.length,
-            isTweeterFollowed,
-            isTweeterMuted,
-            isTweeterBlocked,
+            isFollowed: reply.tweeter.followers.some(
+              (user: User) => user.userId === userId
+            ),
+            isMuted: reply.tweeter.muted.some(
+              (user: User) => user.userId === userId
+            ),
+            isBlocked: reply.tweeter.blocked.some(
+              (user: User) => user.userId === userId
+            ),
           },
-          replies: reply.replies,
+          replies: reply.replies[0]
+            ? {
+                tweetId,
+                replyId: reply.replies[0].tweetId,
+                gifUrl: reply.replies[0].gifUrl,
+                imageUrls: reply.replies[0].imageUrls,
+                content: reply.replies[0].content,
+                createdAt: reply.replies[0].createdAt,
+                type: TweetType.Reply,
+                replier: {
+                  imageUrl: reply.replies[0].tweeter.imageUrl,
+                  username: reply.replies[0].tweeter.username,
+                  jobtitle: reply.replies[0].tweeter.jobtitle,
+                  name: reply.replies[0].tweeter.name,
+                  bio: reply.replies[0].tweeter.bio,
+                  followersCount: reply.replies[0].tweeter.followers.length,
+                  followingsCount: reply.replies[0].tweeter.following.length,
+                  isFollowed: reply.replies[0].tweeter.followers.some(
+                    (user: User) => user.userId === userId
+                  ),
+                  isMuted: reply.replies[0].tweeter.muted.some(
+                    (user: User) => user.userId === userId
+                  ),
+                  isBlocked: reply.replies[0].tweeter.blocked.some(
+                    (user: User) => user.userId === userId
+                  ),
+                },
+                mentions: reply.replies[0].mentions
+                  ? reply.mentions.map((mention) => {
+                      return mention.userMentioned.username;
+                    })
+                  : [],
+                reactCount: reply.replies[0].reactCount,
+                reTweetCount: reply.replies[0].reTweetCount,
+                isBookmarked: reply.replies[0].bookmarkedBy.some(
+                  (user: User) => user.userId === userId
+                ),
+                isReacted: reply.replies[0].reacts.some(
+                  (user: User) => user.userId === userId
+                ),
+                isRetweeted: reply.replies[0].retweets.some(
+                  (retweet: Tweet) => retweet.tweeter.userId === userId
+                ),
+              }
+            : {},
           mentions: reply.mentions
             ? reply.mentions.map((mention) => {
                 return mention.userMentioned.username;
@@ -573,9 +618,13 @@ export class TweetsService {
           reactCount: reply.reactCount,
           reTweetCount: reply.reTweetCount,
           repliesCount: reply.repliesCount,
-          isBookmarked,
-          isReacted,
-          isRetweeted,
+          isBookmarked: reply.bookmarkedBy.some(
+            (user: User) => user.userId === userId
+          ),
+          isReacted: reply.reacts.some((user: User) => user.userId === userId),
+          isRetweeted: reply.retweets.some(
+            (retweet: Tweet) => retweet.tweeter.userId === userId
+          ),
         };
       }),
     };
@@ -608,13 +657,13 @@ export class TweetsService {
 
     return {
       retweeters: retweets?.map((retweet) => {
-        const isTweeterBlocked = retweet.tweeter.blocked.some(
+        const isBlocked = retweet.tweeter.blocked.some(
           (user: User) => user.userId === userId
         );
-        const isTweeterMuted = retweet.tweeter.muted.some(
+        const isMuted = retweet.tweeter.muted.some(
           (user: User) => user.userId === userId
         );
-        const isTweeterFollowed = retweet.tweeter.followers.some(
+        const isFollowed = retweet.tweeter.followers.some(
           (user: User) => user.userId === userId
         );
 
@@ -626,9 +675,9 @@ export class TweetsService {
           bio: retweet.tweeter.bio,
           followersCount: retweet.tweeter.followers.length,
           followingsCount: retweet.tweeter.following.length,
-          isTweeterFollowed,
-          isTweeterMuted,
-          isTweeterBlocked,
+          isFollowed,
+          isMuted,
+          isBlocked,
         };
       }),
     };
@@ -738,13 +787,13 @@ export class TweetsService {
           (user: User) => user.userId === userId
         );
 
-        const isTweeterBlocked = retweet.retweetTo.tweeter.blocked.some(
+        const isBlocked = retweet.retweetTo.tweeter.blocked.some(
           (user: User) => user.userId === userId
         );
-        const isTweeterMuted = retweet.retweetTo.tweeter.muted.some(
+        const isMuted = retweet.retweetTo.tweeter.muted.some(
           (user: User) => user.userId === userId
         );
-        const isTweeterFollowed = retweet.retweetTo.tweeter.followers.some(
+        const isFollowed = retweet.retweetTo.tweeter.followers.some(
           (user: User) => user.userId === userId
         );
 
@@ -794,9 +843,9 @@ export class TweetsService {
             bio: retweet.retweetTo.tweeter.bio,
             followersCount: retweet.retweetTo.tweeter.followers.length,
             followingsCount: retweet.retweetTo.tweeter.following.length,
-            isReTweeterFollowed,
-            isReTweeterMuted,
-            isReTweeterBlocked,
+            isFollowed: isReTweeterFollowed,
+            isMuted: isReTweeterMuted,
+            isBlocked: isReTweeterBlocked,
           },
           retweeter: {
             imageUrl: retweet.tweeter.imageUrl,
@@ -806,9 +855,9 @@ export class TweetsService {
             bio: retweet.tweeter.bio,
             followersCount: retweet.tweeter.followers.length,
             followingsCount: retweet.tweeter.following.length,
-            isTweeterFollowed,
-            isTweeterMuted,
-            isTweeterBlocked,
+            isFollowed,
+            isMuted,
+            isBlocked,
           },
         };
       }),
@@ -843,13 +892,13 @@ export class TweetsService {
 
     return {
       reacters: tweets?.reacts.map((reacter) => {
-        const isTweeterBlocked = reacter.blocked.some(
+        const isBlocked = reacter.blocked.some(
           (user: User) => user.userId === userId
         );
-        const isTweeterMuted = reacter.muted.some(
+        const isMuted = reacter.muted.some(
           (user: User) => user.userId === userId
         );
-        const isTweeterFollowed = reacter.followers.some(
+        const isFollowed = reacter.followers.some(
           (user: User) => user.userId === userId
         );
 
@@ -861,9 +910,9 @@ export class TweetsService {
           bio: reacter.bio,
           followersCount: reacter.followers.length,
           followingsCount: reacter.following.length,
-          isTweeterFollowed,
-          isTweeterMuted,
-          isTweeterBlocked,
+          isFollowed,
+          isMuted,
+          isBlocked,
         };
       }),
     };
@@ -937,14 +986,14 @@ export class TweetsService {
       (user: User) => user.userId === userId
     );
     const isReacted = tweet.reacts.some((user: User) => user.userId === userId);
-    const isTweeterBlocked = tweet.tweeter.blocked.some(
+    const isBlocked = tweet.tweeter.blocked.some(
       (user: User) => user.userId === userId
     );
-    const isTweeterMuted = tweet.tweeter.muted.some(
+    const isMuted = tweet.tweeter.muted.some(
       (user: User) => user.userId === userId
     );
 
-    const isTweeterFollowed = tweet.tweeter.followers.some(
+    const isFollowed = tweet.tweeter.followers.some(
       (user: User) => user.userId === userId
     );
 
@@ -954,9 +1003,9 @@ export class TweetsService {
 
     return {
       tweet,
-      isTweeterBlocked,
-      isTweeterMuted,
-      isTweeterFollowed,
+      isBlocked,
+      isMuted,
+      isFollowed,
       isReacted,
       isRetweeted,
       isBookmarked,
@@ -966,9 +1015,9 @@ export class TweetsService {
   getTweet = async (userId: number, tweetId: number) => {
     const {
       tweet,
-      isTweeterBlocked,
-      isTweeterFollowed,
-      isTweeterMuted,
+      isBlocked,
+      isFollowed,
+      isMuted,
       isReacted,
       isBookmarked,
       isRetweeted,
@@ -1003,9 +1052,9 @@ export class TweetsService {
           bio: tweet.tweeter.bio,
           followersCount: tweet.tweeter.followers.length,
           followingsCount: tweet.tweeter.following.length,
-          isTweeterFollowed,
-          isTweeterMuted,
-          isTweeterBlocked,
+          isFollowed,
+          isMuted,
+          isBlocked,
         },
         mentions: tweet.mentions
           ? tweet.mentions.map((mention) => {

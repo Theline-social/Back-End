@@ -1,4 +1,5 @@
 import { In, Not } from 'typeorm';
+import * as fs from 'fs';
 import { AppError, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
 import { Reel, ReelMention, ReelType, Topic, User } from '../entities';
@@ -300,10 +301,25 @@ export class ReelsService {
     return await reelRepository.exists({ where: { reelId: id } });
   };
 
-  deleteReel = async (id: number) => {
+  deleteReel = async (reelId: number) => {
     const reelRepository = AppDataSource.getRepository(Reel);
 
-    await reelRepository.delete(id);
+    const reel = await reelRepository.findOne({
+      where: { reelId },
+      select: { reelUrl: true, reelId: true },
+    });
+
+    if (!reel) {
+      throw new AppError('Reel not found', 404);
+    }
+
+    if (reel.reelUrl) {
+      process.env.NODE_ENV !== 'production'
+        ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}${reel.reelUrl}`)
+        : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}${reel.reelUrl}`);
+    }
+
+    await reelRepository.delete({ reelId });
   };
 
   getReelReplies = async (userId: number, reelId: number) => {

@@ -11,8 +11,8 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const destinationPath =
       process.env.NODE_ENV !== 'production'
-        ? 'F:/MyRepos/Back-End-SM-Mostaql/assets/reels'
-        : '/home/TheLine/Back-End/assets/reels';
+        ? `${process.env.DEV_MEDIA_PATH}/reels`
+        : `${process.env.PROD_MEDIA_PATH}/reels`;
 
     cb(null, destinationPath);
   },

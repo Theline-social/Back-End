@@ -41,8 +41,8 @@ export const processTweetMedia = async (
             .jpeg({ quality: 90 })
             .toFile(
               process.env.NODE_ENV !== 'production'
-                ? `F:/MyRepos/Back-End-SM-Mostaql/assets${fileName}`
-                : `/home/TheLine/Back-End/assets${fileName}`
+                ? `${process.env.DEV_MEDIA_PATH}${fileName}`
+                : `${process.env.PROD_MEDIA_PATH}${fileName}`
             );
 
           imageUrls.push(fileName);
@@ -65,8 +65,8 @@ export const processTweetMedia = async (
         .toFormat('gif')
         .toFile(
           process.env.NODE_ENV !== 'production'
-            ? `F:/MyRepos/Back-End-SM-Mostaql/assets${gifUrl}`
-            : `/home/TheLine/Back-End/assets${gifUrl}`
+            ? `${process.env.DEV_MEDIA_PATH}${gifUrl}`
+            : `${process.env.PROD_MEDIA_PATH}${gifUrl}`
         );
 
       req.body.gifUrl = gifUrl;
@@ -141,7 +141,7 @@ export const toggleVote = catchAsync(
 
 export const deleteTweet = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    await tweetsService.deleteTweet(Number(req.params.tweetId));
+    await tweetsService.deleteTweet(+(req.params.tweetId));
 
     res.status(200).json({
       status: true,

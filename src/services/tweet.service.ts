@@ -3,6 +3,7 @@ import { AppError, options, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
 import { Poll, PollOption } from '../entities/Poll';
 import { Tweet, TweetMention, TweetType, User } from '../entities';
+import * as fs from 'fs';
 
 import socketService from './socket.service';
 
@@ -452,10 +453,33 @@ export class TweetsService {
     return await tweetRepository.exists({ where: { tweetId: id } });
   };
 
-  deleteTweet = async (id: number) => {
+  deleteTweet = async (tweetId: number) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
-    await tweetRepository.delete(id);
+    const tweet = await tweetRepository.findOne({
+      where: { tweetId },
+      select: { imageUrls: true, gifUrl: true, tweetId: true },
+    });
+
+    if (!tweet) {
+      throw new AppError('Tweet not found', 404);
+    }
+
+    if (tweet.imageUrls && tweet.imageUrls.length > 0) {
+      tweet.imageUrls.forEach((imageUrl) => {
+        process.env.NODE_ENV !== 'production'
+          ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}${imageUrl}`)
+          : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}${imageUrl}`);
+      });
+    }
+
+    if (tweet.gifUrl) {
+      process.env.NODE_ENV !== 'production'
+        ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}${tweet.gifUrl}`)
+        : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}${tweet.gifUrl}`);
+    }
+
+    await tweetRepository.delete({ tweetId });
   };
 
   getTweetReplies = async (userId: number, tweetId: number) => {

@@ -18,7 +18,10 @@ export class TweetMention {
   @ManyToOne(() => User, (user) => user.mentionsReceivedFromTeet)
   userMentioned: User;
 
-  @ManyToOne(() => Tweet, (tweet) => tweet.mentions, { nullable: true })
+  @ManyToOne(() => Tweet, (tweet) => tweet.mentions, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   tweet: Tweet;
 
   @CreateDateColumn({

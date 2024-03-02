@@ -141,7 +141,7 @@ export const toggleVote = catchAsync(
 
 export const deleteTweet = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    await tweetsService.deleteTweet(+(req.params.tweetId));
+    await tweetsService.deleteTweet(+req.params.tweetId);
 
     res.status(200).json({
       status: true,
@@ -267,15 +267,15 @@ export const addRetweet = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { retweet } = await tweetsService.addRetweet(
-      +(userId),
-      +(req.params.tweetId),
+    const { retweet, message } = await tweetsService.addRetweet(
+      +userId,
+      +req.params.tweetId,
       req.body
     );
 
     res.status(200).json({
       status: true,
-      message: 'Retweet added successfully',
+      message,
       data: { retweet },
     });
   }

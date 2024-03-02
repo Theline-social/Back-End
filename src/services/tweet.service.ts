@@ -1,5 +1,5 @@
 import { In, Not } from 'typeorm';
-import { AppError, options, usernameRegex } from '../common';
+import { AppError, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
 import { Poll, PollOption } from '../entities/Poll';
 import { Tweet, TweetMention, TweetType, User } from '../entities';
@@ -31,7 +31,7 @@ export class TweetsService {
     const tweetsOfFollowings = await tweetRepository.find({
       where: {
         tweeter: { userId: In([...followingsIds]) },
-        type: In([TweetType.Tweet, TweetType.ReTweet]),
+        type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
       },
       select: {
         imageUrls: true,
@@ -40,6 +40,42 @@ export class TweetsService {
         content: true,
         createdAt: true,
         type: true,
+        retweetTo: {
+          imageUrls: true,
+          tweetId: true,
+          gifUrl: true,
+          content: true,
+          createdAt: true,
+          type: true,
+          tweeter: {
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+            userId: true,
+            bio: true,
+          },
+          poll: {
+            pollId: true,
+            question: true,
+            length: true,
+            options: {
+              optionId: true,
+              text: true,
+              voters: {
+                username: true,
+                jobtitle: true,
+                name: true,
+                imageUrl: true,
+                userId: true,
+              },
+            },
+          },
+          mentions: {
+            mentionedAt: true,
+            userMentioned: { username: true },
+          },
+        },
         tweeter: {
           username: true,
           jobtitle: true,
@@ -77,6 +113,14 @@ export class TweetsService {
         },
       },
       relations: {
+        retweetTo: {
+          tweeter: {
+            followers: true,
+            following: true,
+            blocked: true,
+            muted: true,
+          },
+        },
         replies: true,
         reacts: true,
         tweeter: {
@@ -98,7 +142,7 @@ export class TweetsService {
     const randomTweets = await tweetRepository.find({
       where: {
         tweeter: { userId: Not(In([...followingsIds])) },
-        type: In([TweetType.Tweet, TweetType.ReTweet]),
+        type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
       },
       select: {
         imageUrls: true,
@@ -107,6 +151,42 @@ export class TweetsService {
         content: true,
         createdAt: true,
         type: true,
+        retweetTo: {
+          imageUrls: true,
+          tweetId: true,
+          gifUrl: true,
+          content: true,
+          createdAt: true,
+          type: true,
+          tweeter: {
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+            userId: true,
+            bio: true,
+          },
+          poll: {
+            pollId: true,
+            question: true,
+            length: true,
+            options: {
+              optionId: true,
+              text: true,
+              voters: {
+                username: true,
+                jobtitle: true,
+                name: true,
+                imageUrl: true,
+                userId: true,
+              },
+            },
+          },
+          mentions: {
+            mentionedAt: true,
+            userMentioned: { username: true },
+          },
+        },
         tweeter: {
           username: true,
           jobtitle: true,
@@ -146,6 +226,16 @@ export class TweetsService {
       relations: {
         replies: true,
         reacts: true,
+        retweetTo: {
+          tweeter: {
+            followers: true,
+            following: true,
+            blocked: true,
+            muted: true,
+          },
+          mentions: { userMentioned: true },
+          poll: { options: { voters: true } },
+        },
         tweeter: {
           followers: true,
           following: true,
@@ -198,6 +288,52 @@ export class TweetsService {
             (user) => user.userId === userId
           ),
         },
+        originalTweeter: tweet.retweetTo
+          ? {
+              userId: tweet.retweetTo.tweeter.userId,
+              imageUrl: tweet.retweetTo.tweeter.imageUrl,
+              username: tweet.retweetTo.tweeter.username,
+              jobtitle: tweet.retweetTo.tweeter.jobtitle,
+              name: tweet.retweetTo.tweeter.name,
+              bio: tweet.retweetTo.tweeter.bio,
+              followersCount: tweet.retweetTo.tweeter.followers.length,
+              followingsCount: tweet.retweetTo.tweeter.following.length,
+              isMuted: tweet.retweetTo.tweeter.muted.some(
+                (user) => user.userId === userId
+              ),
+              isBlocked: tweet.retweetTo.tweeter.blocked.some(
+                (user) => user.userId === userId
+              ),
+            }
+          : {},
+        originalTweet: tweet.retweetTo
+          ? {
+              tweetId: tweet.retweetTo.tweetId,
+              gifUrl: tweet.retweetTo.gifUrl,
+              imageUrls: tweet.retweetTo.imageUrls,
+              content: tweet.retweetTo.content,
+              createdAt: tweet.retweetTo.createdAt,
+              type: tweet.retweetTo.type,
+              poll: tweet.retweetTo.poll
+                ? {
+                    pollId: tweet.retweetTo.poll.pollId,
+                    question: tweet.retweetTo.poll.question,
+                    length: tweet.retweetTo.poll.length,
+                    options: tweet.retweetTo.poll.options.map((option) => ({
+                      optionId: option.optionId,
+                      text: option.text,
+                      votesCount: option.voters.length,
+                    })),
+                    totalVotesCount: tweet.retweetTo.poll.totalVoters,
+                  }
+                : {},
+              mentions: tweet.retweetTo.mentions
+                ? tweet.retweetTo.mentions.map(
+                    (mention) => mention.userMentioned.username
+                  )
+                : [],
+            }
+          : {},
         mentions: tweet.mentions
           ? tweet.mentions.map((mention) => mention.userMentioned.username)
           : [],
@@ -225,7 +361,7 @@ export class TweetsService {
     const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
 
     if (
-      type !== TweetType.ReTweet &&
+      type !== TweetType.Repost &&
       !body.content &&
       !body.imageUrls &&
       !body.gifUrl
@@ -245,9 +381,9 @@ export class TweetsService {
     tweet.tweeter = user;
     tweet.type = type;
 
-    try {
-      await tweetRepository.save(tweet);
+    await tweetRepository.save(tweet);
 
+    if (body.content) {
       let usernames =
         (body.content.match(usernameRegex) as Array<string>) || [];
 
@@ -278,8 +414,6 @@ export class TweetsService {
       //     tweetId: tweet.tweetId,
       //   });
       // }
-    } catch (error) {
-      console.error('Error scheduling tweet:', error);
     }
 
     return { tweet };
@@ -662,53 +796,48 @@ export class TweetsService {
   };
 
   getTweetReTweeters = async (userId: number, tweetId: number) => {
-    const tweetRepository = AppDataSource.getRepository(Tweet);
+    const userRepository = AppDataSource.getRepository(User);
 
-    const retweets = await tweetRepository.find({
-      where: { retweetTo: { tweetId } },
-      select: {
-        tweeter: {
-          bio: true,
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
+    const retweeters = await userRepository.find({
+      where: {
+        tweets: {
+          retweetTo: { tweetId },
         },
       },
+      select: {
+        bio: true,
+        username: true,
+        jobtitle: true,
+        name: true,
+        imageUrl: true,
+        userId: true,
+      },
       relations: {
-        tweeter: {
-          followers: true,
-          following: true,
-          blocked: true,
-          muted: true,
-        },
+        followers: true,
+        following: true,
+        blocked: true,
+        muted: true,
       },
     });
 
     return {
-      retweeters: retweets?.map((retweet) => {
-        const isBlocked = retweet.tweeter.blocked.some(
-          (user: User) => user.userId === userId
-        );
-        const isMuted = retweet.tweeter.muted.some(
-          (user: User) => user.userId === userId
-        );
-        const isFollowed = retweet.tweeter.followers.some(
-          (user: User) => user.userId === userId
-        );
-
+      retweeters: retweeters?.map((retweet) => {
         return {
-          imageUrl: retweet.tweeter.imageUrl,
-          username: retweet.tweeter.username,
-          jobtitle: retweet.tweeter.jobtitle,
-          name: retweet.tweeter.name,
-          bio: retweet.tweeter.bio,
-          followersCount: retweet.tweeter.followers.length,
-          followingsCount: retweet.tweeter.following.length,
-          isFollowed,
-          isMuted,
-          isBlocked,
+          userId: retweet.userId,
+          imageUrl: retweet.imageUrl,
+          username: retweet.username,
+          jobtitle: retweet.jobtitle,
+          name: retweet.name,
+          bio: retweet.bio,
+          followersCount: retweet.followers.length,
+          followingsCount: retweet.following.length,
+          isFollowed: retweet.followers.some(
+            (user: User) => user.userId === userId
+          ),
+          isMuted: retweet.muted.some((user: User) => user.userId === userId),
+          isBlocked: retweet.blocked.some(
+            (user: User) => user.userId === userId
+          ),
         };
       }),
     };
@@ -718,7 +847,7 @@ export class TweetsService {
     const retweetRepository = AppDataSource.getRepository(Tweet);
 
     const retweets = await retweetRepository.find({
-      where: { retweetTo: { tweetId } },
+      where: { retweetTo: { tweetId }, type: TweetType.Quote },
       select: {
         tweeter: {
           email: true,
@@ -798,7 +927,6 @@ export class TweetsService {
 
     return {
       retweets: retweets.map((retweet) => {
-    
         return {
           retweetId: retweet.tweetId,
           createdAt: retweet.createdAt,
@@ -845,7 +973,7 @@ export class TweetsService {
                 })
               : [],
           },
-          tweeter: {
+          originalTweeter: {
             imageUrl: retweet.retweetTo.tweeter.imageUrl,
             username: retweet.retweetTo.tweeter.username,
             jobtitle: retweet.retweetTo.tweeter.jobtitle,
@@ -854,16 +982,16 @@ export class TweetsService {
             followersCount: retweet.retweetTo.tweeter.followers.length,
             followingsCount: retweet.retweetTo.tweeter.following.length,
             isFollowed: retweet.tweeter.followers.some(
-                (user: User) => user.userId === userId
-              ),
+              (user: User) => user.userId === userId
+            ),
             isMuted: retweet.tweeter.muted.some(
-                (user: User) => user.userId === userId
-              ),
+              (user: User) => user.userId === userId
+            ),
             isBlocked: retweet.tweeter.blocked.some(
-                (user: User) => user.userId === userId
-              ),
+              (user: User) => user.userId === userId
+            ),
           },
-          retweeter: {
+          tweeter: {
             imageUrl: retweet.tweeter.imageUrl,
             username: retweet.tweeter.username,
             jobtitle: retweet.tweeter.jobtitle,
@@ -872,14 +1000,14 @@ export class TweetsService {
             followersCount: retweet.tweeter.followers.length,
             followingsCount: retweet.tweeter.following.length,
             isFollowed: retweet.retweetTo.tweeter.followers.some(
-                (user: User) => user.userId === userId
-              ),
+              (user: User) => user.userId === userId
+            ),
             isMuted: retweet.retweetTo.tweeter.muted.some(
-                (user: User) => user.userId === userId
-              ),
+              (user: User) => user.userId === userId
+            ),
             isBlocked: retweet.retweetTo.tweeter.blocked.some(
-                (user: User) => user.userId === userId
-              ),
+              (user: User) => user.userId === userId
+            ),
           },
         };
       }),
@@ -1124,22 +1252,36 @@ export class TweetsService {
     const tweetRepository = AppDataSource.getRepository(Tweet);
     const userRepository = AppDataSource.getRepository(User);
 
+    const type =
+      body.content || body.gifUrl || body.imageUrls
+        ? TweetType.Quote
+        : TweetType.Repost;
+
     const orgTweet = new Tweet();
     orgTweet.tweetId = tweetId;
 
-    const user = (await userRepository.findOne({
-      where: { userId },
-      relations: { retweetedTweets: true },
-    })) as User;
+    if (type === TweetType.Repost) {
+      const user = (await userRepository.findOne({
+        where: { userId },
+        relations: { tweets: { retweetTo: true } },
+      })) as User;
 
-    const { tweet } = await this.createTweet(userId, body, TweetType.ReTweet);
+      const tweetIdx = user.tweets.findIndex(
+        (tweet) =>
+          tweet.type == TweetType.Repost && tweet.retweetTo.tweetId === tweetId
+      );
+
+      if (tweetIdx !== -1) {
+        await this.deleteTweet(user.tweets[tweetIdx].tweetId);
+
+        return { retweet: {}, message: 'Repost deleted successfully' };
+      }
+    }
+
+    const { tweet } = await this.createTweet(userId, body, type);
     tweet.retweetTo = orgTweet;
 
-    if (!user.retweetedTweets) user.retweetedTweets = [tweet];
-    else user.retweetedTweets.push(tweet);
-
     await tweetRepository.save(tweet);
-    await userRepository.save(user);
 
     return {
       retweet: {
@@ -1150,6 +1292,7 @@ export class TweetsService {
           tweetId,
         },
       },
+      message: `${type} added successfully`,
     };
   };
 

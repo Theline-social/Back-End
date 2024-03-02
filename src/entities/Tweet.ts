@@ -16,7 +16,8 @@ import { Poll } from './Poll';
 export enum TweetType {
   Tweet = 'Tweet',
   Reply = 'Reply',
-  ReTweet = 'ReTweet',
+  Repost = 'Repost',
+  Quote = 'Quote',
 }
 
 @Entity()
@@ -45,13 +46,15 @@ export class Tweet {
   @ManyToOne(() => User, (user) => user.tweets, { onDelete: 'CASCADE' })
   tweeter: User;
 
-  @OneToMany(() => Tweet, (tweet) => tweet.retweetTo,  { onDelete: 'CASCADE' })
+  @OneToMany(() => Tweet, (tweet) => tweet.retweetTo, { onDelete: 'CASCADE' })
   retweets: Tweet[];
 
-  @ManyToOne(() => Tweet, (tweet) => tweet.retweets,{ onDelete: 'CASCADE' })
+  @ManyToOne(() => Tweet, (tweet) => tweet.retweets, { onDelete: 'CASCADE' })
   retweetTo: Tweet;
 
-  @ManyToMany(() => User, (user) => user.retweetedTweets, { onDelete: 'CASCADE' })
+  @ManyToMany(() => User, (user) => user.retweetedTweets, {
+    onDelete: 'CASCADE',
+  })
   retweetedBy: User[];
 
   @ManyToOne(() => Tweet, (tweet) => tweet.replies, {

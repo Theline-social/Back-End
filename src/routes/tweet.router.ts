@@ -347,7 +347,7 @@ router
 
 /**
  * @swagger
- * /tweets/{tweetId}/retweets:
+ * /tweets/{tweetId}/quotes:
  *   get:
  *     summary: Get a single tweet by ID
  *     description: Retrieves a single tweet by its ID.
@@ -373,7 +373,7 @@ router
  *         description: Internal Server Error. Failed to retrieve the tweet.
  */
 router
-  .route('/:tweetId/retweets')
+  .route('/:tweetId/quotes')
   .get(
     authController.requireAuth,
     tweetIdParamsValidation,

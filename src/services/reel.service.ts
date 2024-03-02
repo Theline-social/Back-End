@@ -576,7 +576,7 @@ export class ReelsService {
           name: true,
           imageUrl: true,
         },
-        rereels: true,
+        rereels: { reeler: { userId: true } },
       },
       relations: {
         reeler: {
@@ -596,7 +596,7 @@ export class ReelsService {
         },
         replies: true,
         reacts: true,
-        rereels: true,
+        rereels: { reeler: true },
         bookmarkedBy: true,
         mentions: { userMentioned: true },
         supportedTopics: true,

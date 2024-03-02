@@ -730,6 +730,7 @@ export class TweetsService {
           bio: true,
         },
         retweetTo: {
+          tweetId: true,
           content: true,
           createdAt: true,
           gifUrl: true,
@@ -789,7 +790,7 @@ export class TweetsService {
         },
         replies: true,
         reacts: true,
-        retweets: true,
+        retweets: { tweeter: true },
         bookmarkedBy: true,
         mentions: { userMentioned: true },
       },
@@ -797,40 +798,7 @@ export class TweetsService {
 
     return {
       retweets: retweets.map((retweet) => {
-        const isBookmarked = retweet.bookmarkedBy.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isRetweeted = retweet.retweets.some(
-          (retweet: Tweet) => retweet.tweeter.userId === userId
-        );
-
-        const isReacted = retweet.reacts.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isReTweeterBlocked = retweet.tweeter.blocked.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isReTweeterMuted = retweet.tweeter.muted.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isReTweeterFollowed = retweet.tweeter.followers.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isBlocked = retweet.retweetTo.tweeter.blocked.some(
-          (user: User) => user.userId === userId
-        );
-        const isMuted = retweet.retweetTo.tweeter.muted.some(
-          (user: User) => user.userId === userId
-        );
-        const isFollowed = retweet.retweetTo.tweeter.followers.some(
-          (user: User) => user.userId === userId
-        );
-
+    
         return {
           retweetId: retweet.tweetId,
           createdAt: retweet.createdAt,
@@ -838,9 +806,15 @@ export class TweetsService {
           type: retweet.type,
           imageUrls: retweet.imageUrls,
           gifUrl: retweet.gifUrl,
-          isBookmarked,
-          isReacted,
-          isRetweeted,
+          isBookmarked: retweet.bookmarkedBy.some(
+            (user: User) => user.userId === userId
+          ),
+          isReacted: retweet.reacts.some(
+            (user: User) => user.userId === userId
+          ),
+          isRetweeted: retweet.retweets.some(
+            (retweet: Tweet) => retweet.tweeter.userId === userId
+          ),
           reactCount: retweet.reactCount,
           reTweetCount: retweet.reTweetCount,
           repliesCount: retweet.repliesCount,
@@ -879,9 +853,15 @@ export class TweetsService {
             bio: retweet.retweetTo.tweeter.bio,
             followersCount: retweet.retweetTo.tweeter.followers.length,
             followingsCount: retweet.retweetTo.tweeter.following.length,
-            isFollowed: isReTweeterFollowed,
-            isMuted: isReTweeterMuted,
-            isBlocked: isReTweeterBlocked,
+            isFollowed: retweet.tweeter.followers.some(
+                (user: User) => user.userId === userId
+              ),
+            isMuted: retweet.tweeter.muted.some(
+                (user: User) => user.userId === userId
+              ),
+            isBlocked: retweet.tweeter.blocked.some(
+                (user: User) => user.userId === userId
+              ),
           },
           retweeter: {
             imageUrl: retweet.tweeter.imageUrl,
@@ -891,9 +871,15 @@ export class TweetsService {
             bio: retweet.tweeter.bio,
             followersCount: retweet.tweeter.followers.length,
             followingsCount: retweet.tweeter.following.length,
-            isFollowed,
-            isMuted,
-            isBlocked,
+            isFollowed: retweet.retweetTo.tweeter.followers.some(
+                (user: User) => user.userId === userId
+              ),
+            isMuted: retweet.retweetTo.tweeter.muted.some(
+                (user: User) => user.userId === userId
+              ),
+            isBlocked: retweet.retweetTo.tweeter.blocked.some(
+                (user: User) => user.userId === userId
+              ),
           },
         };
       }),

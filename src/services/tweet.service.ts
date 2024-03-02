@@ -114,12 +114,18 @@ export class TweetsService {
       },
       relations: {
         retweetTo: {
+          replies: true,
+          reacts: true,
+          retweets: { tweeter: true },
+          bookmarkedBy: true,
           tweeter: {
             followers: true,
             following: true,
             blocked: true,
             muted: true,
           },
+          mentions: { userMentioned: true },
+          poll: { options: { voters: true } },
         },
         replies: true,
         reacts: true,
@@ -227,6 +233,10 @@ export class TweetsService {
         replies: true,
         reacts: true,
         retweetTo: {
+          replies: true,
+          reacts: true,
+          retweets: { tweeter: true },
+          bookmarkedBy: true,
           tweeter: {
             followers: true,
             following: true,
@@ -332,6 +342,18 @@ export class TweetsService {
                     (mention) => mention.userMentioned.username
                   )
                 : [],
+              reactCount: tweet.retweetTo.reactCount,
+              reTweetCount: tweet.retweetTo.reTweetCount,
+              repliesCount: tweet.retweetTo.repliesCount,
+              isBookmarked: tweet.retweetTo.bookmarkedBy.some(
+                (user) => user.userId === userId
+              ),
+              isReacted: tweet.retweetTo.reacts.some(
+                (user) => user.userId === userId
+              ),
+              isRetweeted: tweet.retweetTo.retweets.some(
+                (retweet) => retweet.tweeter.userId === userId
+              ),
             }
           : {},
         mentions: tweet.mentions

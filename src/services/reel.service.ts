@@ -376,6 +376,10 @@ export class ReelsService {
     userId: number,
     body: { content: string; reelUrl: string; topics: string[] }
   ) => {
+    body.topics = Array.isArray(body.topics) ? [...body.topics] : [body.topics];
+
+    if (!body.topics) throw new AppError('No topics specified', 400);
+
     const { reel } = await this.createReel(userId, body);
 
     return {
@@ -385,7 +389,7 @@ export class ReelsService {
         content: reel.content,
         createdAt: reel.createdAt,
         type: reel.type,
-        topics: Array.isArray(body.topics) ? body.topics : [body.topics],
+        topics: body.topics,
         mentions: reel.mentions
           ? reel.mentions.map((mention) => {
               return mention.userMentioned.username;

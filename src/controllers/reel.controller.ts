@@ -59,7 +59,7 @@ export const getTimelineReels = catchAsync(
 
     res.status(201).json({
       status: true,
-      message: 'Tweets fetched successfully',
+      message: 'Reels fetched successfully',
       data: { timelineReels },
     });
   }

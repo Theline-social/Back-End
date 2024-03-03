@@ -2,7 +2,7 @@ import { In, Not } from 'typeorm';
 import * as fs from 'fs';
 import { AppError, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
-import { Reel, ReelMention, ReelType, Topic, User } from '../entities';
+import { Reel, ReelMention, Topic, ReelType, User } from '../entities';
 import socketService from './socket.service';
 
 export class ReelsService {
@@ -29,14 +29,35 @@ export class ReelsService {
     const reelsOfFollowings = await reelRepository.find({
       where: {
         reeler: { userId: In([...followingsIds]) },
-        type: In([ReelType.Reel, ReelType.ReReel]),
+        type: In([ReelType.Reel, ReelType.Repost, ReelType.Quote]),
       },
       select: {
         reelUrl: true,
         reelId: true,
+
         content: true,
         createdAt: true,
         type: true,
+        rereelTo: {
+          reelUrl: true,
+          reelId: true,
+
+          content: true,
+          createdAt: true,
+          type: true,
+          reeler: {
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+            userId: true,
+            bio: true,
+          },
+          mentions: {
+            mentionedAt: true,
+            userMentioned: { username: true },
+          },
+        },
         reeler: {
           username: true,
           jobtitle: true,
@@ -58,7 +79,22 @@ export class ReelsService {
         rereels: true,
       },
       relations: {
+        rereelTo: {
+          supportedTopics: true,
+          replies: true,
+          reacts: true,
+          rereels: { reeler: true },
+          bookmarkedBy: true,
+          reeler: {
+            followers: true,
+            following: true,
+            blocked: true,
+            muted: true,
+          },
+          mentions: { userMentioned: true },
+        },
         supportedTopics: true,
+
         replies: true,
         reacts: true,
         reeler: {
@@ -79,14 +115,36 @@ export class ReelsService {
     const randomReels = await reelRepository.find({
       where: {
         reeler: { userId: Not(In([...followingsIds])) },
-        type: In([ReelType.Reel, ReelType.ReReel]),
+        type: In([ReelType.Reel, ReelType.Repost, ReelType.Quote]),
       },
       select: {
         reelUrl: true,
         reelId: true,
+
         content: true,
         createdAt: true,
         type: true,
+        rereelTo: {
+          reelUrl: true,
+          reelId: true,
+
+          content: true,
+          createdAt: true,
+          type: true,
+          reeler: {
+            username: true,
+            jobtitle: true,
+            name: true,
+            imageUrl: true,
+            userId: true,
+            bio: true,
+          },
+
+          mentions: {
+            mentionedAt: true,
+            userMentioned: { username: true },
+          },
+        },
         reeler: {
           username: true,
           jobtitle: true,
@@ -108,9 +166,22 @@ export class ReelsService {
         rereels: true,
       },
       relations: {
-        supportedTopics: true,
         replies: true,
         reacts: true,
+        rereelTo: {
+          replies: true,
+          reacts: true,
+          rereels: { reeler: true },
+          bookmarkedBy: true,
+          reeler: {
+            followers: true,
+            following: true,
+            blocked: true,
+            muted: true,
+          },
+          mentions: { userMentioned: true },
+          supportedTopics: true,
+        },
         reeler: {
           followers: true,
           following: true,
@@ -120,6 +191,7 @@ export class ReelsService {
         rereels: { reeler: true },
         bookmarkedBy: true,
         mentions: { userMentioned: true },
+        supportedTopics: true,
       },
       order: {
         createdAt: 'DESC',
@@ -134,7 +206,6 @@ export class ReelsService {
         content: reel.content,
         createdAt: reel.createdAt,
         type: reel.type,
-        topics: reel.supportedTopics,
         reeler: {
           userId: reel.reeler.userId,
           imageUrl: reel.reeler.imageUrl,
@@ -147,6 +218,51 @@ export class ReelsService {
           isMuted: reel.reeler.muted.some((user) => user.userId === userId),
           isBlocked: reel.reeler.blocked.some((user) => user.userId === userId),
         },
+        originalReeler: reel.rereelTo
+          ? {
+              userId: reel.rereelTo.reeler.userId,
+              imageUrl: reel.rereelTo.reeler.imageUrl,
+              username: reel.rereelTo.reeler.username,
+              jobtitle: reel.rereelTo.reeler.jobtitle,
+              name: reel.rereelTo.reeler.name,
+              bio: reel.rereelTo.reeler.bio,
+              followersCount: reel.rereelTo.reeler.followers.length,
+              followingsCount: reel.rereelTo.reeler.following.length,
+              isMuted: reel.rereelTo.reeler.muted.some(
+                (user) => user.userId === userId
+              ),
+              isBlocked: reel.rereelTo.reeler.blocked.some(
+                (user) => user.userId === userId
+              ),
+            }
+          : {},
+        originalReel: reel.rereelTo
+          ? {
+              reelId: reel.rereelTo.reelId,
+              reelUrl: reel.rereelTo.reelUrl,
+              content: reel.rereelTo.content,
+              createdAt: reel.rereelTo.createdAt,
+              type: reel.rereelTo.type,
+
+              mentions: reel.rereelTo.mentions
+                ? reel.rereelTo.mentions.map(
+                    (mention) => mention.userMentioned.username
+                  )
+                : [],
+              reactCount: reel.rereelTo.reactCount,
+              reReelCount: reel.rereelTo.reReelCount,
+              repliesCount: reel.rereelTo.repliesCount,
+              isBookmarked: reel.rereelTo.bookmarkedBy.some(
+                (user) => user.userId === userId
+              ),
+              isReacted: reel.rereelTo.reacts.some(
+                (user) => user.userId === userId
+              ),
+              isRereeled: reel.rereelTo.rereels.some(
+                (rereel) => rereel.reeler.userId === userId
+              ),
+            }
+          : {},
         mentions: reel.mentions
           ? reel.mentions.map((mention) => mention.userMentioned.username)
           : [],
@@ -166,12 +282,19 @@ export class ReelsService {
 
   createReel = async (
     userId: number,
-    body: { content: string; reelUrl: string; topics?: string[] }
+    body: { content: string; reelUrl: string; topics?: string[] },
+    type: ReelType = ReelType.Reel
   ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
     const userRepository = AppDataSource.getRepository(User);
     const topicRepository = AppDataSource.getRepository(Topic);
     const reelMentionRepository = AppDataSource.getRepository(ReelMention);
+
+    if (type == ReelType.Reel && !body.reelUrl)
+      throw new AppError('Must provide a reel vedio', 400);
+
+    if (type == ReelType.Quote && !body.reelUrl && !body.content)
+      throw new AppError('Must provide a reel vedio or a quote', 400);
 
     const supportedtopics = body.topics
       ? await topicRepository.find({
@@ -194,38 +317,42 @@ export class ReelsService {
     reel.reelUrl = body.reelUrl;
     reel.reeler = user;
     reel.supportedTopics = supportedtopics;
+    reel.type = type;
 
     await reelRepository.save(reel);
 
-    let usernames = (body.content.match(usernameRegex) as Array<string>) || [];
+    if (body.content) {
+      let usernames =
+        (body.content.match(usernameRegex) as Array<string>) || [];
 
-    if (!usernames) return { reel };
+      if (!usernames) return { reel };
 
-    usernames = usernames.map((username) => username.replace('@', ''));
+      usernames = usernames.map((username) => username.replace('@', ''));
 
-    const users = await userRepository.find({
-      where: { username: In([...usernames]) },
-    });
+      const users = await userRepository.find({
+        where: { username: In([...usernames]) },
+      });
 
-    let reelMentions: ReelMention[] = [];
+      let reelMentions: ReelMention[] = [];
 
-    reelMentions = users.map((mentioned) => {
-      let newReelMention = new ReelMention();
+      reelMentions = users.map((mentioned) => {
+        let newReelMention = new ReelMention();
 
-      newReelMention.reel = reel;
-      newReelMention.userMakingMention = user;
-      newReelMention.userMentioned = mentioned;
+        newReelMention.reel = reel;
+        newReelMention.userMakingMention = user;
+        newReelMention.userMentioned = mentioned;
 
-      return newReelMention;
-    });
+        return newReelMention;
+      });
 
-    await reelMentionRepository.insert(reelMentions);
+      await reelMentionRepository.insert(reelMentions);
 
-    // for (const username of usernames) {
-    //   await socketService.emitNotification(userId, username, 'MENTION', {
-    //     reelId: reel.reelId,
-    //   });
-    // }
+      // for (const username of usernames) {
+      //   await socketService.emitNotification(userId, username, 'MENTION', {
+      //     reelId: reel.reelId,
+      //   });
+      // }
+    }
 
     return { reel };
   };
@@ -529,7 +656,7 @@ export class ReelsService {
     const rereelRepository = AppDataSource.getRepository(Reel);
 
     const rereels = await rereelRepository.find({
-      where: { rereelTo: { reelId } },
+      where: { rereelTo: { reelId }, type: ReelType.Quote },
       select: {
         reeler: {
           email: true,
@@ -541,9 +668,11 @@ export class ReelsService {
           bio: true,
         },
         rereelTo: {
+          reelId: true,
           content: true,
           createdAt: true,
           reelUrl: true,
+
           reeler: {
             email: true,
             username: true,
@@ -557,6 +686,9 @@ export class ReelsService {
         content: true,
         createdAt: true,
         reelId: true,
+
+        reelUrl: true,
+        type: true,
         mentions: {
           mentionedAt: true,
           userMentioned: { username: true },
@@ -576,7 +708,7 @@ export class ReelsService {
           name: true,
           imageUrl: true,
         },
-        rereels: { reeler: { userId: true } },
+        rereels: true,
       },
       relations: {
         reeler: {
@@ -586,7 +718,6 @@ export class ReelsService {
           muted: true,
         },
         rereelTo: {
-          supportedTopics: true,
           reeler: {
             followers: true,
             following: true,
@@ -599,72 +730,41 @@ export class ReelsService {
         rereels: { reeler: true },
         bookmarkedBy: true,
         mentions: { userMentioned: true },
-        supportedTopics: true,
       },
     });
 
     return {
       rereels: rereels.map((rereel) => {
-        const isBookmarked = rereel.bookmarkedBy.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isRereeled = rereel.rereels.some(
-          (rereel: Reel) => rereel.reeler.userId === userId
-        );
-
-        const isReacted = rereel.reacts.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isReReelerBlocked = rereel.reeler.blocked.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isReReelerMuted = rereel.reeler.muted.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isReReelerFollowed = rereel.reeler.followers.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isBlocked = rereel.rereelTo.reeler.blocked.some(
-          (user: User) => user.userId === userId
-        );
-        const isMuted = rereel.rereelTo.reeler.muted.some(
-          (user: User) => user.userId === userId
-        );
-        const isFollowed = rereel.rereelTo.reeler.followers.some(
-          (user: User) => user.userId === userId
-        );
-
         return {
           rereelId: rereel.reelId,
           createdAt: rereel.createdAt,
           content: rereel.content,
           type: rereel.type,
-          topics: rereel.supportedTopics,
-          isBookmarked,
-          isReacted,
-          isRereeled,
+          reelUrl: rereel.reelUrl,
+          isBookmarked: rereel.bookmarkedBy.some(
+            (user: User) => user.userId === userId
+          ),
+          isReacted: rereel.reacts.some((user: User) => user.userId === userId),
+          isRereeled: rereel.rereels.some(
+            (rereel: Reel) => rereel.reeler.userId === userId
+          ),
           reactCount: rereel.reactCount,
           reReelCount: rereel.reReelCount,
           repliesCount: rereel.repliesCount,
-          reel: {
+          originalReel: {
             reelId: rereel.rereelTo.reelId,
             reelUrl: rereel.rereelTo.reelUrl,
             content: rereel.rereelTo.content,
             createdAt: rereel.rereelTo.createdAt,
             type: rereel.rereelTo.type,
-            topics: rereel.rereelTo.supportedTopics,
+
             mentions: rereel.rereelTo.mentions
               ? rereel.rereelTo.mentions.map((mention) => {
                   return mention.userMentioned.username;
                 })
               : [],
           },
-          reeler: {
+          originalReeler: {
             imageUrl: rereel.rereelTo.reeler.imageUrl,
             username: rereel.rereelTo.reeler.username,
             jobtitle: rereel.rereelTo.reeler.jobtitle,
@@ -672,11 +772,17 @@ export class ReelsService {
             bio: rereel.rereelTo.reeler.bio,
             followersCount: rereel.rereelTo.reeler.followers.length,
             followingsCount: rereel.rereelTo.reeler.following.length,
-            isFollowed: isReReelerFollowed,
-            isMuted: isReReelerMuted,
-            isBlocked: isReReelerBlocked,
+            isFollowed: rereel.reeler.followers.some(
+              (user: User) => user.userId === userId
+            ),
+            isMuted: rereel.reeler.muted.some(
+              (user: User) => user.userId === userId
+            ),
+            isBlocked: rereel.reeler.blocked.some(
+              (user: User) => user.userId === userId
+            ),
           },
-          rereeler: {
+          reeler: {
             imageUrl: rereel.reeler.imageUrl,
             username: rereel.reeler.username,
             jobtitle: rereel.reeler.jobtitle,
@@ -684,9 +790,15 @@ export class ReelsService {
             bio: rereel.reeler.bio,
             followersCount: rereel.reeler.followers.length,
             followingsCount: rereel.reeler.following.length,
-            isFollowed,
-            isMuted,
-            isBlocked,
+            isFollowed: rereel.rereelTo.reeler.followers.some(
+              (user: User) => user.userId === userId
+            ),
+            isMuted: rereel.rereelTo.reeler.muted.some(
+              (user: User) => user.userId === userId
+            ),
+            isBlocked: rereel.rereelTo.reeler.blocked.some(
+              (user: User) => user.userId === userId
+            ),
           },
         };
       }),
@@ -903,23 +1015,34 @@ export class ReelsService {
     const reelRepository = AppDataSource.getRepository(Reel);
     const userRepository = AppDataSource.getRepository(User);
 
+    const type =
+      body.content || body.reelUrl ? ReelType.Quote : ReelType.Repost;
+
     const orgReel = new Reel();
     orgReel.reelId = reelId;
 
-    const user = (await userRepository.findOne({
-      where: { userId },
-      relations: { rereeledReels: true },
-    })) as User;
+    if (type === ReelType.Repost) {
+      const user = (await userRepository.findOne({
+        where: { userId },
+        relations: { reels: { rereelTo: true } },
+      })) as User;
 
-    const { reel } = await this.createReel(userId, body);
+      const reelIdx = user.reels.findIndex(
+        (reel) =>
+          reel.type == ReelType.Repost && reel.rereelTo.reelId === reelId
+      );
+
+      if (reelIdx !== -1) {
+        await this.deleteReel(user.reels[reelIdx].reelId);
+
+        return { rereel: {}, message: 'Repost deleted successfully' };
+      }
+    }
+
+    const { reel } = await this.createReel(userId, body, type);
     reel.rereelTo = orgReel;
-    reel.type = ReelType.ReReel;
-
-    if (!user.rereeledReels) user.rereeledReels = [reel];
-    else user.rereeledReels.push(reel);
 
     await reelRepository.save(reel);
-    await userRepository.save(user);
 
     return {
       rereel: {
@@ -930,6 +1053,7 @@ export class ReelsService {
           reelId,
         },
       },
+      message: `${type} added successfully`,
     };
   };
 

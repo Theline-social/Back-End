@@ -968,7 +968,7 @@ export class TweetsService {
           reactCount: retweet.reactCount,
           reTweetCount: retweet.reTweetCount,
           repliesCount: retweet.repliesCount,
-          tweet: {
+          originalTweet: {
             tweetId: retweet.retweetTo.tweetId,
             gifUrl: retweet.retweetTo.gifUrl,
             imageUrls: retweet.retweetTo.imageUrls,

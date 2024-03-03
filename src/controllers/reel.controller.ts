@@ -179,7 +179,7 @@ export const addReelReply = catchAsync(
       req.body
     );
 
-    res.status(200).json({
+    res.status(201).json({
       status: true,
       message: 'Reel reply added successfully',
       data: { reelReply },
@@ -204,15 +204,15 @@ export const addRereel = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { rereel } = await reelsService.addRereel(
+    const { rereel , message} = await reelsService.addRereel(
       +userId,
       +req.params.reelId,
       req.body
     );
 
-    res.status(200).json({
+    res.status(201).json({
       status: true,
-      message: 'Rereel added successfully',
+      message,
       data: { rereel },
     });
   }

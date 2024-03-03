@@ -52,11 +52,6 @@ export class Tweet {
   @ManyToOne(() => Tweet, (tweet) => tweet.retweets, { onDelete: 'CASCADE' })
   retweetTo: Tweet;
 
-  @ManyToMany(() => User, (user) => user.retweetedTweets, {
-    onDelete: 'CASCADE',
-  })
-  retweetedBy: User[];
-
   @ManyToOne(() => Tweet, (tweet) => tweet.replies, {
     onDelete: 'CASCADE',
     nullable: true,

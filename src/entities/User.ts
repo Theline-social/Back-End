@@ -108,14 +108,6 @@ export class User {
   @OneToMany(() => Reel, (reel) => reel.reeler)
   reels: Reel[];
 
-  @ManyToMany(() => Tweet, (tweet) => tweet.retweetedBy)
-  @JoinTable()
-  retweetedTweets: Tweet[];
-
-  @ManyToMany(() => Reel, (reel) => reel.rereelBy)
-  @JoinTable()
-  rereeledReels: Reel[];
-
   @ManyToMany(() => User, (user) => user.following)
   followers: User[];
 

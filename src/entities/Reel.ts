@@ -4,7 +4,6 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
-  UpdateDateColumn,
   OneToMany,
   ManyToMany,
   JoinTable,
@@ -16,7 +15,8 @@ import { Topic } from './Topic';
 export enum ReelType {
   Reel = 'Reel',
   Reply = 'Reply',
-  ReReel = 'ReReel',
+  Repost = 'Repost',
+  Quote = 'Quote',
 }
 
 @Entity()
@@ -24,10 +24,10 @@ export class Reel {
   @PrimaryGeneratedColumn()
   reelId: number;
 
-  @Column({ type: 'varchar', length: 200 })
+  @Column({ type: 'varchar', length: 200, nullable  :true })
   content: string;
 
-  @Column({ type: 'varchar',nullable: true  })
+  @Column({ type: 'varchar', nullable: true })
   reelUrl: string;
 
   @CreateDateColumn({
@@ -56,11 +56,8 @@ export class Reel {
   @OneToMany(() => Reel, (reel) => reel.rereelTo, { onDelete: 'CASCADE' })
   rereels: Reel[];
 
-  @ManyToOne(() => Reel, (reel) => reel.rereels,{ onDelete: 'CASCADE' })
+  @ManyToOne(() => Reel, (reel) => reel.rereels, { onDelete: 'CASCADE' })
   rereelTo: Reel;
-
-  @ManyToMany(() => User, (user) => user.rereeledReels, { onDelete: 'CASCADE' })
-  rereelBy: User[];
 
   @ManyToOne(() => Reel, (reel) => reel.replies, {
     onDelete: 'CASCADE',

@@ -11,7 +11,8 @@ export class ReelsService {
   getTimelineReels = async (
     userId: number,
     page: number = 1,
-    limit: number = 30
+    limit: number = 30,
+    lang: string = 'ar'
   ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
     const userRepository = AppDataSource.getRepository(User);
@@ -34,17 +35,17 @@ export class ReelsService {
       select: {
         reelUrl: true,
         reelId: true,
-
+        supportedTopics: true,
         content: true,
         createdAt: true,
         type: true,
         rereelTo: {
           reelUrl: true,
           reelId: true,
-
           content: true,
           createdAt: true,
           type: true,
+          supportedTopics: true,
           reeler: {
             username: true,
             jobtitle: true,
@@ -124,13 +125,14 @@ export class ReelsService {
         content: true,
         createdAt: true,
         type: true,
+        supportedTopics: true,
         rereelTo: {
           reelUrl: true,
           reelId: true,
-
           content: true,
           createdAt: true,
           type: true,
+          supportedTopics: true,
           reeler: {
             username: true,
             jobtitle: true,
@@ -206,6 +208,13 @@ export class ReelsService {
         content: reel.content,
         createdAt: reel.createdAt,
         type: reel.type,
+        topics: reel.supportedTopics.map((topic) => {
+          return {
+            topic: lang === 'ar' ? topic.topic_ar : topic.topic_en,
+            description:
+              lang === 'ar' ? topic.description_ar : topic.description_en,
+          };
+        }),
         reeler: {
           userId: reel.reeler.userId,
           imageUrl: reel.reeler.imageUrl,
@@ -243,7 +252,13 @@ export class ReelsService {
               content: reel.rereelTo.content,
               createdAt: reel.rereelTo.createdAt,
               type: reel.rereelTo.type,
-
+              topics: reel.rereelTo.supportedTopics.map((topic) => {
+                return {
+                  topic: lang === 'ar' ? topic.topic_ar : topic.topic_en,
+                  description:
+                    lang === 'ar' ? topic.description_ar : topic.description_en,
+                };
+              }),
               mentions: reel.rereelTo.mentions
                 ? reel.rereelTo.mentions.map(
                     (mention) => mention.userMentioned.username
@@ -282,7 +297,7 @@ export class ReelsService {
 
   createReel = async (
     userId: number,
-    body: { content: string; reelUrl: string; topics?: string[] },
+    body: { content: string; reelUrl?: string; topics?: string[] },
     type: ReelType = ReelType.Reel
   ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
@@ -290,11 +305,11 @@ export class ReelsService {
     const topicRepository = AppDataSource.getRepository(Topic);
     const reelMentionRepository = AppDataSource.getRepository(ReelMention);
 
-    if (type == ReelType.Reel && !body.reelUrl)
-      throw new AppError('Must provide a reel vedio', 400);
+    if (type == ReelType.Reel && (!body.reelUrl || !body.topics))
+      throw new AppError('Must provide a reel vedio and topic', 400);
 
-    if (type == ReelType.Quote && !body.reelUrl && !body.content)
-      throw new AppError('Must provide a reel vedio or a quote', 400);
+    if (type == ReelType.Quote && !body.content)
+      throw new AppError('Must provide a quote', 400);
 
     const supportedtopics = body.topics
       ? await topicRepository.find({
@@ -314,7 +329,7 @@ export class ReelsService {
 
     const reel = new Reel();
     reel.content = body.content;
-    reel.reelUrl = body.reelUrl;
+    if (body.reelUrl) reel.reelUrl = body.reelUrl;
     reel.reeler = user;
     reel.supportedTopics = supportedtopics;
     reel.type = type;
@@ -370,7 +385,7 @@ export class ReelsService {
         content: reel.content,
         createdAt: reel.createdAt,
         type: reel.type,
-        topics: reel.supportedTopics,
+        topics: Array.isArray(body.topics) ? body.topics : [body.topics],
         mentions: reel.mentions
           ? reel.mentions.map((mention) => {
               return mention.userMentioned.username;
@@ -652,7 +667,11 @@ export class ReelsService {
     };
   };
 
-  getReelReReels = async (userId: number, reelId: number) => {
+  getReelReReels = async (
+    userId: number,
+    reelId: number,
+    lang: string = 'ar'
+  ) => {
     const rereelRepository = AppDataSource.getRepository(Reel);
 
     const rereels = await rereelRepository.find({
@@ -726,12 +745,14 @@ export class ReelsService {
             blocked: true,
             muted: true,
           },
+          supportedTopics: true,
         },
         replies: true,
         reacts: true,
         rereels: { reeler: true },
         bookmarkedBy: true,
         mentions: { userMentioned: true },
+        supportedTopics: true,
       },
     });
 
@@ -759,7 +780,13 @@ export class ReelsService {
             content: rereel.rereelTo.content,
             createdAt: rereel.rereelTo.createdAt,
             type: rereel.rereelTo.type,
-
+            topics: rereel.rereelTo.supportedTopics.map((topic) => {
+              return {
+                topic: lang === 'ar' ? topic.topic_ar : topic.topic_en,
+                description:
+                  lang === 'ar' ? topic.description_ar : topic.description_en,
+              };
+            }),
             mentions: rereel.rereelTo.mentions
               ? rereel.rereelTo.mentions.map((mention) => {
                   return mention.userMentioned.username;
@@ -871,6 +898,7 @@ export class ReelsService {
         reelUrl: true,
         content: true,
         createdAt: true,
+        supportedTopics: true,
         reeler: {
           username: true,
           jobtitle: true,
@@ -939,7 +967,7 @@ export class ReelsService {
     };
   };
 
-  getReel = async (userId: number, reelId: number) => {
+  getReel = async (userId: number, reelId: number, lang: string = 'ar') => {
     const {
       reel,
       isBlocked,
@@ -957,7 +985,13 @@ export class ReelsService {
         content: reel.content,
         createdAt: reel.createdAt,
         type: reel.type,
-        topics: reel.supportedTopics,
+        topics: reel.supportedTopics.map((topic) => {
+          return {
+            topic: lang === 'ar' ? topic.topic_ar : topic.topic_en,
+            description:
+              lang === 'ar' ? topic.description_ar : topic.description_en,
+          };
+        }),
 
         reeler: {
           imageUrl: reel.reeler.imageUrl,
@@ -1012,13 +1046,12 @@ export class ReelsService {
   addRereel = async (
     userId: number,
     reelId: number,
-    body: { content: string; topics?: string[]; reelUrl: string }
+    body: { content: string }
   ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
     const userRepository = AppDataSource.getRepository(User);
 
-    const type =
-      body.content || body.reelUrl ? ReelType.Quote : ReelType.Repost;
+    const type = body.content ? ReelType.Quote : ReelType.Repost;
 
     const orgReel = new Reel();
     orgReel.reelId = reelId;

@@ -461,7 +461,6 @@ router
     authController.requireAuth,
     reelIdParamsValidation,
     validateRequest,
-    reelsController.uploadReel,
     reelsController.addRereel
   );
 

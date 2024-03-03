@@ -34,15 +34,15 @@ export const processTweetMedia = async (
 
       await Promise.all(
         images.map(async (image: Express.Multer.File, i: number) => {
-          const fileName = `/tweets/tweet-${Date.now()}-${i + 1}.jpeg`;
+          const fileName = `tweet-${Date.now()}-${i + 1}.jpeg`;
 
           await sharp(image.buffer)
             .toFormat('jpeg')
             .jpeg({ quality: 90 })
             .toFile(
               process.env.NODE_ENV !== 'production'
-                ? `${process.env.DEV_MEDIA_PATH}${fileName}`
-                : `${process.env.PROD_MEDIA_PATH}${fileName}`
+                ? `${process.env.DEV_MEDIA_PATH}/tweets/${fileName}`
+                : `${process.env.PROD_MEDIA_PATH}/tweets/${fileName}`
             );
 
           imageUrls.push(fileName);
@@ -57,7 +57,7 @@ export const processTweetMedia = async (
     ] as Express.Multer.File[];
 
     if (gif) {
-      const gifUrl = `/tweets/gif-${
+      const gifUrl = `gif-${
         Date.now() + '-' + Math.round(Math.random() * 1e9)
       }.gif`;
 
@@ -65,8 +65,8 @@ export const processTweetMedia = async (
         .toFormat('gif')
         .toFile(
           process.env.NODE_ENV !== 'production'
-            ? `${process.env.DEV_MEDIA_PATH}${gifUrl}`
-            : `${process.env.PROD_MEDIA_PATH}${gifUrl}`
+            ? `${process.env.DEV_MEDIA_PATH}/tweets/${gifUrl}`
+            : `${process.env.PROD_MEDIA_PATH}/tweets/${gifUrl}`
         );
 
       req.body.gifUrl = gifUrl;

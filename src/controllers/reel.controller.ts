@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    req.body.reelUrl = `/reels/reel-${uniqueSuffix}.mp4`;
+    req.body.reelUrl = `reel-${uniqueSuffix}.mp4`;
 
     cb(null, `reel-${uniqueSuffix}.mp4`);
   },
@@ -48,13 +48,15 @@ export const uploadReel = upload.single('reel');
 export const getTimelineReels = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
+    const lang = req.headers['accept-language'] as string;
 
     const { page, limit } = req.query;
 
     const { timelineReels } = await reelsService.getTimelineReels(
       userId,
       +(page as string),
-      +(limit as string)
+      +(limit as string),
+      lang,
     );
 
     res.status(201).json({
@@ -141,10 +143,12 @@ export const getReelReacters = catchAsync(
 export const getReelReReels = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
+    const lang = req.headers['accept-language'] as string;
 
     const { rereels } = await reelsService.getReelReReels(
       +userId,
-      +req.params.reelId
+      +req.params.reelId,
+      lang
     );
 
     res.status(200).json({
@@ -157,8 +161,9 @@ export const getReelReReels = catchAsync(
 export const getReel = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
+    const lang = req.headers['accept-language'] as string;
 
-    const { reel } = await reelsService.getReel(+userId, +req.params.reelId);
+    const { reel } = await reelsService.getReel(+userId, +req.params.reelId, lang);
 
     res.status(200).json({
       status: true,

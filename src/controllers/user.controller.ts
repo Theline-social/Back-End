@@ -43,14 +43,14 @@ export const resizePhoto = async (
     .jpeg({ quality: 90 })
     .toFile(
       process.env.NODE_ENV !== 'production'
-        ? `F:/MyRepos/Back-End-SM-Mostaql/assets/users/user-${uniqueSuffix}.jpeg`
-        : `/home/TheLine/Back-End/assets/users/user-${uniqueSuffix}.jpeg`
+        ? `${process.env.DEV_MEDIA_PATH}/users/user-${uniqueSuffix}.jpeg`
+        : `${process.env.PROD_MEDIA_PATH}/users/user-${uniqueSuffix}.jpeg`
     );
 
   await AppDataSource.getRepository(User).update(
     { userId },
     {
-      imageUrl: `/users/user-${uniqueSuffix}.jpeg`,
+      imageUrl: `user-${uniqueSuffix}.jpeg`,
     }
   );
 
@@ -58,7 +58,7 @@ export const resizePhoto = async (
     status: 200,
     message: 'Photo Uploaded Successfully',
     data: {
-      imageUrl: `/users/user-${uniqueSuffix}.jpeg`,
+      imageUrl: `user-${uniqueSuffix}.jpeg`,
     },
   });
 };

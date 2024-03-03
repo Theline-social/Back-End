@@ -912,14 +912,14 @@ export class TweetsService {
           username: true,
           jobtitle: true,
           name: true,
-          imageUrl: true,
+          imageUrl: true,userId:true
         },
         bookmarkedBy: {
           email: true,
           username: true,
           jobtitle: true,
           name: true,
-          imageUrl: true,
+          imageUrl: true,userId:true
         },
         retweets: true,
       },

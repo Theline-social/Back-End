@@ -700,6 +700,7 @@ export class ReelsService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
         bookmarkedBy: {
           email: true,
@@ -707,6 +708,7 @@ export class ReelsService {
           jobtitle: true,
           name: true,
           imageUrl: true,
+          userId: true,
         },
         rereels: true,
       },

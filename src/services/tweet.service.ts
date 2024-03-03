@@ -624,15 +624,15 @@ export class TweetsService {
     if (tweet.imageUrls && tweet.imageUrls.length > 0) {
       tweet.imageUrls.forEach((imageUrl) => {
         process.env.NODE_ENV !== 'production'
-          ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}${imageUrl}`)
-          : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}${imageUrl}`);
+          ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/tweets/${imageUrl}`)
+          : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}/tweets/${imageUrl}`);
       });
     }
 
     if (tweet.gifUrl) {
       process.env.NODE_ENV !== 'production'
-        ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}${tweet.gifUrl}`)
-        : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}${tweet.gifUrl}`);
+        ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/tweets/${tweet.gifUrl}`)
+        : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}/tweets/${tweet.gifUrl}`);
     }
 
     await tweetRepository.delete({ tweetId });

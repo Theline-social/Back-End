@@ -461,8 +461,8 @@ export class ReelsService {
 
     if (reel.reelUrl) {
       process.env.NODE_ENV !== 'production'
-        ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}${reel.reelUrl}`)
-        : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}${reel.reelUrl}`);
+        ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/reels/${reel.reelUrl}`)
+        : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}/reels/${reel.reelUrl}`);
     }
 
     await reelRepository.delete({ reelId });

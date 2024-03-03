@@ -6,6 +6,7 @@ import { Tweet, TweetMention, TweetType, User } from '../entities';
 import * as fs from 'fs';
 
 import socketService from './socket.service';
+import { TweetMedia } from '../entities/Media';
 
 export class TweetsService {
   constructor() {}
@@ -34,16 +35,14 @@ export class TweetsService {
         type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
       },
       select: {
-        imageUrls: true,
         tweetId: true,
-        gifUrl: true,
+        media: { url: true },
         content: true,
         createdAt: true,
         type: true,
         retweetTo: {
-          imageUrls: true,
           tweetId: true,
-          gifUrl: true,
+          media: true,
           content: true,
           createdAt: true,
           type: true,
@@ -114,6 +113,7 @@ export class TweetsService {
       },
       relations: {
         retweetTo: {
+          media: true,
           replies: true,
           reacts: true,
           retweets: { tweeter: true },
@@ -127,6 +127,7 @@ export class TweetsService {
           mentions: { userMentioned: true },
           poll: { options: { voters: true } },
         },
+        media: true,
         replies: true,
         reacts: true,
         tweeter: {
@@ -151,16 +152,14 @@ export class TweetsService {
         type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
       },
       select: {
-        imageUrls: true,
         tweetId: true,
-        gifUrl: true,
+        media: { url: true },
         content: true,
         createdAt: true,
         type: true,
         retweetTo: {
-          imageUrls: true,
           tweetId: true,
-          gifUrl: true,
+          media: true,
           content: true,
           createdAt: true,
           type: true,
@@ -230,9 +229,11 @@ export class TweetsService {
         },
       },
       relations: {
+        media: true,
         replies: true,
         reacts: true,
         retweetTo: {
+          media: true,
           replies: true,
           reacts: true,
           retweets: { tweeter: true },
@@ -266,8 +267,7 @@ export class TweetsService {
     const timelineTweets = [...tweetsOfFollowings, ...randomTweets].map(
       (tweet) => ({
         tweetId: tweet.tweetId,
-        gifUrl: tweet.gifUrl,
-        imageUrls: tweet.imageUrls,
+        media: tweet.media,
         content: tweet.content,
         createdAt: tweet.createdAt,
         type: tweet.type,
@@ -319,8 +319,7 @@ export class TweetsService {
         originalTweet: tweet.retweetTo
           ? {
               tweetId: tweet.retweetTo.tweetId,
-              gifUrl: tweet.retweetTo.gifUrl,
-              imageUrls: tweet.retweetTo.imageUrls,
+              media: tweet.retweetTo.media,
               content: tweet.retweetTo.content,
               createdAt: tweet.retweetTo.createdAt,
               type: tweet.retweetTo.type,
@@ -398,11 +397,25 @@ export class TweetsService {
 
     const tweet = new Tweet();
     tweet.content = body.content;
-    tweet.imageUrls = body.imageUrls || [];
-    tweet.gifUrl = body.gifUrl || '';
     tweet.tweeter = user;
     tweet.type = type;
 
+    let media: TweetMedia[] = [];
+    if (body.imageUrls) {
+      for (const img of body.imageUrls) {
+        const newmedia = new TweetMedia();
+        newmedia.url = img;
+        media.push(newmedia);
+      }
+    }
+
+    if (body.gifUrl) {
+      const newmedia = new TweetMedia();
+      newmedia.url = body.gifUrl;
+      media.push(newmedia);
+    }
+
+    tweet.media = media;
     await tweetRepository.save(tweet);
 
     if (body.content) {
@@ -450,8 +463,8 @@ export class TweetsService {
     return {
       tweet: {
         tweetId: tweet.tweetId,
-        gifUrl: tweet.gifUrl,
-        imageUrls: tweet.imageUrls,
+        media: tweet.media,
+
         content: tweet.content,
         createdAt: tweet.createdAt,
         type: tweet.type,
@@ -496,8 +509,8 @@ export class TweetsService {
       tweetReply: {
         tweetId,
         replyId: tweet.tweetId,
-        gifUrl: tweet.gifUrl,
-        imageUrls: tweet.imageUrls,
+        media: tweet.media,
+
         content: tweet.content,
         createdAt: tweet.createdAt,
         poll: { ...tweet.poll, votesCount: tweet.poll?.totalVoters },
@@ -614,25 +627,19 @@ export class TweetsService {
 
     const tweet = await tweetRepository.findOne({
       where: { tweetId },
-      select: { imageUrls: true, gifUrl: true, tweetId: true },
+      select: { media: true, tweetId: true },
     });
 
     if (!tweet) {
       throw new AppError('Tweet not found', 404);
     }
 
-    if (tweet.imageUrls && tweet.imageUrls.length > 0) {
-      tweet.imageUrls.forEach((imageUrl) => {
+    if (tweet.media.length > 0) {
+      tweet.media.forEach((media) => {
         process.env.NODE_ENV !== 'production'
-          ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/tweets/${imageUrl}`)
-          : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}/tweets/${imageUrl}`);
+          ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/tweets/${media.url}`)
+          : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}/tweets/${media.url}`);
       });
-    }
-
-    if (tweet.gifUrl) {
-      process.env.NODE_ENV !== 'production'
-        ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/tweets/${tweet.gifUrl}`)
-        : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}/tweets/${tweet.gifUrl}`);
     }
 
     await tweetRepository.delete({ tweetId });
@@ -644,9 +651,8 @@ export class TweetsService {
     const replies = await tweetRepository.find({
       where: { replyTo: { tweetId } },
       select: {
-        imageUrls: true,
         tweetId: true,
-        gifUrl: true,
+        media: { url: true },
         content: true,
         createdAt: true,
         tweeter: {
@@ -686,6 +692,7 @@ export class TweetsService {
       },
       relations: {
         replies: {
+          media: true,
           bookmarkedBy: true,
           retweets: true,
           reacts: true,
@@ -697,6 +704,7 @@ export class TweetsService {
             blocked: true,
           },
         },
+        media: true,
         reacts: true,
         tweeter: {
           followers: true,
@@ -716,8 +724,7 @@ export class TweetsService {
         return {
           tweetId,
           replyId: reply.tweetId,
-          gifUrl: reply.gifUrl,
-          imageUrls: reply.imageUrls,
+          media: reply.media,
           content: reply.content,
           createdAt: reply.createdAt,
           type: TweetType.Reply,
@@ -756,8 +763,7 @@ export class TweetsService {
             ? {
                 tweetId,
                 replyId: reply.replies[0].tweetId,
-                gifUrl: reply.replies[0].gifUrl,
-                imageUrls: reply.replies[0].imageUrls,
+                media: reply.replies[0].media,
                 content: reply.replies[0].content,
                 createdAt: reply.replies[0].createdAt,
                 type: TweetType.Reply,
@@ -884,8 +890,8 @@ export class TweetsService {
           tweetId: true,
           content: true,
           createdAt: true,
-          gifUrl: true,
-          imageUrls: true,
+          media: { url: true },
+
           tweeter: {
             email: true,
             username: true,
@@ -899,8 +905,8 @@ export class TweetsService {
         content: true,
         createdAt: true,
         tweetId: true,
-        imageUrls: true,
-        gifUrl: true,
+
+        media: { url: true },
         type: true,
         mentions: {
           mentionedAt: true,
@@ -912,14 +918,16 @@ export class TweetsService {
           username: true,
           jobtitle: true,
           name: true,
-          imageUrl: true,userId:true
+          imageUrl: true,
+          userId: true,
         },
         bookmarkedBy: {
           email: true,
           username: true,
           jobtitle: true,
           name: true,
-          imageUrl: true,userId:true
+          imageUrl: true,
+          userId: true,
         },
         retweets: true,
       },
@@ -931,6 +939,7 @@ export class TweetsService {
           muted: true,
         },
         retweetTo: {
+          media: true,
           tweeter: {
             followers: true,
             following: true,
@@ -939,6 +948,7 @@ export class TweetsService {
           },
           poll: { options: { voters: true } },
         },
+        media: true,
         replies: true,
         reacts: true,
         retweets: { tweeter: true },
@@ -954,8 +964,7 @@ export class TweetsService {
           createdAt: retweet.createdAt,
           content: retweet.content,
           type: retweet.type,
-          imageUrls: retweet.imageUrls,
-          gifUrl: retweet.gifUrl,
+          media: retweet.media,
           isBookmarked: retweet.bookmarkedBy.some(
             (user: User) => user.userId === userId
           ),
@@ -970,8 +979,7 @@ export class TweetsService {
           repliesCount: retweet.repliesCount,
           originalTweet: {
             tweetId: retweet.retweetTo.tweetId,
-            gifUrl: retweet.retweetTo.gifUrl,
-            imageUrls: retweet.retweetTo.imageUrls,
+            media: retweet.retweetTo.media,
             content: retweet.retweetTo.content,
             createdAt: retweet.retweetTo.createdAt,
             type: retweet.retweetTo.type,
@@ -1096,9 +1104,8 @@ export class TweetsService {
     const tweet = await tweetRepository.findOne({
       where: { tweetId },
       select: {
-        imageUrls: true,
         tweetId: true,
-        gifUrl: true,
+        media: { url: true },
         content: true,
         createdAt: true,
         tweeter: {
@@ -1137,6 +1144,7 @@ export class TweetsService {
         },
       },
       relations: {
+        media: true,
         replies: true,
         reacts: true,
         tweeter: {
@@ -1198,8 +1206,8 @@ export class TweetsService {
     return {
       tweet: {
         tweetId,
-        gifUrl: tweet.gifUrl,
-        imageUrls: tweet.imageUrls,
+        media: tweet.media,
+
         content: tweet.content,
         createdAt: tweet.createdAt,
         type: tweet.type,

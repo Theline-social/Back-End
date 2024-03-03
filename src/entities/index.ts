@@ -10,3 +10,4 @@ export * from './User';
 export * from './Topic';
 export * from './Reel';
 export * from './Poll';
+export * from './Media';

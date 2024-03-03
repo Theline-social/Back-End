@@ -11,7 +11,7 @@ import {
   Topic,
   Reel,
   Poll,
-  PollOption,
+  PollOption,TweetMedia
 } from './entities';
 
 const AppDataSource = new DataSource({
@@ -36,6 +36,7 @@ const AppDataSource = new DataSource({
     Notification,
     Conversation,
     Tweet,
+    TweetMedia,
     OtpCodes,
     TweetMention,
     ReelMention,

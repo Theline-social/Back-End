@@ -12,6 +12,7 @@ import {
 import { User } from './User';
 import { TweetMention } from './TweetMention';
 import { Poll } from './Poll';
+import { TweetMedia } from './Media';
 
 export enum TweetType {
   Tweet = 'Tweet',
@@ -28,12 +29,6 @@ export class Tweet {
   @Column({ type: 'varchar', length: 200, nullable: true })
   content: string;
 
-  @Column({ type: 'varchar', array: true, length: 200, nullable: true })
-  imageUrls: string[];
-
-  @Column({ type: 'varchar', length: 200, nullable: true })
-  gifUrl: string;
-
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
@@ -42,6 +37,13 @@ export class Tweet {
 
   @Column({ type: 'enum', enum: TweetType, default: TweetType.Tweet })
   type: TweetType;
+
+  @OneToMany(() => TweetMedia, (media) => media.tweet, {
+    cascade: true,
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  media: TweetMedia[];
 
   @ManyToOne(() => User, (user) => user.tweets, { onDelete: 'CASCADE' })
   tweeter: User;

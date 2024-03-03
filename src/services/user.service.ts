@@ -157,9 +157,8 @@ export class UsersService {
       select: {
         tweetBookmarks: {
           content: true,
-          gifUrl: true,
+          media: true,
           createdAt: true,
-          imageUrls: true,
           tweeter: {
             email: true,
             username: true,
@@ -205,6 +204,7 @@ export class UsersService {
       },
       relations: {
         tweetBookmarks: {
+          media: true,
           tweeter: true,
           mentions: { userMentioned: true },
           reacts: true,
@@ -242,9 +242,8 @@ export class UsersService {
       select: {
         tweet: {
           content: true,
-          gifUrl: true,
+          media: true,
           createdAt: true,
-          imageUrls: true,
           tweeter: {
             email: true,
             username: true,
@@ -290,6 +289,7 @@ export class UsersService {
       },
       relations: {
         tweet: {
+          media: true,
           tweeter: true,
           reacts: true,
           bookmarkedBy: true,

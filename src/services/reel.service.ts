@@ -378,9 +378,7 @@ export class ReelsService {
   ) => {
     body.topics = Array.isArray(body.topics) ? [...body.topics] : [body.topics];
 
-    if (!body.topics) throw new AppError('No topics specified', 400);
-
-    const { reel } = await this.createReel(userId, body);
+    const { reel } = await this.createReel(userId, body, ReelType.Reel);
 
     return {
       reel: {

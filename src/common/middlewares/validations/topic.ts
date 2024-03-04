@@ -32,9 +32,8 @@ export const topicIdParamsValidation = [
 export const topicParamsValidation = [
   param('topic')
     .exists()
-    .toInt()
-    .custom(async (tweetId) => {
-      const exists = await topicsService.existsbyTopicName(tweetId);
+    .custom(async (topic) => {
+      const exists = await topicsService.existsbyTopicName(topic);
       if (!exists) {
         throw new Error('topic does not exist');
       }

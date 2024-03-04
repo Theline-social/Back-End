@@ -1,6 +1,7 @@
 import express, { Router } from 'express';
 import * as topicsController from '../controllers/topic.controller';
 import * as authController from '../controllers/auth.controller';
+import { topicParamsValidation } from '../common';
 
 const router: Router = express.Router();
 
@@ -37,7 +38,7 @@ const router: Router = express.Router();
  *               topic_ar:
  *                 type: string
  *               topic_en:
- *                 type: string 
+ *                 type: string
  *               description_ar:
  *                 type: string
  *               description_en:
@@ -60,31 +61,6 @@ router
 /**
  * @swagger
  * /topics/{topic}:
- *   get:
- *     summary: Get reels for a topic
- *     description: Retrieves reels for a specific topic.
- *     security:
- *       - jwt: []
- *     tags: [topics]
- *     parameters:
- *       - in: path
- *         name: topic
- *         description: The name of the topic.
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       '200':
- *         description: OK. Reels for the topic successfully retrieved.
- *       '400':
- *         description: Bad Request. Invalid request parameters.
- *       '401':
- *         description: Unauthorized. User authentication failed.
- *       '404':
- *         description: Not Found. Topic not found.
- *       '500':
- *         description: Internal Server Error. Failed to retrieve reels.
- *
  *   delete:
  *     summary: Delete a topic
  *     description: Deletes a topic.
@@ -112,7 +88,43 @@ router
  */
 router
   .route('/:topic')
-  .get(authController.requireAuth, topicsController.getTopicReels)
   .delete(authController.requireAuth, topicsController.deleteTopic);
+
+/**
+ * @swagger
+ * /topics/{topic}/reels:
+ *   get:
+ *     summary: Get reels for a topic
+ *     description: Retrieves reels for a specific topic.
+ *     security:
+ *       - jwt: []
+ *     tags: [topics]
+ *     parameters:
+ *       - in: path
+ *         name: topic
+ *         description: The name of the topic.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK. Reels for the topic successfully retrieved.
+ *       '400':
+ *         description: Bad Request. Invalid request parameters.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '404':
+ *         description: Not Found. Topic not found.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve reels.
+ *
+ */
+router
+  .route('/:topic/reels')
+  .get(
+    authController.requireAuth,
+    topicParamsValidation,
+    topicsController.getTopicReels
+  );
 
 export { router as topicsRouter };

@@ -1,4 +1,9 @@
 import { AddTopicBody } from '../common';
+import { filterReel } from '../common/filters/reels/filterReel';
+import {
+  reelRelations,
+  reelSelectOptions,
+} from '../common/filters/reels/reelSelectOptions';
 import { AppDataSource } from '../dataSource';
 import { Topic, User } from '../entities';
 
@@ -49,29 +54,20 @@ export class TopicsService {
     });
   };
 
-  getTopicReels = async (userId: number, topicName: string) => {
+  getTopicReels = async (
+    userId: number,
+    topicName: string,
+    lang: string = 'ar'
+  ) => {
     const topicRepository = AppDataSource.getRepository(Topic);
 
     const topic = await topicRepository.findOne({
-      where: [{ topic_ar: topicName }, { topic_en: topicName }],
+      where: lang === 'ar' ? { topic_ar: topicName } : { topic_en: topicName },
       select: {
-        supportingReels: {
-          reacts: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-        },
+        supportingReels: reelSelectOptions,
       },
       relations: {
-        supportingReels: {
-          bookmarkedBy: true,
-          reacts: true,
-          rereels: true,
-          replies: true,
-        },
+        supportingReels: reelRelations,
       },
     });
 
@@ -87,25 +83,9 @@ export class TopicsService {
     });
 
     return {
-      supportingreels: sortedReels.map((reel) => {
-        const isBookmarked = reel.bookmarkedBy.some(
-          (user: User) => user.userId === userId
-        );
-
-        const isReacted = reel.reacts.some(
-          (user: User) => user.userId === userId
-        );
-
-        return {
-          ...reel,
-          reactCount: reel.reactCount,
-          reReelCount: reel.reReelCount,
-          bookmarksCount: reel.bookmarksCount,
-          repliesCount: reel.repliesCount,
-          isBookmarked,
-          isReacted,
-        };
-      }),
+      supportingreels: sortedReels.map((reel) =>
+        filterReel(reel, userId, lang)
+      ),
     };
   };
 }

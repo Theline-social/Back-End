@@ -168,8 +168,9 @@ export const getTweetBookmarks = catchAsync(
 export const getReelBookmarks = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
+    const lang = req.headers['accept-language'] as string;
 
-    const { bookmarks } = await usersService.getReelBookmarks(+userId);
+    const { bookmarks } = await usersService.getReelBookmarks(+userId, lang);
 
     res.status(200).json({
       status: true,
@@ -194,8 +195,9 @@ export const getTweetMentions = catchAsync(
 export const getReelMentions = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
+    const lang = req.headers['accept-language'] as string;
 
-    const { mentions } = await usersService.getReelMentions(+userId);
+    const { mentions } = await usersService.getReelMentions(+userId, lang);
 
     res.status(200).json({
       status: true,

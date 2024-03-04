@@ -32,10 +32,12 @@ export const deleteTopic = catchAsync(
 export const getTopicReels = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
+    const lang = req.headers['accept-language'] as string;
 
     const { supportingreels } = await topicsService.getTopicReels(
       userId,
-      req.params.topic
+      req.params.topic,
+      lang
     );
 
     res.status(200).json({

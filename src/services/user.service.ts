@@ -6,6 +6,11 @@ import {
   filterTweet,
   isPhoneValid,
 } from '../common';
+import { filterReel } from '../common/filters/reels/filterReel';
+import {
+  reelRelations,
+  reelSelectOptions,
+} from '../common/filters/reels/reelSelectOptions';
 import {
   tweetRelations,
   tweetSelectOptions,
@@ -182,72 +187,29 @@ export class UsersService {
     };
   };
 
-  getReelBookmarks = async (userId: number) => {
+  getReelBookmarks = async (userId: number, lang: string = 'ar') => {
     const userRepository = AppDataSource.getRepository(User);
 
     const user = await userRepository.findOne({
       where: { userId },
       select: {
-        reelBookmarks: {
-          content: true,
-          reelUrl: true,
-          createdAt: true,
-          reeler: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          mentions: {
-            mentionedAt: true,
-            userMentioned: { username: true },
-          },
-          replies: true,
-          reacts: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          bookmarkedBy: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-        },
+        reelBookmarks: reelSelectOptions,
       },
       relations: {
-        reelBookmarks: {
-          reeler: true,
-          rereels: true,
-          mentions: { userMentioned: true },
-          bookmarkedBy: true,
-          reacts: true,
-          replies: true,
-        },
+        reelBookmarks: reelRelations,
       },
     });
 
     if (!user?.reelBookmarks) return { bookmarks: [] };
 
     return {
-      bookmarks: user.reelBookmarks.map((tweet) => {
-        return {
-          ...tweet,
-          reactCount: tweet.reactCount,
-          reTweetCount: tweet.reReelCount,
-          bookmarksCount: tweet.bookmarksCount,
-          repliesCount: tweet.repliesCount,
-        };
-      }),
+      bookmarks: user.reelBookmarks.map((reel) =>
+        filterReel(reel, userId, lang)
+      ),
     };
   };
 
-  getReelMentions = async (userId: number) => {
+  getReelMentions = async (userId: number, lang: string = 'ar') => {
     const reelMentionRepository = AppDataSource.getRepository(ReelMention);
 
     const user = new User();
@@ -256,60 +218,17 @@ export class UsersService {
     const mentions = await reelMentionRepository.find({
       where: { userMentioned: user },
       select: {
-        reel: {
-          content: true,
-          reelUrl: true,
-          createdAt: true,
-          reeler: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          mentions: {
-            mentionedAt: true,
-            userMentioned: { username: true },
-          },
-          replies: true,
-          reacts: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          bookmarkedBy: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-        },
+        reel: reelSelectOptions,
       },
       relations: {
-        reel: {
-          reeler: true,
-          reacts: true,
-          bookmarkedBy: true,
-          replies: true,
-          mentions: { userMentioned: true },
-          rereels: true,
-        },
+        reel: reelRelations,
       },
     });
 
     return {
-      mentions: mentions.map((mention) => {
-        return {
-          ...mention.reel,
-          reactCount: mention.reel?.reactCount,
-          reTweetCount: mention.reel?.reReelCount,
-          bookmarksCount: mention.reel?.bookmarksCount,
-          repliesCount: mention.reel?.repliesCount,
-        };
-      }),
+      mentions: mentions.map((mention) =>
+        filterReel(mention.reel, userId, lang)
+      ),
     };
   };
 }

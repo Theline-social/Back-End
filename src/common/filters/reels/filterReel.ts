@@ -1,4 +1,5 @@
 import { Reel } from '../../../entities';
+import { FilteredReelDto } from './reelSchemaDto';
 
 export const filterReel = (
   reel: Reel,

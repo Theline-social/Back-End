@@ -1,4 +1,4 @@
-interface FilteredReelDto {
+export interface FilteredReelDto {
   reelId: number;
   reelUrl: string;
   content: string;

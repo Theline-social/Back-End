@@ -37,6 +37,15 @@ export class Poll {
       0
     );
   }
+
+  getVotedOptionByUserId(userId: number): PollOption | undefined {
+    for (const option of this.options) {
+      if (option.voters.some((user) => user.userId === userId)) {
+        return option;
+      }
+    }
+    return undefined;
+  }
 }
 
 @Entity()

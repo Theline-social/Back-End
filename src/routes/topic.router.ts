@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import * as topicsController from '../controllers/topic.controller';
 import * as authController from '../controllers/auth.controller';
-import { topicParamsValidation } from '../common';
+import { topicParamsValidation, validateRequest } from '../common';
 
 const router: Router = express.Router();
 
@@ -124,6 +124,7 @@ router
   .get(
     authController.requireAuth,
     topicParamsValidation,
+    validateRequest,
     topicsController.getTopicReels
   );
 

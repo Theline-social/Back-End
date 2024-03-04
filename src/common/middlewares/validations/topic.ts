@@ -1,5 +1,6 @@
 import { body, param } from 'express-validator';
 import { TopicsService } from '../../../services/topics.service';
+import { AppError } from '../../utils/AppError';
 
 const topicsService = new TopicsService();
 
@@ -33,9 +34,12 @@ export const topicParamsValidation = [
   param('topic')
     .exists()
     .custom(async (topic) => {
+        console.log(topic);
+        
       const exists = await topicsService.existsbyTopicName(topic);
+      
       if (!exists) {
-        throw new Error('topic does not exist');
+        throw new AppError('topic does not exist', 404);
       }
     })
     .withMessage('topic does not exist'),

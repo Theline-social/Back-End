@@ -21,3 +21,5 @@ export * from './middlewares/validations/tweet';
 export * from './middlewares/validations/topic';
 
 export * from './constants/regex';
+
+export * from './filters/tweets/filtertweet';

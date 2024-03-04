@@ -3,8 +3,14 @@ import {
   ChangePasswordBody,
   Password,
   emailRegex,
+  filterTweet,
   isPhoneValid,
 } from '../common';
+import {
+  tweetRelations,
+  tweetSelectOptions,
+} from '../common/filters/tweets/tweetSelectOptions';
+import { userSelectOptions } from '../common/filters/users/userSelectOptions';
 import { AppDataSource } from '../dataSource';
 import { ReelMention, TweetMention, User } from '../entities';
 
@@ -114,14 +120,7 @@ export class UsersService {
     const user = await userRepository.findOne({
       where: { userId },
       select: {
-        followers: {
-          email: true,
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
-        },
+        followers: userSelectOptions,
       },
       relations: { followers: true },
     });
@@ -134,14 +133,7 @@ export class UsersService {
     const user = await userRepository.findOne({
       where: { userId },
       select: {
-        following: {
-          email: true,
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
-        },
+        following: userSelectOptions,
       },
       relations: { following: true },
     });
@@ -155,79 +147,17 @@ export class UsersService {
     const user = await userRepository.findOne({
       where: { userId },
       select: {
-        tweetBookmarks: {
-          content: true,
-          media: true,
-          createdAt: true,
-          tweeter: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          mentions: {
-            mentionedAt: true,
-            userMentioned: { username: true },
-          },
-          replies: true,
-          reacts: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          bookmarkedBy: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          poll: {
-            question: true,
-            length: true,
-            options: {
-              text: true,
-              voters: {
-                userId: true,
-                email: true,
-                username: true,
-                jobtitle: true,
-                name: true,
-                imageUrl: true,
-              },
-            },
-          },
-        },
+        tweetBookmarks: tweetSelectOptions,
       },
       relations: {
-        tweetBookmarks: {
-          media: true,
-          tweeter: true,
-          mentions: { userMentioned: true },
-          reacts: true,
-          bookmarkedBy: true,
-          replies: true,
-          retweets: true,
-          poll: { options: { voters: true } },
-        },
+        tweetBookmarks: tweetRelations,
       },
     });
 
-    if (!user?.reelBookmarks) return { tweetBookmarks: [] };
+    if (!user?.tweetBookmarks) return { bookmarks: [] };
 
     return {
-      bookmarks: user.tweetBookmarks.map((tweet) => {
-        return {
-          ...tweet,
-          reactCount: tweet.reactCount,
-          reTweetCount: tweet.reTweetCount,
-          bookmarksCount: tweet.bookmarksCount,
-          repliesCount: tweet.repliesCount,
-        };
-      }),
+      bookmarks: user.tweetBookmarks.map((tweet) => filterTweet(tweet, userId)),
     };
   };
 
@@ -240,77 +170,15 @@ export class UsersService {
     const mentions = await tweetMentionRepository.find({
       where: { userMentioned: user },
       select: {
-        tweet: {
-          content: true,
-          media: true,
-          createdAt: true,
-          tweeter: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          mentions: {
-            mentionedAt: true,
-            userMentioned: { username: true },
-          },
-          replies: true,
-          reacts: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          bookmarkedBy: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-          },
-          poll: {
-            question: true,
-            length: true,
-            options: {
-              text: true,
-              voters: {
-                userId: true,
-                email: true,
-                username: true,
-                jobtitle: true,
-                name: true,
-                imageUrl: true,
-              },
-            },
-          },
-        },
+        tweet: tweetSelectOptions,
       },
       relations: {
-        tweet: {
-          media: true,
-          tweeter: true,
-          reacts: true,
-          bookmarkedBy: true,
-          mentions: { userMentioned: true },
-          replies: true,
-          retweets: true,
-          poll: { options: { voters: true } },
-        },
+        tweet: tweetRelations,
       },
     });
 
     return {
-      mentions: mentions.map((mention) => {
-        return {
-          ...mention.tweet,
-          reactCount: mention.tweet?.reactCount,
-          reTweetCount: mention.tweet?.reTweetCount,
-          bookmarksCount: mention.tweet?.bookmarksCount,
-          repliesCount: mention.tweet?.repliesCount,
-        };
-      }),
+      mentions: mentions.map((mention) => filterTweet(mention.tweet, userId)),
     };
   };
 

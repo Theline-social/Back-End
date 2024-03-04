@@ -158,4 +158,24 @@ export class User {
   @ManyToMany(() => PollOption, (option) => option.voters)
   @JoinTable()
   votedOptions: PollOption[];
+
+  isMutedBy(userId: number): boolean {
+    return this.muted.some((user) => user.userId === userId);
+  }
+
+  isBlockedBy(userId: number): boolean {
+    return this.blocked.some((user) => user.userId === userId);
+  }
+
+  isFollowedBy(userId: number): boolean {
+    return this.followers.some((user) => user.userId === userId);
+  }
+
+  get followersCount(): number {
+    return this.followers ? this.followers.length : 0;
+  }
+
+  get followingsCount(): number {
+    return this.following ? this.following.length : 0;
+  }
 }

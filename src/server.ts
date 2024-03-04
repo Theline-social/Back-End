@@ -20,6 +20,8 @@ const PORT = process.env.PORT || 2000;
 let server: http.Server | https.Server;
 
 (async () => {
+    console.log(new Date().toISOString());
+    
   try {    
     await AppDataSource.initialize();
     if (AppDataSource.isInitialized) {

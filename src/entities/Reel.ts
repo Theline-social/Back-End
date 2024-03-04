@@ -24,7 +24,7 @@ export class Reel {
   @PrimaryGeneratedColumn()
   reelId: number;
 
-  @Column({ type: 'varchar', length: 200, nullable  :true })
+  @Column({ type: 'varchar', length: 200, nullable: true })
   content: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -90,5 +90,17 @@ export class Reel {
   }
   get reReelCount(): number {
     return this.rereels ? this.rereels.length : 0;
+  }
+
+  isBookmarkedBy(userId: number): boolean {
+    return this.bookmarkedBy.some((user) => user.userId === userId);
+  }
+
+  isRereeledBy(userId: number): boolean {
+    return this.rereels.some((retweet) => retweet.reeler.userId === userId);
+  }
+
+  isReactedBy(userId: number): boolean {
+    return this.reacts.some((user) => user.userId === userId);
   }
 }

@@ -1,5 +1,5 @@
 import { In, Not } from 'typeorm';
-import { AppError, usernameRegex } from '../common';
+import { AppError, filterTweet, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
 import { Poll, PollOption } from '../entities/Poll';
 import { Tweet, TweetMention, TweetType, User } from '../entities';
@@ -7,6 +7,10 @@ import * as fs from 'fs';
 
 import socketService from './socket.service';
 import { TweetMedia } from '../entities/Media';
+import {
+  tweetRelations,
+  tweetSelectOptions,
+} from '../common/filters/tweets/tweetSelectOptions';
 
 export class TweetsService {
   constructor() {}
@@ -34,113 +38,8 @@ export class TweetsService {
         tweeter: { userId: In([...followingsIds]) },
         type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
       },
-      select: {
-        tweetId: true,
-        media: { url: true },
-        content: true,
-        createdAt: true,
-        type: true,
-        retweetTo: {
-          tweetId: true,
-          media: true,
-          content: true,
-          createdAt: true,
-          type: true,
-          tweeter: {
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-            userId: true,
-            bio: true,
-          },
-          poll: {
-            pollId: true,
-            question: true,
-            length: true,
-            options: {
-              optionId: true,
-              text: true,
-              voters: {
-                username: true,
-                jobtitle: true,
-                name: true,
-                imageUrl: true,
-                userId: true,
-              },
-            },
-          },
-          mentions: {
-            mentionedAt: true,
-            userMentioned: { username: true },
-          },
-        },
-        tweeter: {
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
-          bio: true,
-        },
-        mentions: {
-          mentionedAt: true,
-          userMentioned: { username: true },
-        },
-        reacts: {
-          userId: true,
-        },
-        bookmarkedBy: {
-          userId: true,
-        },
-        retweets: true,
-        poll: {
-          pollId: true,
-          question: true,
-          length: true,
-          options: {
-            optionId: true,
-            text: true,
-            voters: {
-              username: true,
-              jobtitle: true,
-              name: true,
-              imageUrl: true,
-              userId: true,
-            },
-          },
-        },
-      },
-      relations: {
-        retweetTo: {
-          media: true,
-          replies: true,
-          reacts: true,
-          retweets: { tweeter: true },
-          bookmarkedBy: true,
-          tweeter: {
-            followers: true,
-            following: true,
-            blocked: true,
-            muted: true,
-          },
-          mentions: { userMentioned: true },
-          poll: { options: { voters: true } },
-        },
-        media: true,
-        replies: true,
-        reacts: true,
-        tweeter: {
-          followers: true,
-          following: true,
-          blocked: true,
-          muted: true,
-        },
-        retweets: { tweeter: true },
-        bookmarkedBy: true,
-        mentions: { userMentioned: true },
-        poll: { options: { voters: true } },
-      },
+      select: tweetSelectOptions,
+      relations: tweetRelations,
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -151,113 +50,8 @@ export class TweetsService {
         tweeter: { userId: Not(In([...followingsIds])) },
         type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
       },
-      select: {
-        tweetId: true,
-        media: { url: true },
-        content: true,
-        createdAt: true,
-        type: true,
-        retweetTo: {
-          tweetId: true,
-          media: true,
-          content: true,
-          createdAt: true,
-          type: true,
-          tweeter: {
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-            userId: true,
-            bio: true,
-          },
-          poll: {
-            pollId: true,
-            question: true,
-            length: true,
-            options: {
-              optionId: true,
-              text: true,
-              voters: {
-                username: true,
-                jobtitle: true,
-                name: true,
-                imageUrl: true,
-                userId: true,
-              },
-            },
-          },
-          mentions: {
-            mentionedAt: true,
-            userMentioned: { username: true },
-          },
-        },
-        tweeter: {
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
-          bio: true,
-        },
-        mentions: {
-          mentionedAt: true,
-          userMentioned: { username: true },
-        },
-        reacts: {
-          userId: true,
-        },
-        bookmarkedBy: {
-          userId: true,
-        },
-        retweets: true,
-        poll: {
-          pollId: true,
-          question: true,
-          length: true,
-          options: {
-            optionId: true,
-            text: true,
-            voters: {
-              username: true,
-              jobtitle: true,
-              name: true,
-              imageUrl: true,
-              userId: true,
-            },
-          },
-        },
-      },
-      relations: {
-        media: true,
-        replies: true,
-        reacts: true,
-        retweetTo: {
-          media: true,
-          replies: true,
-          reacts: true,
-          retweets: { tweeter: true },
-          bookmarkedBy: true,
-          tweeter: {
-            followers: true,
-            following: true,
-            blocked: true,
-            muted: true,
-          },
-          mentions: { userMentioned: true },
-          poll: { options: { voters: true } },
-        },
-        tweeter: {
-          followers: true,
-          following: true,
-          blocked: true,
-          muted: true,
-        },
-        retweets: { tweeter: true },
-        bookmarkedBy: true,
-        mentions: { userMentioned: true },
-        poll: { options: { voters: true } },
-      },
+      select: tweetSelectOptions,
+      relations: tweetRelations,
       order: {
         createdAt: 'DESC',
       },
@@ -265,108 +59,7 @@ export class TweetsService {
     });
 
     const timelineTweets = [...tweetsOfFollowings, ...randomTweets].map(
-      (tweet) => ({
-        tweetId: tweet.tweetId,
-        media: tweet.media,
-        content: tweet.content,
-        createdAt: tweet.createdAt,
-        type: tweet.type,
-        poll: tweet.poll
-          ? {
-              pollId: tweet.poll.pollId,
-              question: tweet.poll.question,
-              length: tweet.poll.length,
-              options: tweet.poll.options.map((option) => ({
-                optionId: option.optionId,
-                text: option.text,
-                votesCount: option.voters.length,
-              })),
-              totalVotesCount: tweet.poll.totalVoters,
-            }
-          : {},
-        tweeter: {
-          userId: tweet.tweeter.userId,
-          imageUrl: tweet.tweeter.imageUrl,
-          username: tweet.tweeter.username,
-          jobtitle: tweet.tweeter.jobtitle,
-          name: tweet.tweeter.name,
-          bio: tweet.tweeter.bio,
-          followersCount: tweet.tweeter.followers.length,
-          followingsCount: tweet.tweeter.following.length,
-          isMuted: tweet.tweeter.muted.some((user) => user.userId === userId),
-          isBlocked: tweet.tweeter.blocked.some(
-            (user) => user.userId === userId
-          ),
-        },
-        originalTweeter: tweet.retweetTo
-          ? {
-              userId: tweet.retweetTo.tweeter.userId,
-              imageUrl: tweet.retweetTo.tweeter.imageUrl,
-              username: tweet.retweetTo.tweeter.username,
-              jobtitle: tweet.retweetTo.tweeter.jobtitle,
-              name: tweet.retweetTo.tweeter.name,
-              bio: tweet.retweetTo.tweeter.bio,
-              followersCount: tweet.retweetTo.tweeter.followers.length,
-              followingsCount: tweet.retweetTo.tweeter.following.length,
-              isMuted: tweet.retweetTo.tweeter.muted.some(
-                (user) => user.userId === userId
-              ),
-              isBlocked: tweet.retweetTo.tweeter.blocked.some(
-                (user) => user.userId === userId
-              ),
-            }
-          : {},
-        originalTweet: tweet.retweetTo
-          ? {
-              tweetId: tweet.retweetTo.tweetId,
-              media: tweet.retweetTo.media,
-              content: tweet.retweetTo.content,
-              createdAt: tweet.retweetTo.createdAt,
-              type: tweet.retweetTo.type,
-              poll: tweet.retweetTo.poll
-                ? {
-                    pollId: tweet.retweetTo.poll.pollId,
-                    question: tweet.retweetTo.poll.question,
-                    length: tweet.retweetTo.poll.length,
-                    options: tweet.retweetTo.poll.options.map((option) => ({
-                      optionId: option.optionId,
-                      text: option.text,
-                      votesCount: option.voters.length,
-                    })),
-                    totalVotesCount: tweet.retweetTo.poll.totalVoters,
-                  }
-                : {},
-              mentions: tweet.retweetTo.mentions
-                ? tweet.retweetTo.mentions.map(
-                    (mention) => mention.userMentioned.username
-                  )
-                : [],
-              reactCount: tweet.retweetTo.reactCount,
-              reTweetCount: tweet.retweetTo.reTweetCount,
-              repliesCount: tweet.retweetTo.repliesCount,
-              isBookmarked: tweet.retweetTo.bookmarkedBy.some(
-                (user) => user.userId === userId
-              ),
-              isReacted: tweet.retweetTo.reacts.some(
-                (user) => user.userId === userId
-              ),
-              isRetweeted: tweet.retweetTo.retweets.some(
-                (retweet) => retweet.tweeter.userId === userId
-              ),
-            }
-          : {},
-        mentions: tweet.mentions
-          ? tweet.mentions.map((mention) => mention.userMentioned.username)
-          : [],
-        reactCount: tweet.reactCount,
-        reTweetCount: tweet.reTweetCount,
-        repliesCount: tweet.repliesCount,
-        isBookmarked: tweet.bookmarkedBy.some((user) => user.userId === userId),
-        isReacted: tweet.reacts.some((user) => user.userId === userId),
-        isRetweeted: tweet.retweets.some(
-          (retweet) => retweet.tweeter.userId === userId
-        ),
-      })
+      (tweet) => filterTweet(tweet, userId)
     );
 
     return { timelineTweets };
@@ -594,10 +287,13 @@ export class TweetsService {
 
     if (!poll) throw new AppError('Poll not found', 404);
 
+    if (poll.length < new Date())
+      throw new AppError('poll duration ended', 404);
+
     const user = new User();
     user.userId = userId;
 
-    if (poll.options.length <= body.optionIdx)
+    if (isNaN(body.optionIdx) || poll.options.length <= body.optionIdx)
       throw new AppError('Option index out of range', 400);
 
     const selectedOptionVoters = poll.options[body.optionIdx].voters || [];
@@ -652,7 +348,7 @@ export class TweetsService {
       where: { replyTo: { tweetId } },
       select: {
         tweetId: true,
-        media: { url: true },
+        media: true,
         content: true,
         createdAt: true,
         tweeter: {
@@ -876,171 +572,12 @@ export class TweetsService {
 
     const retweets = await retweetRepository.find({
       where: { retweetTo: { tweetId }, type: TweetType.Quote },
-      select: {
-        tweeter: {
-          email: true,
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
-          bio: true,
-        },
-        retweetTo: {
-          tweetId: true,
-          content: true,
-          createdAt: true,
-          media: { url: true },
-
-          tweeter: {
-            email: true,
-            username: true,
-            jobtitle: true,
-            name: true,
-            imageUrl: true,
-            userId: true,
-            bio: true,
-          },
-        },
-        content: true,
-        createdAt: true,
-        tweetId: true,
-
-        media: { url: true },
-        type: true,
-        mentions: {
-          mentionedAt: true,
-          userMentioned: { username: true },
-        },
-        replies: true,
-        reacts: {
-          email: true,
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
-        },
-        bookmarkedBy: {
-          email: true,
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
-        },
-        retweets: true,
-      },
-      relations: {
-        tweeter: {
-          followers: true,
-          following: true,
-          blocked: true,
-          muted: true,
-        },
-        retweetTo: {
-          media: true,
-          tweeter: {
-            followers: true,
-            following: true,
-            blocked: true,
-            muted: true,
-          },
-          poll: { options: { voters: true } },
-        },
-        media: true,
-        replies: true,
-        reacts: true,
-        retweets: { tweeter: true },
-        bookmarkedBy: true,
-        mentions: { userMentioned: true },
-      },
+      select: tweetSelectOptions,
+      relations: tweetRelations,
     });
 
     return {
-      retweets: retweets.map((retweet) => {
-        return {
-          retweetId: retweet.tweetId,
-          createdAt: retweet.createdAt,
-          content: retweet.content,
-          type: retweet.type,
-          media: retweet.media,
-          isBookmarked: retweet.bookmarkedBy.some(
-            (user: User) => user.userId === userId
-          ),
-          isReacted: retweet.reacts.some(
-            (user: User) => user.userId === userId
-          ),
-          isRetweeted: retweet.retweets.some(
-            (retweet: Tweet) => retweet.tweeter.userId === userId
-          ),
-          reactCount: retweet.reactCount,
-          reTweetCount: retweet.reTweetCount,
-          repliesCount: retweet.repliesCount,
-          originalTweet: {
-            tweetId: retweet.retweetTo.tweetId,
-            media: retweet.retweetTo.media,
-            content: retweet.retweetTo.content,
-            createdAt: retweet.retweetTo.createdAt,
-            type: retweet.retweetTo.type,
-            poll: retweet.retweetTo.poll
-              ? {
-                  pollId: retweet.retweetTo.poll.pollId,
-                  question: retweet.retweetTo.poll.question,
-                  length: retweet.retweetTo.poll.length,
-                  options: retweet.retweetTo.poll.options.map((option) => ({
-                    optionId: option.optionId,
-                    text: option.text,
-                    votesCount: option.voters.length,
-                  })),
-                  totalVotesCount: retweet.retweetTo.poll.totalVoters,
-                }
-              : {},
-
-            mentions: retweet.retweetTo.mentions
-              ? retweet.retweetTo.mentions.map((mention) => {
-                  return mention.userMentioned.username;
-                })
-              : [],
-          },
-          originalTweeter: {
-            imageUrl: retweet.retweetTo.tweeter.imageUrl,
-            username: retweet.retweetTo.tweeter.username,
-            jobtitle: retweet.retweetTo.tweeter.jobtitle,
-            name: retweet.retweetTo.tweeter.name,
-            bio: retweet.retweetTo.tweeter.bio,
-            followersCount: retweet.retweetTo.tweeter.followers.length,
-            followingsCount: retweet.retweetTo.tweeter.following.length,
-            isFollowed: retweet.tweeter.followers.some(
-              (user: User) => user.userId === userId
-            ),
-            isMuted: retweet.tweeter.muted.some(
-              (user: User) => user.userId === userId
-            ),
-            isBlocked: retweet.tweeter.blocked.some(
-              (user: User) => user.userId === userId
-            ),
-          },
-          tweeter: {
-            imageUrl: retweet.tweeter.imageUrl,
-            username: retweet.tweeter.username,
-            jobtitle: retweet.tweeter.jobtitle,
-            name: retweet.tweeter.name,
-            bio: retweet.tweeter.bio,
-            followersCount: retweet.tweeter.followers.length,
-            followingsCount: retweet.tweeter.following.length,
-            isFollowed: retweet.retweetTo.tweeter.followers.some(
-              (user: User) => user.userId === userId
-            ),
-            isMuted: retweet.retweetTo.tweeter.muted.some(
-              (user: User) => user.userId === userId
-            ),
-            isBlocked: retweet.retweetTo.tweeter.blocked.some(
-              (user: User) => user.userId === userId
-            ),
-          },
-        };
-      }),
+      retweets: retweets.map((retweet) => filterTweet(retweet, userId)),
     };
   };
 
@@ -1098,156 +635,19 @@ export class TweetsService {
     };
   };
 
-  queryTweet = async (userId: number, tweetId: number) => {
+  getTweet = async (userId: number, tweetId: number) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
     const tweet = await tweetRepository.findOne({
       where: { tweetId },
-      select: {
-        tweetId: true,
-        media: { url: true },
-        content: true,
-        createdAt: true,
-        tweeter: {
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
-          bio: true,
-        },
-        mentions: {
-          mentionedAt: true,
-          userMentioned: { username: true },
-        },
-        reacts: {
-          userId: true,
-        },
-        bookmarkedBy: {
-          userId: true,
-        },
-        retweets: true,
-        poll: {
-          pollId: true,
-          question: true,
-          length: true,
-          options: {
-            optionId: true,
-            text: true,
-            voters: {
-              username: true,
-              jobtitle: true,
-              name: true,
-              imageUrl: true,
-            },
-          },
-        },
-      },
-      relations: {
-        media: true,
-        replies: true,
-        reacts: true,
-        tweeter: {
-          followers: true,
-          following: true,
-          blocked: true,
-          muted: true,
-        },
-        retweets: { tweeter: true },
-        bookmarkedBy: true,
-        mentions: { userMentioned: true },
-        poll: { options: { voters: true } },
-      },
+      select: tweetSelectOptions,
+      relations: tweetRelations,
     });
 
     if (!tweet) throw new AppError(`No tweet found`, 400);
 
-    const isBookmarked = tweet.bookmarkedBy.some(
-      (user: User) => user.userId === userId
-    );
-    const isReacted = tweet.reacts.some((user: User) => user.userId === userId);
-    const isBlocked = tweet.tweeter.blocked.some(
-      (user: User) => user.userId === userId
-    );
-    const isMuted = tweet.tweeter.muted.some(
-      (user: User) => user.userId === userId
-    );
-
-    const isFollowed = tweet.tweeter.followers.some(
-      (user: User) => user.userId === userId
-    );
-
-    const isRetweeted = tweet.retweets.some(
-      (retweet: Tweet) => retweet.tweeter.userId === userId
-    );
-
     return {
-      tweet,
-      isBlocked,
-      isMuted,
-      isFollowed,
-      isReacted,
-      isRetweeted,
-      isBookmarked,
-    };
-  };
-
-  getTweet = async (userId: number, tweetId: number) => {
-    const {
-      tweet,
-      isBlocked,
-      isFollowed,
-      isMuted,
-      isReacted,
-      isBookmarked,
-      isRetweeted,
-    } = await this.queryTweet(userId, tweetId);
-
-    return {
-      tweet: {
-        tweetId,
-        media: tweet.media,
-
-        content: tweet.content,
-        createdAt: tweet.createdAt,
-        type: tweet.type,
-        poll: tweet.poll
-          ? {
-              pollId: tweet.poll.pollId,
-              question: tweet.poll.question,
-              length: tweet.poll.length,
-              options: tweet.poll.options.map((option) => ({
-                optionId: option.optionId,
-                text: option.text,
-                votesCount: option.voters.length,
-              })),
-              totalVotesCount: tweet.poll.totalVoters,
-            }
-          : {},
-        tweeter: {
-          imageUrl: tweet.tweeter.imageUrl,
-          username: tweet.tweeter.username,
-          jobtitle: tweet.tweeter.jobtitle,
-          name: tweet.tweeter.name,
-          bio: tweet.tweeter.bio,
-          followersCount: tweet.tweeter.followers.length,
-          followingsCount: tweet.tweeter.following.length,
-          isFollowed,
-          isMuted,
-          isBlocked,
-        },
-        mentions: tweet.mentions
-          ? tweet.mentions.map((mention) => {
-              return mention.userMentioned.username;
-            })
-          : [],
-        reactCount: tweet.reactCount,
-        reTweetCount: tweet.reTweetCount,
-        repliesCount: tweet.repliesCount,
-        isBookmarked,
-        isReacted,
-        isRetweeted,
-      },
+      tweet: filterTweet(tweet, userId),
     };
   };
 

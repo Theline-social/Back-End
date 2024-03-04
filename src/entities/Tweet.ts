@@ -75,7 +75,6 @@ export class Tweet {
   @ManyToMany(() => User, (user) => user.tweetBookmarks, {
     onDelete: 'CASCADE',
   })
-  @JoinTable()
   bookmarkedBy: User[];
 
   @OneToOne(() => Poll, (poll) => poll.tweet, {
@@ -96,5 +95,17 @@ export class Tweet {
   }
   get reTweetCount(): number {
     return this.retweets ? this.retweets.length : 0;
+  }
+
+  isBookmarkedBy(userId: number): boolean {
+    return this.bookmarkedBy.some((user) => user.userId === userId);
+  }
+
+  isRetweetedBy(userId: number): boolean {
+    return this.retweets.some((retweet) => retweet.tweeter.userId === userId);
+  }
+
+  isReactedBy(userId: number): boolean {
+    return this.reacts.some((user) => user.userId === userId);
   }
 }

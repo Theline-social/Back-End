@@ -15,6 +15,7 @@ export interface TweetAPISchemaDto {
       votesCount: number;
     }[];
     totalVotesCount: number;
+    votedOption?: number;
   };
   tweeter: {
     userId: number;
@@ -59,6 +60,7 @@ export interface TweetAPISchemaDto {
         votesCount: number;
       }[];
       totalVotesCount: number;
+      votedOption?: number;
     };
     mentions?: string[];
     reactCount: number;

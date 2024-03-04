@@ -21,9 +21,10 @@ export const filterTweet = (
             votesCount: option.voters.length,
           })),
           totalVotesCount: tweet.poll.totalVoters,
+          votedOption: tweet.poll.getVotedOptionBy(userId),
         }
       : undefined,
-      mentions: tweet.mentions
+    mentions: tweet.mentions
       ? tweet.mentions.map((mention) => mention.userMentioned.username)
       : undefined,
     reactCount: tweet.reactCount,
@@ -78,6 +79,7 @@ export const filterTweet = (
                   votesCount: option.voters.length,
                 })),
                 totalVotesCount: tweet.retweetTo.poll.totalVoters,
+                votedOption: tweet.retweetTo.poll.getVotedOptionBy(userId),
               }
             : undefined,
           mentions: tweet.retweetTo.mentions
@@ -92,7 +94,6 @@ export const filterTweet = (
           isReacted: tweet.retweetTo.isReactedBy(userId),
           isRetweeted: tweet.retweetTo.isRetweetedBy(userId),
         }
-      : undefined
-
+      : undefined,
   };
 };

@@ -38,12 +38,11 @@ export class Poll {
     );
   }
 
-  getVotedOptionByUserId(userId: number): PollOption | undefined {
-    for (const option of this.options) {
-      if (option.voters.some((user) => user.userId === userId)) {
-        return option;
-      }
-    }
+  getVotedOptionBy(userId: number) {
+    for (const i in this.options)
+      if (this.options[i].voters.some((user) => user.userId === userId))
+        return +i;
+
     return undefined;
   }
 }

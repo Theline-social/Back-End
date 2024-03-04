@@ -290,13 +290,27 @@ export class TweetsService {
     if (poll.length < new Date())
       throw new AppError('poll duration ended', 404);
 
-    const user = new User();
-    user.userId = userId;
-
     if (isNaN(body.optionIdx) || poll.options.length <= body.optionIdx)
       throw new AppError('Option index out of range', 400);
 
-    const selectedOptionVoters = poll.options[body.optionIdx].voters || [];
+    const selectedOption = poll.options[body.optionIdx];
+    const selectedOptionVoters = selectedOption.voters || [];
+
+    const userVotedOption = poll.options.find((option) =>
+      option.voters.some((voter) => voter.userId === userId)
+    );
+
+    if (userVotedOption && userVotedOption !== selectedOption) {
+      const existingVoteIndex = userVotedOption.voters.findIndex(
+        (voter) => voter.userId === userId
+      );
+      if (existingVoteIndex !== -1) {
+        userVotedOption.voters.splice(existingVoteIndex, 1);
+      }
+    }
+
+    const user = new User();
+    user.userId = userId;
 
     const existingVoteIndex = selectedOptionVoters.findIndex(
       (voter) => voter.userId === userId
@@ -308,7 +322,7 @@ export class TweetsService {
       selectedOptionVoters.push(user);
     }
 
-    poll.options[body.optionIdx].voters = selectedOptionVoters;
+    selectedOption.voters = selectedOptionVoters;
     await pollRepository.save(poll);
   };
 

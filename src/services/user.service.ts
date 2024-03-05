@@ -15,7 +15,7 @@ import {
   tweetRelations,
   tweetSelectOptions,
 } from '../common/filters/tweets/tweetSelectOptions';
-import { userSelectOptions } from '../common/filters/users/userSelectOptions';
+import { userProfileSelectOptions } from '../common/filters/users/userSelectOptions';
 import { AppDataSource } from '../dataSource';
 import { ReelMention, TweetMention, User } from '../entities';
 
@@ -125,7 +125,7 @@ export class UsersService {
     const user = await userRepository.findOne({
       where: { userId },
       select: {
-        followers: userSelectOptions,
+        followers: userProfileSelectOptions,
       },
       relations: { followers: true },
     });
@@ -138,7 +138,7 @@ export class UsersService {
     const user = await userRepository.findOne({
       where: { userId },
       select: {
-        following: userSelectOptions,
+        following: userProfileSelectOptions,
       },
       relations: { following: true },
     });

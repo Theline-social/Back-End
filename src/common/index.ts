@@ -26,3 +26,5 @@ export * from './filters/tweets/filtertweet';
 export * from './filters/reels/filterReel';
 export * from './filters/users/filterUser';
 export * from './filters/users/userDto';
+export * from './filters/users/userSelectOptions';
+export * from './filters/notifications/filterNotification';

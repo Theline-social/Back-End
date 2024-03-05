@@ -1,3 +1,5 @@
+import { ProfileDto } from '../users/userDto';
+
 export interface TweetAPISchemaDto {
   tweetId: number;
   media?: {
@@ -18,32 +20,8 @@ export interface TweetAPISchemaDto {
     totalVotesCount: number;
     votedOptionId?: number;
   };
-  tweeter: {
-    userId: number;
-    imageUrl: string;
-    username: string;
-    jobtitle: string;
-    name: string;
-    bio: string;
-    followersCount: number;
-    followingsCount: number;
-    isMuted: boolean;
-    isBlocked: boolean;
-    isFollowed: boolean;
-  };
-  originalTweeter?: {
-    userId: number;
-    imageUrl: string;
-    username: string;
-    jobtitle: string;
-    name: string;
-    bio: string;
-    followersCount: number;
-    followingsCount: number;
-    isMuted: boolean;
-    isBlocked: boolean;
-    isFollowed: boolean;
-  };
+  tweeter: ProfileDto;
+  originalTweeter?: ProfileDto;
   originalTweet?: {
     tweetId: number;
     media?: {

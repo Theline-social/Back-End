@@ -1,3 +1,8 @@
+import { filterNotification } from '../common';
+import {
+  userProfileRelations,
+  userProfileSelectOptions,
+} from '../common/filters/users/userSelectOptions';
 import { AppDataSource } from '../dataSource';
 import { Notification } from '../entities';
 
@@ -9,10 +14,26 @@ export class NotificationsService {
 
     const notifications = await notificationRepository.find({
       where: { notificationTo: { userId } },
+      select: {
+        notificationId: true,
+        type: true,
+        content: true,
+        createdAt: true,
+        isSeen: true,
+        metadata: true,
+        notificationFrom: userProfileSelectOptions,
+      },
+      relations: {
+        notificationFrom: userProfileRelations,
+      },
       order: { createdAt: 'DESC' },
     });
 
-    return { notifications };
+    return {
+      notifications: notifications.map((notification) =>
+        filterNotification(notification, userId)
+      ),
+    };
   };
 
   getUnseenNotificationCount = async (userId: number) => {

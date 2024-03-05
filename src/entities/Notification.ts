@@ -7,6 +7,12 @@ import {
 } from 'typeorm';
 import { User } from './User';
 
+export enum NotificationType {
+  Mention = 'MENTION',
+  Follow = 'FOLLOW',
+  Message = 'MESSAGE',
+}
+
 @Entity()
 export class Notification {
   @PrimaryGeneratedColumn()
@@ -18,8 +24,8 @@ export class Notification {
   @Column({ type: 'boolean', default: false })
   isSeen: boolean;
 
-  @Column({ type: 'enum', enum: ['CHAT', 'MENTION', 'FOLLOW', 'UNFOLLOW'] })
-  type: string;
+  @Column({ type: 'enum', enum: NotificationType})
+  type: NotificationType;
 
   @CreateDateColumn({
     type: 'timestamp',

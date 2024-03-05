@@ -1,8 +1,15 @@
-export const userSelectOptions = {
+export const userProfileSelectOptions = {
   username: true,
   jobtitle: true,
   name: true,
   imageUrl: true,
   userId: true,
   bio: true,
+};
+
+export const userProfileRelations = {
+  followers: true,
+  following: true,
+  muted: true,
+  blocked: true,
 };

@@ -1,4 +1,4 @@
-import { userSelectOptions } from '../users/userSelectOptions';
+import { userProfileSelectOptions } from '../users/userSelectOptions';
 
 export const tweetSelectOptions = {
   tweetId: true,
@@ -12,7 +12,7 @@ export const tweetSelectOptions = {
     content: true,
     createdAt: true,
     type: true,
-    tweeter: userSelectOptions,
+    tweeter: userProfileSelectOptions,
     poll: {
       pollId: true,
       question: true,
@@ -20,7 +20,7 @@ export const tweetSelectOptions = {
       options: {
         optionId: true,
         text: true,
-        voters: userSelectOptions,
+        voters: userProfileSelectOptions,
       },
     },
     mentions: {
@@ -28,7 +28,7 @@ export const tweetSelectOptions = {
       userMentioned: { username: true },
     },
   },
-  tweeter: userSelectOptions,
+  tweeter: userProfileSelectOptions,
   mentions: {
     mentionedAt: true,
     userMentioned: { username: true },
@@ -47,7 +47,7 @@ export const tweetSelectOptions = {
     options: {
       optionId: true,
       text: true,
-      voters: userSelectOptions,
+      voters: userProfileSelectOptions,
     },
   },
 };

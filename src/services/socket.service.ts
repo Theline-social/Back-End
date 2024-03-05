@@ -1,9 +1,20 @@
 import { Repository, DataSource } from 'typeorm';
-import { Message, Conversation, Notification, User } from '../entities';
+import {
+  Message,
+  Conversation,
+  Notification,
+  User,
+  NotificationType,
+} from '../entities';
 import { AppError } from '../common/utils/AppError';
 import { Server } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { jwtVerifyPromisified } from '../common';
+import {
+  filterNotification,
+  jwtVerifyPromisified,
+  userProfileRelations,
+} from '../common';
+import { userProfileSelectOptions } from '../common';
 
 interface SocketData {
   name: string;
@@ -27,39 +38,37 @@ class SocketService {
   async emitNotification(
     senderId: number,
     receiverUsername: string,
-    type: string = '',
+    type: NotificationType,
     metadata: any = {}
   ): Promise<void> {
-    type = type.toUpperCase();
     const userRepository: Repository<User> =
       this.AppDataSource.getRepository(User);
 
     const sender = await userRepository.findOne({
       where: { userId: senderId },
-      select: { userId: true, name: true },
+      select: userProfileSelectOptions,
+      relations: userProfileRelations,
     });
 
     if (!sender) throw new AppError('User not found', 404);
 
     const receiver = await userRepository.findOne({
       where: { username: receiverUsername },
+      select: { userId: true },
     });
 
     if (!receiver) throw new AppError('User not found', 404);
 
     let content = '';
     switch (type) {
-      case 'CHAT':
-        content = `${sender.name} sent you a message`;
+      case NotificationType.Message:
+        content = `sent you a message`;
         break;
-      case 'MENTION':
-        content = `${sender.name} mentioned you`;
+      case NotificationType.Mention:
+        content = `mentioned you in a ${metadata.tweetId ? 'diary' : 'reel'}`;
         break;
-      case 'FOLLOW':
-        content = `${sender.name} followed you`;
-        break;
-      case 'UNFOLLOW':
-        content = `${sender.name} unfollowed you`;
+      case NotificationType.Follow:
+        content = `followed you`;
         break;
       default:
         throw new AppError('Unknown notification type: ' + type, 400);
@@ -73,20 +82,17 @@ class SocketService {
     notification.type = type;
     notification.metadata = metadata;
 
-    await this.AppDataSource.getRepository(Notification).save(notification);
+    const savednotification = await this.AppDataSource.getRepository(
+      Notification
+    ).save(notification);
 
     if (receiver && sender) {
       this.io?.sockets
         .in(`user_${receiver.userId}_room`)
-        .emit('notification-receive', {
-          notificationId: notification.notificationId,
-          content: notification.content,
-          timestamp: notification.createdAt,
-          senderImgUrl: sender.imageUrl,
-          senderUsername: sender.username,
-          isSeen: notification.isSeen,
-          type: notification.type,
-        });
+        .emit(
+          'notification-receive',
+          filterNotification(savednotification, receiver.userId)
+        );
     }
   }
 
@@ -114,10 +120,9 @@ class SocketService {
 
     this.io
       .use(async (socket: Socket, next: any) => {
-        if (!socket.handshake.headers.token) {
-          console.log('Socket is not logged in');
-          return next();
-        }
+        if (!socket.handshake.headers.token)
+          return next(new AppError('you are not logged in', 401));
+
         const payload = await jwtVerifyPromisified(
           socket.handshake.headers.token as string,
           process.env.ACCESSTOKEN_SECRET_KEY as string
@@ -134,10 +139,10 @@ class SocketService {
         });
 
         if (!user) {
-          throw new AppError('User does no longer exist', 401);
+          return next(new AppError('User does no longer exist', 401));
         }
 
-        socket.data = user ? user : {};
+        socket.data.user = user ? user : {};
 
         socket.join(`user_${user.userId}_room`);
 
@@ -146,33 +151,12 @@ class SocketService {
       .on('connection', (socket: Socket) => {
         console.log('socket connected');
 
-        // temp event as a alternative to token
-        socket.on('add-user', async ({ userId }: any) => {
-          const user = await this.AppDataSource.getRepository(User).findOne({
-            where: { userId },
-            select: {
-              userId: true,
-              username: true,
-              email: true,
-              name: true,
-            },
-          });
-
-          if (!user) {
-            throw new AppError('User does no longer exist', 401);
-          }
-
-          socket.data = user ? user : {};
-
-          socket.join(`user_${user.userId}_room`);
-        });
-
         socket.on(
           'msg-send',
           async ({ receiverId, conversationId, text }: any) => {
             if (!receiverId || !conversationId || !text)
               throw new AppError('message data are required', 400);
-            const { userId, username } = socket.data;
+            const { userId, username } = socket.data.user;
 
             const conversation = await this.AppDataSource.getRepository(
               Conversation
@@ -224,7 +208,7 @@ class SocketService {
         );
 
         socket.on('mark-notifications-as-seen', async () => {
-          const { userId } = socket.data;
+          const { userId } = socket.data.user;
           await this.AppDataSource.getRepository(Notification).update(
             { isSeen: false, notificationTo: { userId } },
             { isSeen: true }
@@ -234,7 +218,7 @@ class SocketService {
         socket.on('chat-opened', async ({ conversationId, contactId }: any) => {
           if (!conversationId || !contactId)
             throw new AppError('chat data is required', 400);
-          const { userId } = socket.data;
+          const { userId } = socket.data.user;
 
           await this.AppDataSource.createQueryBuilder()
             .update(Conversation)
@@ -264,7 +248,7 @@ class SocketService {
         socket.on('chat-closed', async ({ contactId, conversationId }: any) => {
           if (!contactId || !conversationId)
             throw new AppError('chat data are required', 400);
-          const { userId } = socket.data;
+          const { userId } = socket.data.user;
 
           await this.AppDataSource.createQueryBuilder()
             .update(Conversation)
@@ -288,7 +272,7 @@ class SocketService {
 
         socket.on('disconnect', async () => {
           console.log(`Server disconnected from a client`);
-          const { userId } = socket.data;
+          const { userId } = socket.data.user;
 
           if (!userId) return;
 

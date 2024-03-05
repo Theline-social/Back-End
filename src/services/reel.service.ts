@@ -2,7 +2,7 @@ import { In, Not } from 'typeorm';
 import * as fs from 'fs';
 import { AppError, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
-import { Reel, ReelMention, Topic, ReelType, User } from '../entities';
+import { Reel, ReelMention, Topic, ReelType, User, NotificationType } from '../entities';
 import socketService from './socket.service';
 import {
   reelRelations,
@@ -93,7 +93,7 @@ export class ReelsService {
     await reelMentionRepository.insert(reelMentions);
 
     for (const username of usernames) {
-      await socketService.emitNotification(user.userId, username, 'MENTION', {
+      await socketService.emitNotification(user.userId, username, NotificationType.Mention, {
         reelId: reel.reelId,
       });
     }

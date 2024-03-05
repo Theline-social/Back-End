@@ -2,7 +2,7 @@ import { In, Not } from 'typeorm';
 import { AppError, filterTweet, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
 import { Poll, PollOption } from '../entities/Poll';
-import { Tweet, TweetMention, TweetType, User } from '../entities';
+import { NotificationType, Tweet, TweetMention, TweetType, User } from '../entities';
 import * as fs from 'fs';
 
 import socketService from './socket.service';
@@ -94,7 +94,7 @@ export class TweetsService {
     await tweetMentionRepository.insert(tweetMentions);
 
     for (const username of usernames) {
-      await socketService.emitNotification(user.userId, username, 'MENTION', {
+      await socketService.emitNotification(user.userId, username, NotificationType.Mention, {
         tweetId: tweet.tweetId,
       });
     }

@@ -4,6 +4,8 @@ import * as authController from '../controllers/auth.controller';
 
 import {
   addPollValidationRules,
+  optionIdParamsValidation,
+  pollIdParamsValidation,
   validatePagination,
   validateRequest,
 } from '../common';
@@ -148,7 +150,7 @@ router
 
 /**
  * @swagger
- * /tweets/{tweetId}/toggle-vote:
+ * /tweets/{pollId}/toggle-vote/{optionId}:
  *   patch:
  *     summary: Toggle vote on a tweet
  *     description: Toggles the user's vote (like/dislike) on a specific tweet by its ID.
@@ -158,21 +160,17 @@ router
  *       - tweets
  *     parameters:
  *       - in: path
- *         name: tweetId
- *         description: The ID of the tweet.
+ *         name: pollId
+ *         description: The ID of the poll.
  *         required: true
  *         schema:
  *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               optionIdx:
- *                 type: string
-
+ *       - in: path
+ *         name: optionId
+ *         description: The ID of the option.
+ *         required: true
+ *         schema:
+ *           type: integer
  *     responses:
  *       '200':
  *         description: OK. Vote on the tweet successfully toggled.
@@ -186,10 +184,11 @@ router
  *         description: Internal Server Error. Failed to toggle vote on the tweet.
  */
 router
-  .route('/:tweetId/toggle-vote')
+  .route('/:pollId/toggle-vote/:optionId')
   .patch(
     authController.requireAuth,
-    tweetIdParamsValidation,
+    pollIdParamsValidation,
+    optionIdParamsValidation,
     validateRequest,
     tweetsController.toggleVote
   );

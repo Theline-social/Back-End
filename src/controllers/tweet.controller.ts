@@ -130,7 +130,7 @@ export const toggleVote = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    await tweetsService.toggleVote(userId, +req.params.tweetId, req.body);
+    await tweetsService.toggleVote(userId, +req.params.pollId, +req.params.optionId);
 
     res.status(201).json({
       status: true,

@@ -36,6 +36,7 @@ class SocketService {
 
     const sender = await userRepository.findOne({
       where: { userId: senderId },
+      select: { userId: true, name: true },
     });
 
     if (!sender) throw new AppError('User not found', 404);
@@ -72,7 +73,7 @@ class SocketService {
     notification.type = type;
     notification.metadata = metadata;
 
-    await this.AppDataSource.getRepository(Notification).insert(notification);
+    await this.AppDataSource.getRepository(Notification).save(notification);
 
     if (receiver && sender) {
       this.io?.sockets

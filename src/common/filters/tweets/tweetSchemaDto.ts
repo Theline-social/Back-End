@@ -11,11 +11,12 @@ export interface TweetAPISchemaDto {
     question: string;
     length: Date;
     options: {
+      optionId: number;
       text: string;
       votesCount: number;
     }[];
     totalVotesCount: number;
-    votedOption?: number;
+    votedOptionId?: number;
   };
   tweeter: {
     userId: number;
@@ -56,11 +57,12 @@ export interface TweetAPISchemaDto {
       question: string;
       length: Date;
       options: {
+        optionId: number;
         text: string;
         votesCount: number;
       }[];
       totalVotesCount: number;
-      votedOption?: number;
+      votedOptionId?: number;
     };
     mentions?: string[];
     reactCount: number;

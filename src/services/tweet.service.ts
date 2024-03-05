@@ -137,11 +137,11 @@ export class TweetsService {
 
       await tweetMentionRepository.insert(tweetMentions);
 
-      // for (const username of usernames) {
-      //   await socketService.emitNotification(userId, username, 'MENTION', {
-      //     tweetId: tweet.tweetId,
-      //   });
-      // }
+      for (const username of usernames) {
+        await socketService.emitNotification(userId, username, 'MENTION', {
+          tweetId: tweet.tweetId,
+        });
+      }
     }
 
     return { tweet };
@@ -190,7 +190,6 @@ export class TweetsService {
 
     let user = new User();
     user.userId = userId;
-    console.log(body);
 
     const { tweet } = await this.createTweet(userId, body);
     tweet.replyTo = originaltweet;
@@ -273,15 +272,13 @@ export class TweetsService {
 
   toggleVote = async (
     userId: number,
-    tweetId: number,
-    body: { optionIdx: number }
+    pollId: number,
+    optionId: number 
   ) => {
     const pollRepository = AppDataSource.getRepository(Poll);
 
-    if (!body.optionIdx) throw new AppError('option index is required', 400);
-
     const poll = await pollRepository.findOne({
-      where: { tweet: { tweetId } },
+      where: { pollId },
       relations: { options: { voters: true } },
     });
 
@@ -290,10 +287,12 @@ export class TweetsService {
     if (poll.length < new Date())
       throw new AppError('poll duration ended', 404);
 
-    if (isNaN(body.optionIdx) || poll.options.length <= body.optionIdx)
-      throw new AppError('Option index out of range', 400);
+    const selectedOption = poll.options.find(
+      (option) => option.optionId === optionId
+    );
 
-    const selectedOption = poll.options[body.optionIdx];
+    if (!selectedOption) throw new AppError('Option not found', 404);
+
     const selectedOptionVoters = selectedOption.voters || [];
 
     const userVotedOption = poll.options.find((option) =>
@@ -330,6 +329,12 @@ export class TweetsService {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
     return await tweetRepository.exists({ where: { tweetId: id } });
+  };
+
+  pollExists = async (id: number) => {
+    const tweetRepository = AppDataSource.getRepository(Poll);
+
+    return await tweetRepository.exists({ where: { pollId: id } });
   };
 
   deleteTweet = async (tweetId: number) => {

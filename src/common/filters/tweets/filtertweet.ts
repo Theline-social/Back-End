@@ -17,11 +17,12 @@ export const filterTweet = (
           question: tweet.poll.question,
           length: tweet.poll.length,
           options: tweet.poll.options.map((option) => ({
+            optionId: option.optionId,
             text: option.text,
             votesCount: option.voters.length,
           })),
           totalVotesCount: tweet.poll.totalVoters,
-          votedOption: tweet.poll.getVotedOptionBy(userId),
+          votedOptionId: tweet.poll.getVotedOptionBy(userId),
         }
       : undefined,
     mentions: tweet.mentions
@@ -79,7 +80,7 @@ export const filterTweet = (
                   votesCount: option.voters.length,
                 })),
                 totalVotesCount: tweet.retweetTo.poll.totalVoters,
-                votedOption: tweet.retweetTo.poll.getVotedOptionBy(userId),
+                votedOptionId: tweet.retweetTo.poll.getVotedOptionBy(userId),
               }
             : undefined,
           mentions: tweet.retweetTo.mentions

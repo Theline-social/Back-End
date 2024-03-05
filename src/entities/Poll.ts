@@ -21,13 +21,14 @@ export class Poll {
 
   @OneToMany(() => PollOption, (option) => option.poll, {
     cascade: true,
+    onDelete: 'CASCADE',
   })
   options: PollOption[];
 
   @Column({ type: 'timestamptz' })
   length: Date;
 
-  @OneToOne(() => Tweet, (tweet) => tweet.poll)
+  @OneToOne(() => Tweet, (tweet) => tweet.poll, { onDelete: 'CASCADE' })
   @JoinColumn()
   tweet: Tweet;
 
@@ -39,9 +40,9 @@ export class Poll {
   }
 
   getVotedOptionBy(userId: number) {
-    for (const i in this.options)
-      if (this.options[i].voters.some((user) => user.userId === userId))
-        return +i;
+    for (const option of this.options)
+      if (option.voters.some((user) => user.userId === userId))
+        return option.optionId;
 
     return undefined;
   }
@@ -60,6 +61,6 @@ export class PollOption {
   })
   voters: User[];
 
-  @ManyToOne(() => Poll, (poll) => poll.options)
+  @ManyToOne(() => Poll, (poll) => poll.options, { onDelete: 'CASCADE' })
   poll: Poll;
 }

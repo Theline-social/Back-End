@@ -422,26 +422,15 @@ router
  *       - jwt: []
  *     tags:
  *       - reels
- *     consumes:
- *       - multipart/form-data
- *     parameters:
- *       - name: content
- *         in: formData
- *         description: The content of the reel.
- *         required: true
- *         type: string
- *       - name: topics
- *         in: formData
- *         description: List of topics related to the reel.
- *         required: false
- *         type: array
- *         items:
- *           type: string
- *       - name: reel
- *         in: formData
- *         description: List of image files to be attached to the reel.
- *         required: false
- *         type: file
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
  *     responses:
  *       '201':
  *         description: Created. Rereel successfully added.

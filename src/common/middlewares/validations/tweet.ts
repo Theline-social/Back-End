@@ -15,10 +15,27 @@ export const tweetIdParamsValidation = [
     .custom(async (tweetId) => {
       const exists = await tweetsService.exists(tweetId);
       if (!exists) {
-        throw new Error('muted id does not exist');
+        throw new Error('tweet id does not exist');
       }
     })
     .withMessage('tweet does not exist'),
+];
+
+export const pollIdParamsValidation = [
+  param('pollId')
+    .exists()
+    .toInt()
+    .custom(async (pollId) => {
+      const exists = await tweetsService.pollExists(pollId);
+      if (!exists) {
+        throw new Error('poll does not exist');
+      }
+    })
+    .withMessage('poll does not exist'),
+];
+
+export const optionIdParamsValidation = [
+  param('optionId').exists().toInt().withMessage('option does not exist'),
 ];
 
 export const replyIdParamsValidation = [

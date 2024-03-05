@@ -16,6 +16,7 @@ import { AuthProvider, User } from '../entities';
 import { OtpCodes, OtpProvider } from '../entities/OtpCodes';
 import moment from 'moment';
 import { UsersService } from './user.service';
+import { filterUser } from '../common/filters/users/filterUser';
 
 /**
  * @class AuthService
@@ -56,9 +57,9 @@ class AuthService {
     user.name = body.name;
     user.username = `user${body.phoneNumber}`;
 
-    await userRepository.insert(user);
+    const saveduser = await userRepository.save(user);
 
-    return { user };
+    return { user: filterUser(saveduser) };
   };
 
   checkValidOtp = async (body: CheckValidOtpBody): Promise<boolean> => {
@@ -151,6 +152,7 @@ class AuthService {
 
     const user = await AppDataSource.getRepository(User).findOne({
       where: { email: data.email },
+      relations: { followers: true, following: true },
     });
 
     if (!user) throw new AppError('No User Found', 404);
@@ -164,7 +166,7 @@ class AuthService {
       if (!isCorrectPassword) throw new AppError('Wrong Password', 400);
     }
 
-    return { user };
+    return { user: filterUser(user) };
   };
 
   validateRecaptcha = async (body: {

@@ -5,7 +5,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { catchAsync } from '../common';
+import { catchAsync, userDto } from '../common';
 import { AppError } from '../common';
 import AuthService from '../services/auth.service';
 import { OtpProvider, User } from '../entities';
@@ -38,7 +38,7 @@ export const signToken = (
   });
 
 const createAndSendToken = (
-  user: User,
+  user: userDto,
   req: Request,
   res: Response,
   statusCode: number,

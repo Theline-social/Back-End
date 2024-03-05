@@ -58,6 +58,7 @@ export class PollOption {
 
   @ManyToMany(() => User, (user) => user.votedOptions, {
     cascade: true,
+    onDelete: 'CASCADE',
   })
   voters: User[];
 

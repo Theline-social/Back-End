@@ -23,3 +23,6 @@ export * from './middlewares/validations/topic';
 export * from './constants/regex';
 
 export * from './filters/tweets/filtertweet';
+export * from './filters/reels/filterReel';
+export * from './filters/users/filterUser';
+export * from './filters/users/userDto';

@@ -34,8 +34,6 @@ export const topicParamsValidation = [
   param('topic')
     .exists()
     .custom(async (topic) => {
-        console.log(topic);
-        
       const exists = await topicsService.existsbyTopicName(topic);
       
       if (!exists) {

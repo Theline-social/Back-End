@@ -66,9 +66,9 @@ class SocketService {
     }
 
     const notification = new Notification();
-    notification.sender = sender;
+    notification.notificationFrom = sender;
     notification.content = content;
-    notification.user = receiver;
+    notification.notificationTo = receiver;
     notification.isSeen = false;
     notification.type = type;
     notification.metadata = metadata;
@@ -81,7 +81,7 @@ class SocketService {
         .emit('notification-receive', {
           notificationId: notification.notificationId,
           content: notification.content,
-          timestamp: notification.timestamp,
+          timestamp: notification.createdAt,
           senderImgUrl: sender.imageUrl,
           senderUsername: sender.username,
           isSeen: notification.isSeen,
@@ -226,7 +226,7 @@ class SocketService {
         socket.on('mark-notifications-as-seen', async () => {
           const { userId } = socket.data;
           await this.AppDataSource.getRepository(Notification).update(
-            { isSeen: false, user: { userId } },
+            { isSeen: false, notificationTo: { userId } },
             { isSeen: true }
           );
         });

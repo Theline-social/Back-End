@@ -64,15 +64,50 @@ export class ReelsService {
     return { timelineReels };
   };
 
+  extractMentions = async (user: User, content: string, reel: Reel) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const reelMentionRepository = AppDataSource.getRepository(ReelMention);
+
+    let usernames = (content.match(usernameRegex) as Array<string>) || [];
+
+    if (!usernames) return { usernames: undefined };
+
+    usernames = usernames.map((username) => username.replace('@', ''));
+
+    const users = await userRepository.find({
+      where: { username: In([...usernames]) },
+    });
+
+    let reelMentions: ReelMention[] = [];
+
+    reelMentions = users.map((mentioned) => {
+      let newReelMention = new ReelMention();
+
+      newReelMention.reel = reel;
+      newReelMention.userMakingMention = user;
+      newReelMention.userMentioned = mentioned;
+
+      return newReelMention;
+    });
+
+    await reelMentionRepository.insert(reelMentions);
+
+    for (const username of usernames) {
+      await socketService.emitNotification(user.userId, username, 'MENTION', {
+        reelId: reel.reelId,
+      });
+    }
+
+    return { usernames };
+  };
+
   createReel = async (
     userId: number,
     body: { content: string; reelUrl?: string; topics?: string[] },
     type: ReelType = ReelType.Reel
   ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
-    const userRepository = AppDataSource.getRepository(User);
     const topicRepository = AppDataSource.getRepository(Topic);
-    const reelMentionRepository = AppDataSource.getRepository(ReelMention);
 
     if (type == ReelType.Reel && (!body.reelUrl || !body.topics))
       throw new AppError('Must provide a reel vedio and topic', 400);
@@ -103,42 +138,19 @@ export class ReelsService {
     reel.supportedTopics = supportedtopics;
     reel.type = type;
 
-    await reelRepository.save(reel);
+    const savedreel = await reelRepository.save(reel);
 
+    let mentions: string[] | undefined = [];
     if (body.content) {
-      let usernames =
-        (body.content.match(usernameRegex) as Array<string>) || [];
-
-      if (!usernames) return { reel };
-
-      usernames = usernames.map((username) => username.replace('@', ''));
-
-      const users = await userRepository.find({
-        where: { username: In([...usernames]) },
-      });
-
-      let reelMentions: ReelMention[] = [];
-
-      reelMentions = users.map((mentioned) => {
-        let newReelMention = new ReelMention();
-
-        newReelMention.reel = reel;
-        newReelMention.userMakingMention = user;
-        newReelMention.userMentioned = mentioned;
-
-        return newReelMention;
-      });
-
-      await reelMentionRepository.insert(reelMentions);
-
-      // for (const username of usernames) {
-      //   await socketService.emitNotification(userId, username, 'MENTION', {
-      //     reelId: reel.reelId,
-      //   });
-      // }
+      const { usernames } = await this.extractMentions(
+        user,
+        body.content,
+        savedreel
+      );
+      mentions = usernames;
     }
 
-    return { reel };
+    return { reel: savedreel, mentions };
   };
 
   addReel = async (
@@ -147,7 +159,11 @@ export class ReelsService {
   ) => {
     body.topics = Array.isArray(body.topics) ? [...body.topics] : [body.topics];
 
-    const { reel } = await this.createReel(userId, body, ReelType.Reel);
+    const { reel, mentions } = await this.createReel(
+      userId,
+      body,
+      ReelType.Reel
+    );
 
     return {
       reel: {
@@ -157,11 +173,7 @@ export class ReelsService {
         createdAt: reel.createdAt,
         type: reel.type,
         topics: body.topics,
-        mentions: reel.mentions
-          ? reel.mentions.map((mention) => {
-              return mention.userMentioned.username;
-            })
-          : [],
+        mentions: mentions,
       },
     };
   };
@@ -179,31 +191,20 @@ export class ReelsService {
     let user = new User();
     user.userId = userId;
 
-    const { reel } = await this.createReel(userId, body);
+    const { reel, mentions } = await this.createReel(userId, body, ReelType.Reply);
     reel.replyTo = originalreel;
     reel.type = ReelType.Reply;
 
-    await reelReplyRepository.save(reel);
+    const savedreel = await reelReplyRepository.save(reel);
 
     return {
       reelReply: {
         reelId,
-        replyId: reel.reelId,
-        reelurl: reel.reelUrl,
-        content: reel.content,
-        createdAt: reel.createdAt,
-        reeler: {
-          imageUrl: reel.reeler.imageUrl,
-          username: reel.reeler.username,
-          jobtitle: reel.reeler.jobtitle,
-          name: reel.reeler.name,
-          bio: reel.reeler.bio,
-        },
-        mentions: reel.mentions
-          ? reel.mentions.map((mention) => {
-              return mention.userMentioned.username;
-            })
-          : [],
+        replyId: savedreel.reelId,
+        reelurl: savedreel.reelUrl,
+        content: savedreel.content,
+        createdAt: savedreel.createdAt,
+        mentions,
       },
     };
   };

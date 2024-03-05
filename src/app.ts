@@ -15,6 +15,7 @@ import { tweetsRouter } from './routes/tweet.router';
 import { interactionsRouter } from './routes/interaction.router';
 import { reelsRouter } from './routes/reel.router';
 import { topicsRouter } from './routes/topic.router';
+import { notificationsRouter } from './routes/notification.router';
 
 const app = express();
 
@@ -69,6 +70,7 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/tweets', tweetsRouter);
 app.use('/api/v1/users/current', interactionsRouter);
+app.use('/api/v1/users/current', notificationsRouter);
 app.use('/api/v1/reels', reelsRouter);
 app.use('/api/v1/topics', topicsRouter);
 

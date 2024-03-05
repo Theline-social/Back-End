@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+} from 'typeorm';
 import { User } from './User';
 
 @Entity()
@@ -12,18 +18,21 @@ export class Notification {
   @Column({ type: 'boolean', default: false })
   isSeen: boolean;
 
-  @Column({ type: 'timestamptz' })
-  timestamp: Date;
-
   @Column({ type: 'enum', enum: ['CHAT', 'MENTION', 'FOLLOW', 'UNFOLLOW'] })
   type: string;
 
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  createdAt: Date;
+
   @Column({ type: 'json' })
-  metadata: Object;
+  metadata: any;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  user: User;
+  notificationTo: User;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  sender: User;
+  notificationFrom: User;
 }

@@ -93,11 +93,11 @@ export class TweetsService {
 
     await tweetMentionRepository.insert(tweetMentions);
 
-    // for (const username of usernames) {
-    //   await socketService.emitNotification(user.userId, username, 'MENTION', {
-    //     tweetId: tweet.tweetId,
-    //   });
-    // }
+    for (const username of usernames) {
+      await socketService.emitNotification(user.userId, username, 'MENTION', {
+        tweetId: tweet.tweetId,
+      });
+    }
 
     return { usernames };
   };
@@ -148,7 +148,7 @@ export class TweetsService {
       const { usernames } = await this.extractMentions(
         user,
         body.content,
-        tweet
+        savedtweet
       );
       mentions = usernames;
     }
@@ -187,33 +187,19 @@ export class TweetsService {
     let user = new User();
     user.userId = userId;
 
-    const { tweet } = await this.createTweet(userId, body);
+    const { tweet, mentions } = await this.createTweet(userId, body, TweetType.Reply);
     tweet.replyTo = originaltweet;
-    tweet.type = TweetType.Reply;
 
-    await tweetReplyRepository.save(tweet);
+    const savedtweet = await tweetReplyRepository.save(tweet);
 
     return {
       tweetReply: {
         tweetId,
-        replyId: tweet.tweetId,
-        media: tweet.media,
-
-        content: tweet.content,
-        createdAt: tweet.createdAt,
-        poll: { ...tweet.poll, votesCount: tweet.poll?.totalVoters },
-        tweeter: {
-          imageUrl: tweet.tweeter.imageUrl,
-          username: tweet.tweeter.username,
-          jobtitle: tweet.tweeter.jobtitle,
-          name: tweet.tweeter.name,
-          bio: tweet.tweeter.bio,
-        },
-        mentions: tweet.mentions
-          ? tweet.mentions.map((mention) => {
-              return mention.userMentioned.username;
-            })
-          : [],
+        replyId: savedtweet.tweetId,
+        media: savedtweet.media,
+        content: savedtweet.content,
+        createdAt: savedtweet.createdAt,
+        mentions,
       },
     };
   };
@@ -242,23 +228,24 @@ export class TweetsService {
     tweet.poll = poll;
     tweet.tweeter = user;
 
+    const savedtweet = await tweetRepository.save(tweet);
+
     const { usernames } = await this.extractMentions(
       user,
       body.question,
-      tweet
+      savedtweet
     );
-    await tweetRepository.save(tweet);
 
     return {
       tweet: {
-        tweetId: tweet.tweetId,
-        createdAt: tweet.createdAt,
-        type: tweet.type,
+        tweetId: savedtweet.tweetId,
+        createdAt: savedtweet.createdAt,
+        type: savedtweet.type,
         poll: {
-          pollId: tweet.poll.pollId,
-          question: tweet.poll.question,
-          length: tweet.poll.length,
-          options: tweet.poll.options.map((option) => ({
+          pollId: savedtweet.poll.pollId,
+          question: savedtweet.poll.question,
+          length: savedtweet.poll.length,
+          options: savedtweet.poll.options.map((option) => ({
             optionId: option.optionId,
             text: option.text,
             votesCount: 0,

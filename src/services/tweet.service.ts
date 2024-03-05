@@ -65,14 +65,49 @@ export class TweetsService {
     return { timelineTweets };
   };
 
+  extractMentions = async (user: User, content: string, tweet: Tweet) => {
+    const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
+    const userRepository = AppDataSource.getRepository(User);
+
+    let usernames = (content.match(usernameRegex) as Array<string>) || [];
+
+    if (!usernames) return { usernames: undefined };
+
+    usernames = usernames.map((username) => username.replace('@', ''));
+
+    const users = await userRepository.find({
+      where: { username: In([...usernames]) },
+    });
+
+    let tweetMentions: TweetMention[] = [];
+
+    tweetMentions = users.map((mentioned) => {
+      let newTweetMention = new TweetMention();
+
+      newTweetMention.tweet = tweet;
+      newTweetMention.userMakingMention = user;
+      newTweetMention.userMentioned = mentioned;
+
+      return newTweetMention;
+    });
+
+    await tweetMentionRepository.insert(tweetMentions);
+
+    // for (const username of usernames) {
+    //   await socketService.emitNotification(user.userId, username, 'MENTION', {
+    //     tweetId: tweet.tweetId,
+    //   });
+    // }
+
+    return { usernames };
+  };
+
   createTweet = async (
     userId: number,
     body: { content: string; imageUrls?: string[]; gifUrl?: string },
     type: TweetType = TweetType.Tweet
   ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
-    const userRepository = AppDataSource.getRepository(User);
-    const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
 
     if (
       type !== TweetType.Repost &&
@@ -82,11 +117,8 @@ export class TweetsService {
     )
       throw new AppError('Must provide content or media', 400);
 
-    const user = await userRepository.findOne({
-      where: { userId },
-    });
-
-    if (!user) throw new AppError('User not found', 404);
+    const user = new User();
+    user.userId = userId;
 
     const tweet = new Tweet();
     tweet.content = body.content;
@@ -109,71 +141,35 @@ export class TweetsService {
     }
 
     tweet.media = media;
-    await tweetRepository.save(tweet);
+    const savedtweet = await tweetRepository.save(tweet);
 
+    let mentions: string[] | undefined = [];
     if (body.content) {
-      let usernames =
-        (body.content.match(usernameRegex) as Array<string>) || [];
-
-      if (!usernames) return { tweet };
-
-      usernames = usernames.map((username) => username.replace('@', ''));
-
-      const users = await userRepository.find({
-        where: { username: In([...usernames]) },
-      });
-
-      let tweetMentions: TweetMention[] = [];
-
-      tweetMentions = users.map((mentioned) => {
-        let newTweetMention = new TweetMention();
-
-        newTweetMention.tweet = tweet;
-        newTweetMention.userMakingMention = user;
-        newTweetMention.userMentioned = mentioned;
-
-        return newTweetMention;
-      });
-
-      await tweetMentionRepository.insert(tweetMentions);
-
-      for (const username of usernames) {
-        await socketService.emitNotification(userId, username, 'MENTION', {
-          tweetId: tweet.tweetId,
-        });
-      }
+      const { usernames } = await this.extractMentions(
+        user,
+        body.content,
+        tweet
+      );
+      mentions = usernames;
     }
 
-    return { tweet };
+    return { tweet: savedtweet, mentions };
   };
 
   addTweet = async (
     userId: number,
     body: { content: string; imageUrls?: string[]; gifUrl?: string }
   ) => {
-    const { tweet } = await this.createTweet(userId, body);
+    const { tweet, mentions } = await this.createTweet(userId, body);
 
     return {
       tweet: {
         tweetId: tweet.tweetId,
         media: tweet.media,
-
         content: tweet.content,
         createdAt: tweet.createdAt,
         type: tweet.type,
-        poll: { ...tweet.poll, votesCount: tweet.poll?.totalVoters },
-        tweeter: {
-          imageUrl: tweet.tweeter.imageUrl,
-          username: tweet.tweeter.username,
-          jobtitle: tweet.tweeter.jobtitle,
-          name: tweet.tweeter.name,
-          bio: tweet.tweeter.bio,
-        },
-        mentions: tweet.mentions
-          ? tweet.mentions.map((mention) => {
-              return mention.userMentioned.username;
-            })
-          : [],
+        mentions,
       },
     };
   };
@@ -246,6 +242,11 @@ export class TweetsService {
     tweet.poll = poll;
     tweet.tweeter = user;
 
+    const { usernames } = await this.extractMentions(
+      user,
+      body.question,
+      tweet
+    );
     await tweetRepository.save(tweet);
 
     return {
@@ -253,28 +254,23 @@ export class TweetsService {
         tweetId: tweet.tweetId,
         createdAt: tweet.createdAt,
         type: tweet.type,
-        poll: tweet.poll
-          ? {
-              pollId: tweet.poll.pollId,
-              question: tweet.poll.question,
-              length: tweet.poll.length,
-              options: tweet.poll.options.map((option) => ({
-                optionId: option.optionId,
-                text: option.text,
-                votesCount: 0,
-              })),
-              totalVotesCount: 0,
-            }
-          : {},
+        poll: {
+          pollId: tweet.poll.pollId,
+          question: tweet.poll.question,
+          length: tweet.poll.length,
+          options: tweet.poll.options.map((option) => ({
+            optionId: option.optionId,
+            text: option.text,
+            votesCount: 0,
+          })),
+          totalVotesCount: 0,
+        },
+        mentions: usernames,
       },
     };
   };
 
-  toggleVote = async (
-    userId: number,
-    pollId: number,
-    optionId: number 
-  ) => {
+  toggleVote = async (userId: number, pollId: number, optionId: number) => {
     const pollRepository = AppDataSource.getRepository(Poll);
 
     const poll = await pollRepository.findOne({

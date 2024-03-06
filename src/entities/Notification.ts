@@ -10,8 +10,12 @@ import { User } from './User';
 export enum NotificationType {
   Follow = 'FOLLOW',
   Message = 'MESSAGE',
-  temp = 'REACT',
   
+  temp = 'REACT',
+  temp2 = 'REPOST',
+  temp3 = 'REPLY',
+  temp4 = 'MENTION',
+
   Mention_Reel = 'MENTION_REEL',
   React_Reel = 'REACT_REEL',
   Reply_Reel = 'REPLY_REEL',

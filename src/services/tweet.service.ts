@@ -103,7 +103,7 @@ export class TweetsService {
       await socketService.emitNotification(
         user.userId,
         username,
-        NotificationType.Mention,
+        NotificationType.Mention_Tweet,
         {
           tweetId: tweet.tweetId,
         }
@@ -220,7 +220,7 @@ export class TweetsService {
       await socketService.emitNotification(
         userId,
         orgTweeter.username,
-        NotificationType.Reply,
+        NotificationType.Reply_Tweet,
         { replyId: savedtweet.tweetId }
       );
     }
@@ -718,7 +718,7 @@ export class TweetsService {
         await socketService.emitNotification(
           userId,
           tweet.tweeter.username,
-          NotificationType.React,
+          NotificationType.React_Tweet,
           { tweetId }
         );
       }
@@ -778,7 +778,7 @@ export class TweetsService {
       await socketService.emitNotification(
         userId,
         orgTweeter.username,
-        NotificationType.Repost,
+        NotificationType.Repost_Tweet,
         { retweetId: savedtweet.tweetId }
       );
     }

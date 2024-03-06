@@ -231,4 +231,33 @@ export class UsersService {
       ),
     };
   };
+
+  getBlocked = async (userId: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: {
+        blocked: userProfileSelectOptions,
+      },
+      relations: { blocked: true },
+    });
+
+    return { blocked: user?.blocked };
+  };
+
+  getMuted = async (userId: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: {
+        userId: true,
+        name: true,
+        muted: userProfileSelectOptions,
+      },
+      relations: { muted: true },
+    });
+    console.log(user);
+
+    return { muted: user?.muted };
+  };
 }

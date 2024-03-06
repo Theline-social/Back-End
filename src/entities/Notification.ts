@@ -8,12 +8,18 @@ import {
 import { User } from './User';
 
 export enum NotificationType {
-  Mention = 'MENTION',
   Follow = 'FOLLOW',
   Message = 'MESSAGE',
-  React = 'REACT',
-  Reply = 'REPLY',
-  Repost = 'REPOST',
+
+  Mention_Reel = 'MENTION_REEL',
+  React_Reel = 'REACT_REEL',
+  Reply_Reel = 'REPLY_REEL',
+  Repost_Reel = 'REPOST_REEL',
+
+  Mention_Tweet = 'MENTION_TWEET',
+  React_Tweet = 'REACT_TWEET',
+  Reply_Tweet = 'REPLY_TWEET',
+  Repost_Tweet = 'REPOST_TWEET',
 }
 
 @Entity()

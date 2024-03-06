@@ -21,3 +21,4 @@ export const filterUser = (user: User): userDto => {
     followingsCount: user.followingsCount,
   };
 };
+

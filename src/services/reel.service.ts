@@ -103,7 +103,7 @@ export class ReelsService {
       await socketService.emitNotification(
         user.userId,
         username,
-        NotificationType.Mention,
+        NotificationType.Mention_Reel,
         {
           reelId: reel.reelId,
         }
@@ -226,7 +226,7 @@ export class ReelsService {
       await socketService.emitNotification(
         userId,
         orgReeler.username,
-        NotificationType.Reply,
+        NotificationType.Reply_Reel,
         { replyId: savedreel.reelId }
       );
     }
@@ -596,7 +596,7 @@ export class ReelsService {
       await socketService.emitNotification(
         userId,
         orgReeler.username,
-        NotificationType.React,
+        NotificationType.React_Reel,
         { reelId: savedreel.reelId }
       );
     }
@@ -650,7 +650,7 @@ export class ReelsService {
       await socketService.emitNotification(
         userId,
         orgReeler.username,
-        NotificationType.Repost,
+        NotificationType.Repost_Reel,
         { rereelId: savedreel.reelId }
       );
     }

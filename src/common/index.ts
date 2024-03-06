@@ -1,4 +1,5 @@
 export * from './jwtVerify';
+export * from './utils/notification.type.map';
 
 export * from './utils/swagger';
 export * from './utils/AppError';

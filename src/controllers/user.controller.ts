@@ -205,3 +205,27 @@ export const getReelMentions = catchAsync(
     });
   }
 );
+
+export const getBlocked = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+    const { blocked } = await usersService.getBlocked(+userId);
+
+    res.status(200).json({
+      status: true,
+      data: { blocked },
+    });
+  }
+);
+
+export const getMuted = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+    const { muted } = await usersService.getMuted(+userId);
+
+    res.status(200).json({
+      status: true,
+      data: { muted },
+    });
+  }
+);

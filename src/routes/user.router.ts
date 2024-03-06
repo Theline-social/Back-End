@@ -405,4 +405,46 @@ router
   .route('/current/reel-mentions')
   .get(authController.requireAuth, usersController.getReelMentions);
 
+/**
+ * @swagger
+ * /users/current/muted:
+ *   get:
+ *     summary: Get muted users
+ *     description: Retrieve a list of muted users for the current user.
+ *     security:
+ *       - jwt: []
+ *     tags: [users]
+ *     responses:
+ *       '200':
+ *         description: OK. Muted users retrieved successfully.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve muted users.
+ */
+router
+  .route('/current/muted')
+  .get(authController.requireAuth, usersController.getMuted);
+
+/**
+ * @swagger
+ * /users/current/blocked:
+ *   get:
+ *     summary: Get blocked users
+ *     description: Retrieve a list of blocked users for the current user.
+ *     security:
+ *       - jwt: []
+ *     tags: [users]
+ *     responses:
+ *       '200':
+ *         description: OK. Blocked users retrieved successfully.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve blocked users.
+ */
+router
+  .route('/current/blocked')
+  .get(authController.requireAuth, usersController.getBlocked);
+
 export { router as usersRouter };

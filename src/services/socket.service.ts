@@ -12,6 +12,7 @@ import { Server as SocketIOServer, Socket } from 'socket.io';
 import {
   filterNotification,
   jwtVerifyPromisified,
+  notificationTypeContentMap,
   userProfileRelations,
 } from '../common';
 import { userProfileSelectOptions } from '../common';
@@ -59,29 +60,7 @@ class SocketService {
 
     if (!receiver) throw new AppError('User not found', 404);
 
-    let content = '';
-    switch (type) {
-      case NotificationType.Message:
-        content = `sent you a message`;
-        break;
-      case NotificationType.Mention:
-        content = `mentioned you in a ${metadata.tweetId ? 'diary' : 'reel'}`;
-        break;
-      case NotificationType.Follow:
-        content = `followed you`;
-        break;
-      case NotificationType.Reply:
-        content = `replyed to you`;
-        break;
-      case NotificationType.React:
-        content = `reacted to your ${metadata.tweetId ? 'diary' : 'reel'}`;
-        break;
-      case NotificationType.Repost:
-        content = `reposted your ${metadata.retweetId ? 'diary' : 'reel'}`;
-        break;
-      default:
-        throw new AppError('Unknown notification type: ' + type, 400);
-    }
+    const content = notificationTypeContentMap[type] || 'Unknown notification';
 
     const notification = new Notification();
     notification.notificationFrom = sender;

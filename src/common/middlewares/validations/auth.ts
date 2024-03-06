@@ -82,7 +82,7 @@ export const signupValidationRules = [
 ];
 
 export const signinValidationRules = [
-  body('input').toLowerCase().notEmpty().withMessage('input is required  '),
+  body('input').notEmpty().withMessage('input is required  '),
   body('password').isString().notEmpty().withMessage('Password is required'),
 ];
 

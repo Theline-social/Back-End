@@ -92,11 +92,10 @@ export class UsersService {
     const { input } = body;
     let user: User | null = null;
     const userRepository = AppDataSource.getRepository(User);
-console.log(input);
 
     if (input.match(emailRegex)) {
       user = await userRepository.findOne({
-        where: { email: input },
+        where: { email: input.toLowerCase() },
         select: { email: true, phoneNumber: true, name: true },
       });
     } else if (isPhoneValid(input)) {

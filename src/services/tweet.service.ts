@@ -2,7 +2,13 @@ import { In, Not } from 'typeorm';
 import { AppError, filterTweet, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
 import { Poll, PollOption } from '../entities/Poll';
-import { NotificationType, Tweet, TweetMention, TweetType, User } from '../entities';
+import {
+  NotificationType,
+  Tweet,
+  TweetMention,
+  TweetType,
+  User,
+} from '../entities';
 import * as fs from 'fs';
 
 import socketService from './socket.service';
@@ -94,9 +100,14 @@ export class TweetsService {
     await tweetMentionRepository.insert(tweetMentions);
 
     for (const username of usernames) {
-      await socketService.emitNotification(user.userId, username, NotificationType.Mention, {
-        tweetId: tweet.tweetId,
-      });
+      await socketService.emitNotification(
+        user.userId,
+        username,
+        NotificationType.Mention,
+        {
+          tweetId: tweet.tweetId,
+        }
+      );
     }
 
     return { usernames };
@@ -180,6 +191,7 @@ export class TweetsService {
     body: { content: string; imageUrls: string[]; gifUrl: string }
   ) => {
     const tweetReplyRepository = AppDataSource.getRepository(Tweet);
+    const userRepository = AppDataSource.getRepository(User);
 
     let originaltweet = new Tweet();
     originaltweet.tweetId = tweetId;
@@ -187,10 +199,31 @@ export class TweetsService {
     let user = new User();
     user.userId = userId;
 
-    const { tweet, mentions } = await this.createTweet(userId, body, TweetType.Reply);
+    const { tweet, mentions } = await this.createTweet(
+      userId,
+      body,
+      TweetType.Reply
+    );
     tweet.replyTo = originaltweet;
 
     const savedtweet = await tweetReplyRepository.save(tweet);
+
+    const orgTweeter = await userRepository.findOne({
+      where: { tweets: { tweetId } },
+      relations: { following: true },
+    });
+
+    if (
+      orgTweeter &&
+      orgTweeter.following.some((followee) => followee.userId === userId)
+    ) {
+      await socketService.emitNotification(
+        userId,
+        orgTweeter.username,
+        NotificationType.Reply,
+        { replyId: savedtweet.tweetId }
+      );
+    }
 
     return {
       tweetReply: {
@@ -658,7 +691,12 @@ export class TweetsService {
 
     const tweet = await tweetRepository.findOne({
       where: { tweetId },
-      relations: ['reacts'],
+      relations: {
+        reacts: true,
+        tweeter: {
+          following: true,
+        },
+      },
     });
 
     if (!tweet) throw new AppError('No tweet found', 404);
@@ -671,6 +709,19 @@ export class TweetsService {
       let user = new User();
       user.userId = userId;
       tweet.reacts.push(user);
+
+      if (
+        tweet?.tweeter &&
+        tweet.tweeter.following.some((followee) => followee.userId === userId)
+      ) {
+        
+        await socketService.emitNotification(
+          userId,
+          tweet.tweeter.username,
+          NotificationType.React,
+          { tweetId }
+        );
+      }
     }
 
     await tweetRepository.save(tweet);
@@ -713,13 +764,29 @@ export class TweetsService {
     const { tweet } = await this.createTweet(userId, body, type);
     tweet.retweetTo = orgTweet;
 
-    await tweetRepository.save(tweet);
+    const savedtweet = await tweetRepository.save(tweet);
 
+    const orgTweeter = await userRepository.findOne({
+      where: { tweets: { tweetId } },
+      relations: { following: true },
+    });
+
+    if (
+      orgTweeter &&
+      orgTweeter.following.some((followee) => followee.userId === userId)
+    ) {
+      await socketService.emitNotification(
+        userId,
+        orgTweeter.username,
+        NotificationType.Repost,
+        { retweetId: savedtweet.tweetId }
+      );
+    }
     return {
       retweet: {
-        retweetId: tweet.tweetId,
-        createdAt: tweet.createdAt,
-        content: tweet.content,
+        retweetId: savedtweet.tweetId,
+        createdAt: savedtweet.createdAt,
+        content: savedtweet.content,
         tweet: {
           tweetId,
         },

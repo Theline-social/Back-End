@@ -70,6 +70,15 @@ class SocketService {
       case NotificationType.Follow:
         content = `followed you`;
         break;
+      case NotificationType.Reply:
+        content = `replyed to you`;
+        break;
+      case NotificationType.React:
+        content = `reacted to your ${metadata.tweetId ? 'diary' : 'reel'}`;
+        break;
+      case NotificationType.Repost:
+        content = `reposted your ${metadata.retweetId ? 'diary' : 'reel'}`;
+        break;
       default:
         throw new AppError('Unknown notification type: ' + type, 400);
     }

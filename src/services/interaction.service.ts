@@ -1,6 +1,9 @@
 import { AppError } from '../common';
 import { AppDataSource } from '../dataSource';
-import { User } from '../entities';
+import { NotificationType, User } from '../entities';
+
+import socketService from './socket.service';
+
 
 export class InteractionsService {
   constructor() {}
@@ -25,7 +28,9 @@ export class InteractionsService {
         where: { username: followingUsername },
         select: { userId: true },
       })) as User;
+
       user.following.push(followingUser);
+      await socketService.emitNotification(userId,followingUsername,NotificationType.Follow)
     }
 
     await userRepository.save(user);

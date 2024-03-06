@@ -2,7 +2,14 @@ import { In, Not } from 'typeorm';
 import * as fs from 'fs';
 import { AppError, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
-import { Reel, ReelMention, Topic, ReelType, User, NotificationType } from '../entities';
+import {
+  Reel,
+  ReelMention,
+  Topic,
+  ReelType,
+  User,
+  NotificationType,
+} from '../entities';
 import socketService from './socket.service';
 import {
   reelRelations,
@@ -93,9 +100,14 @@ export class ReelsService {
     await reelMentionRepository.insert(reelMentions);
 
     for (const username of usernames) {
-      await socketService.emitNotification(user.userId, username, NotificationType.Mention, {
-        reelId: reel.reelId,
-      });
+      await socketService.emitNotification(
+        user.userId,
+        username,
+        NotificationType.Mention,
+        {
+          reelId: reel.reelId,
+        }
+      );
     }
 
     return { usernames };
@@ -184,6 +196,7 @@ export class ReelsService {
     body: { content: string; reelUrl: string; topics: string[] }
   ) => {
     const reelReplyRepository = AppDataSource.getRepository(Reel);
+    const userRepository = AppDataSource.getRepository(User);
 
     let originalreel = new Reel();
     originalreel.reelId = reelId;
@@ -191,11 +204,32 @@ export class ReelsService {
     let user = new User();
     user.userId = userId;
 
-    const { reel, mentions } = await this.createReel(userId, body, ReelType.Reply);
+    const { reel, mentions } = await this.createReel(
+      userId,
+      body,
+      ReelType.Reply
+    );
     reel.replyTo = originalreel;
     reel.type = ReelType.Reply;
 
     const savedreel = await reelReplyRepository.save(reel);
+
+    const orgReeler = await userRepository.findOne({
+      where: { reels: { reelId } },
+      relations: { following: true },
+    });
+
+    if (
+      orgReeler &&
+      orgReeler.following.some((followee) => followee.userId === userId)
+    ) {
+      await socketService.emitNotification(
+        userId,
+        orgReeler.username,
+        NotificationType.Reply,
+        { replyId: savedreel.reelId }
+      );
+    }
 
     return {
       reelReply: {
@@ -529,6 +563,7 @@ export class ReelsService {
 
   toggleReelReact = async (userId: number, reelId: number) => {
     const reelRepository = AppDataSource.getRepository(Reel);
+    const userRepository = AppDataSource.getRepository(User);
 
     const reel = await reelRepository.findOne({
       where: { reelId },
@@ -547,7 +582,24 @@ export class ReelsService {
       reel.reacts.push(user);
     }
 
-    await reelRepository.save(reel);
+    const savedreel = await reelRepository.save(reel);
+
+    const orgReeler = await userRepository.findOne({
+      where: { reels: { reelId } },
+      relations: { following: true },
+    });
+
+    if (
+      orgReeler &&
+      orgReeler.following.some((followee) => followee.userId === userId)
+    ) {
+      await socketService.emitNotification(
+        userId,
+        orgReeler.username,
+        NotificationType.React,
+        { reelId: savedreel.reelId }
+      );
+    }
   };
 
   addRereel = async (
@@ -584,7 +636,24 @@ export class ReelsService {
     const { reel } = await this.createReel(userId, body, type);
     reel.rereelTo = orgReel;
 
-    await reelRepository.save(reel);
+    const savedreel = await reelRepository.save(reel);
+
+    const orgReeler = await userRepository.findOne({
+      where: { reels: { reelId } },
+      relations: { following: true },
+    });
+
+    if (
+      orgReeler &&
+      orgReeler.following.some((followee) => followee.userId === userId)
+    ) {
+      await socketService.emitNotification(
+        userId,
+        orgReeler.username,
+        NotificationType.Repost,
+        { rereelId: savedreel.reelId }
+      );
+    }
 
     return {
       rereel: {

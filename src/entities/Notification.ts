@@ -11,6 +11,9 @@ export enum NotificationType {
   Mention = 'MENTION',
   Follow = 'FOLLOW',
   Message = 'MESSAGE',
+  React = 'REACT',
+  Reply = 'REPLY',
+  Repost = 'REPOST',
 }
 
 @Entity()
@@ -24,7 +27,7 @@ export class Notification {
   @Column({ type: 'boolean', default: false })
   isSeen: boolean;
 
-  @Column({ type: 'enum', enum: NotificationType})
+  @Column({ type: 'enum', enum: NotificationType })
   type: NotificationType;
 
   @CreateDateColumn({

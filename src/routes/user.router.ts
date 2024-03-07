@@ -447,4 +447,33 @@ router
   .route('/current/blocked')
   .get(authController.requireAuth, usersController.getBlocked);
 
+/**
+ * @swagger
+ * /users/{username}/profile:
+ *   get:
+ *     summary: Get the profile of a user by username
+ *     description: Retrieve the profile data.
+ *     security:
+ *       - jwt: []
+ *     tags: [users]
+ *     parameters:
+ *       - name: username
+ *         in: path
+ *         description: username of the user to get his profile.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK. Blocked users retrieved successfully.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve blocked users.
+ */
+
+router
+  .route('/:username/profile')
+  .get(authController.requireAuth, usersController.getUserProfile);
+
 export { router as usersRouter };

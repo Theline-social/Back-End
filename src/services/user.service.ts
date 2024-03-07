@@ -4,7 +4,9 @@ import {
   Password,
   emailRegex,
   filterTweet,
+  filterUser,
   filterUserProfile,
+  getFullUserProfile,
   isPhoneValid,
 } from '../common';
 import { filterReel } from '../common/filters/reels/filterReel';
@@ -119,6 +121,22 @@ export class UsersService {
         name: user?.name,
       },
     };
+  };
+
+  getUserProfile = async (username: string, userId: number) => {
+    const user = await AppDataSource.getRepository(User).findOne({
+      where: { username },
+      relations: {
+        followers: true,
+        following: true,
+        blocked: true,
+        muted: true,
+      },
+    });
+
+    if (!user) throw new AppError('user not found', 404);
+
+    return { user: getFullUserProfile(user, userId) };
   };
 
   getTweetBookmarks = async (userId: number) => {

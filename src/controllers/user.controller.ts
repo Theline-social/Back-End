@@ -229,3 +229,18 @@ export const getMuted = catchAsync(
     });
   }
 );
+
+export const getUserProfile = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+    const { user } = await usersService.getUserProfile(
+      req.params.username,
+      +userId
+    );
+
+    res.status(200).json({
+      status: true,
+      data: { user },
+    });
+  }
+);

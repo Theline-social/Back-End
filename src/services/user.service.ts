@@ -4,6 +4,7 @@ import {
   Password,
   emailRegex,
   filterTweet,
+  filterUserProfile,
   isPhoneValid,
 } from '../common';
 import { filterReel } from '../common/filters/reels/filterReel';
@@ -120,32 +121,6 @@ export class UsersService {
     };
   };
 
-  getFollowers = async (userId: number) => {
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({
-      where: { userId },
-      select: {
-        followers: userProfileSelectOptions,
-      },
-      relations: { followers: true },
-    });
-
-    return { followers: user?.followers };
-  };
-
-  getFollowings = async (userId: number) => {
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({
-      where: { userId },
-      select: {
-        following: userProfileSelectOptions,
-      },
-      relations: { following: true },
-    });
-
-    return { followings: user?.following };
-  };
-
   getTweetBookmarks = async (userId: number) => {
     const userRepository = AppDataSource.getRepository(User);
 
@@ -232,17 +207,76 @@ export class UsersService {
     };
   };
 
+  getFollowers = async (userId: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: {
+        followers: userProfileSelectOptions,
+      },
+      relations: {
+        followers: {
+          blocked: true,
+          muted: true,
+          followers: true,
+          following: true,
+        },
+      },
+    });
+
+    return {
+      followers: user?.followers.map((follower) =>
+        filterUserProfile(follower, userId)
+      ),
+    };
+  };
+
+  getFollowings = async (userId: number) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: {
+        following: userProfileSelectOptions,
+      },
+      relations: {
+        following: {
+          blocked: true,
+          muted: true,
+          followers: true,
+          following: true,
+        },
+      },
+    });
+
+    return {
+      followings: user?.following.map((followee) =>
+        filterUserProfile(followee, userId)
+      ),
+    };
+  };
+
   getBlocked = async (userId: number) => {
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({
       where: { userId },
       select: {
-        blocked: userProfileSelectOptions,
+        blocking: userProfileSelectOptions,
       },
-      relations: { blocked: true },
+      relations: {
+        blocking: {
+          blocked: true,
+          muted: true,
+          followers: true,
+          following: true,
+        },
+      },
     });
 
-    return { blocked: user?.blocked };
+    return {
+      blocked: user?.blocking.map((blocked) =>
+        filterUserProfile(blocked, userId)
+      ),
+    };
   };
 
   getMuted = async (userId: number) => {
@@ -250,14 +284,20 @@ export class UsersService {
     const user = await userRepository.findOne({
       where: { userId },
       select: {
-        userId: true,
-        name: true,
-        muted: userProfileSelectOptions,
+        muting: userProfileSelectOptions,
       },
-      relations: { muted: true },
+      relations: {
+        muting: {
+          blocked: true,
+          muted: true,
+          followers: true,
+          following: true,
+        },
+      },
     });
-    console.log(user);
 
-    return { muted: user?.muted };
+    return {
+      muted: user?.muting.map((muted) => filterUserProfile(muted, userId)),
+    };
   };
 }

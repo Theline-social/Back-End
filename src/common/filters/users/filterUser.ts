@@ -1,5 +1,5 @@
 import { User } from '../../../entities';
-import { userDto } from './userDto';
+import { ProfileDto, userDto } from './userDto';
 
 export const filterUser = (user: User): userDto => {
   return {
@@ -22,3 +22,18 @@ export const filterUser = (user: User): userDto => {
   };
 };
 
+export const filterUserProfile = (user: User, userId: number): ProfileDto => {
+  return {
+    userId: user.userId,
+    imageUrl: user.imageUrl,
+    username: user.username,
+    jobtitle: user.jobtitle,
+    name: user.name,
+    bio: user.bio,
+    followersCount: user.followersCount,
+    followingsCount: user.followingsCount,
+    isMuted: user.isMutedBy(userId),
+    isBlocked: user.isBlockedBy(userId),
+    isFollowed: user.isFollowedBy(userId),
+  };
+};

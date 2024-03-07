@@ -1,5 +1,5 @@
 import { In, Not } from 'typeorm';
-import { AppError, filterTweet, usernameRegex } from '../common';
+import { AppError, extractTags, filterTweet, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
 import { Poll, PollOption } from '../entities/Poll';
 import {
@@ -17,6 +17,7 @@ import {
   tweetRelations,
   tweetSelectOptions,
 } from '../common/filters/tweets/tweetSelectOptions';
+import { Tag } from '../entities/Tag';
 
 export class TweetsService {
   constructor() {}
@@ -82,6 +83,7 @@ export class TweetsService {
     usernames = usernames.map((username) => username.replace('@', ''));
 
     const users = await userRepository.find({
+      select: { userId: true, username: true },
       where: { username: In([...usernames]) },
     });
 
@@ -98,6 +100,8 @@ export class TweetsService {
     });
 
     await tweetMentionRepository.insert(tweetMentions);
+
+    usernames = users.map((user) => user.username);
 
     for (const username of usernames) {
       await socketService.emitNotification(
@@ -152,6 +156,9 @@ export class TweetsService {
     }
 
     tweet.media = media;
+    const { hashtags } = await extractTags(body.content);
+    tweet.tags = hashtags || [];
+
     const savedtweet = await tweetRepository.save(tweet);
 
     let mentions: string[] | undefined = [];
@@ -714,7 +721,6 @@ export class TweetsService {
         tweet?.tweeter &&
         tweet.tweeter.following.some((followee) => followee.userId === userId)
       ) {
-        
         await socketService.emitNotification(
           userId,
           tweet.tweeter.username,
@@ -818,5 +824,17 @@ export class TweetsService {
     }
 
     await userRepository.save(user);
+  };
+
+  getTweetsSupportingTag = async (userId: number, tag: string) => {
+    const tweets = await AppDataSource.getRepository(Tweet).find({
+      where: { tags: { tag } },
+      select: tweetSelectOptions,
+      relations: tweetRelations,
+    });
+
+    return {
+      tweets: tweets.map((tweet) => filterTweet(tweet, userId)),
+    };
   };
 }

@@ -11,3 +11,4 @@ export * from './Topic';
 export * from './Reel';
 export * from './Poll';
 export * from './Media';
+export * from './Tag';

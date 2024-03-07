@@ -617,4 +617,38 @@ router
     validateRequest,
     tweetsController.toggleBookmark
   );
+
+
+  /**
+ * @swagger
+ * /tweets/supporting/{tag}:
+ *   get:
+ *     summary: Retrieve tweets supporting a specific tag
+ *     tags:
+ *       - tweets
+ *     description: |
+ *       This endpoint retrieves tweets that support a specific tag.
+ *     parameters:
+ *       - in: path
+ *         name: tag
+ *         required: true
+ *         description: The tag for which tweets are to be retrieved.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK. Tweets  fetched successfully.
+ *       '400':
+ *         description: Bad Request. Invalid request parameters.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '404':
+ *         description: Not Found. Reel with the provided ID not found.
+ *       '500':
+ *         description: Internal Server Error. Failed to get the tweets.
+ */
+router
+  .route('/supporting/:tag')
+  .get(authController.requireAuth, tweetsController.getTweetsSupportingTag);
+
 export { router as tweetsRouter };

@@ -11,6 +11,7 @@ import {
 import { User } from './User';
 import { ReelMention } from './ReelMention';
 import { Topic } from './Topic';
+import { Tag } from './Tag';
 
 export enum ReelType {
   Reel = 'Reel',
@@ -78,6 +79,9 @@ export class Reel {
     onDelete: 'CASCADE',
   })
   bookmarkedBy: User[];
+
+  @ManyToMany(() => Tag, (trend) => trend.reels, { onDelete: 'NO ACTION' })
+  tags: Tag[];
 
   get reactCount(): number {
     return this.reacts ? this.reacts.length : 0;

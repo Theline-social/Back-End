@@ -13,6 +13,7 @@ import { User } from './User';
 import { TweetMention } from './TweetMention';
 import { Poll } from './Poll';
 import { TweetMedia } from './Media';
+import { Tag } from './Tag';
 
 export enum TweetType {
   Tweet = 'Tweet',
@@ -83,6 +84,9 @@ export class Tweet {
     cascade: true,
   })
   poll: Poll;
+
+  @ManyToMany(() => Tag, (trend) => trend.tweets, { onDelete: 'NO ACTION' })
+  tags: Tag[];
 
   get reactCount(): number {
     return this.reacts ? this.reacts.length : 0;

@@ -1,6 +1,6 @@
 import { In, Not } from 'typeorm';
 import * as fs from 'fs';
-import { AppError, usernameRegex } from '../common';
+import { AppError, extractTags, usernameRegex } from '../common';
 import { AppDataSource } from '../dataSource';
 import {
   Reel,
@@ -82,6 +82,7 @@ export class ReelsService {
     usernames = usernames.map((username) => username.replace('@', ''));
 
     const users = await userRepository.find({
+      select: { userId: true, username: true },
       where: { username: In([...usernames]) },
     });
 
@@ -98,6 +99,8 @@ export class ReelsService {
     });
 
     await reelMentionRepository.insert(reelMentions);
+
+    usernames = users.map((user) => user.username);
 
     for (const username of usernames) {
       await socketService.emitNotification(
@@ -149,6 +152,9 @@ export class ReelsService {
     reel.reeler = user;
     reel.supportedTopics = supportedtopics;
     reel.type = type;
+
+    const { hashtags } = await extractTags(body.content);
+    reel.tags = hashtags || [];
 
     const savedreel = await reelRepository.save(reel);
 
@@ -691,5 +697,17 @@ export class ReelsService {
     }
 
     await userRepository.save(user);
+  };
+
+  getReelsSupportingTag = async (userId: number, tag: string, lang: string) => {
+    const reels = await AppDataSource.getRepository(Reel).find({
+      where: { tags: { tag } },
+      select: reelSelectOptions,
+      relations: reelRelations,
+    });
+
+    return {
+      reels: reels.map((reel) => filterReel(reel, userId, lang)),
+    };
   };
 }

@@ -491,4 +491,37 @@ router
     validateRequest,
     reelsController.toggleBookmark
   );
+
+/**
+ * @swagger
+ * /reels/supporting/{tag}:
+ *   get:
+ *     summary: Retrieve reels supporting a specific tag
+ *     tags:
+ *       - reels
+ *     description: |
+ *       This endpoint retrieves reels that support a specific tag.
+ *     parameters:
+ *       - in: path
+ *         name: tag
+ *         required: true
+ *         description: The tag for which reels are to be retrieved.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK. Reels fetched successfully.
+ *       '400':
+ *         description: Bad Request. Invalid request parameters.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '404':
+ *         description: Not Found. Reel with the provided ID not found.
+ *       '500':
+ *         description: Internal Server Error. Failed to get the reels.
+ */
+router
+  .route('/supporting/:tag')
+  .get(authController.requireAuth, reelsController.getReelsSupportingTag);
+
 export { router as reelsRouter };

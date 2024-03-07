@@ -56,7 +56,7 @@ export const getTimelineReels = catchAsync(
       userId,
       +(page as string),
       +(limit as string),
-      lang,
+      lang
     );
 
     res.status(201).json({
@@ -163,7 +163,11 @@ export const getReel = catchAsync(
     const userId = res.locals.currentUser.userId;
     const lang = req.headers['accept-language'] as string;
 
-    const { reel } = await reelsService.getReel(+userId, +req.params.reelId, lang);
+    const { reel } = await reelsService.getReel(
+      +userId,
+      +req.params.reelId,
+      lang
+    );
 
     res.status(200).json({
       status: true,
@@ -209,7 +213,7 @@ export const addRereel = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { rereel , message} = await reelsService.addRereel(
+    const { rereel, message } = await reelsService.addRereel(
       +userId,
       +req.params.reelId,
       req.body
@@ -232,6 +236,24 @@ export const toggleBookmark = catchAsync(
     res.status(200).json({
       status: true,
       message: 'reel bookmark toggled successfully',
+    });
+  }
+);
+
+export const getReelsSupportingTag = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+    const lang = req.headers['accept-language'] as string;
+
+    const { reels } = await reelsService.getReelsSupportingTag(
+      +userId,
+      req.params.tag,
+      lang
+    );
+
+    res.status(200).json({
+      status: true,
+      data: { reels },
     });
   }
 );

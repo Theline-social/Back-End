@@ -29,3 +29,6 @@ export * from './filters/users/filterUser';
 export * from './filters/users/userDto';
 export * from './filters/users/userSelectOptions';
 export * from './filters/notifications/filterNotification';
+
+
+export * from './utils/extractTags'

@@ -130,7 +130,11 @@ export const toggleVote = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    await tweetsService.toggleVote(userId, +req.params.pollId, +req.params.optionId);
+    await tweetsService.toggleVote(
+      userId,
+      +req.params.pollId,
+      +req.params.optionId
+    );
 
     res.status(201).json({
       status: true,
@@ -290,6 +294,22 @@ export const toggleBookmark = catchAsync(
     res.status(200).json({
       status: true,
       message: 'tweet bookmark toggled successfully',
+    });
+  }
+);
+
+export const getTweetsSupportingTag = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { tweets } = await tweetsService.getTweetsSupportingTag(
+      +userId,
+      req.params.tag
+    );
+
+    res.status(200).json({
+      status: true,
+      data: { tweets },
     });
   }
 );

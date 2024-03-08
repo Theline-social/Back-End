@@ -183,11 +183,21 @@ export class UsersService {
   getUserProfile = async (username: string, userId: number) => {
     const user = await AppDataSource.getRepository(User).findOne({
       where: { username },
+      select: {
+        followers: { userId: true },
+        following: { userId: true },
+        blocked: { userId: true },
+        muted: { userId: true },
+        tweets: { tweetId: true },
+        reels: { reelId: true },
+      },
       relations: {
         followers: true,
         following: true,
         blocked: true,
         muted: true,
+        tweets: true,
+        reels: true,
       },
     });
 

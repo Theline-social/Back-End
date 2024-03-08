@@ -244,3 +244,22 @@ export const getUserProfile = catchAsync(
     });
   }
 );
+
+export const searchUsers = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+    let { page, limit, nameorusername } = req.query;
+
+    const { users } = await usersService.search(
+      +userId,
+      nameorusername as string,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
+
+    res.status(200).json({
+      status: true,
+      data: { users },
+    });
+  }
+);

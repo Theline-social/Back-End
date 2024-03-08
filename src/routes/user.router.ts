@@ -476,4 +476,45 @@ router
   .route('/:username/profile')
   .get(authController.requireAuth, usersController.getUserProfile);
 
+/**
+ * @swagger
+ * /users/search:
+ *   get:
+ *     summary: Search for users by name or username
+ *     description: |
+ *       This endpoint allows authenticated users to search for other users by their name or username.
+ *       Results are sorted by relevance and returned with pagination.
+ *     tags:
+ *       - users
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: nameorusername
+ *         description: Name or username to search for (partial match)
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         description: Page number for pagination (default 1)
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         description: Number of results per page (default 10)
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: OK. users retrieved successfully.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve users.
+ */
+
+router
+  .route('/search')
+  .get(authController.requireAuth, usersController.searchUsers);
+
 export { router as usersRouter };

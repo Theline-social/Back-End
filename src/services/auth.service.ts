@@ -194,7 +194,7 @@ class AuthService {
     const userRepository = AppDataSource.getRepository(User);
 
     const response = await fetch(
-      `https://www.googleapis.com/oauth2/v3/userinfo`,
+      `https://www.googleapis.com/oauth2/v3/userinfo?scope=email profile https://www.googleapis.com/auth/user.phonenumbers.read openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile`,
       {
         headers: {
           Authorization: `Bearer ${googleAccessToken}`,
@@ -206,6 +206,8 @@ class AuthService {
 
     const { email, name, picture, phone_number, username, sub } =
       await response.json();
+
+    console.log(email, name, picture, phone_number, username);
 
     let existingUser: User | null = null;
     const isUserExists = await userRepository.exists({

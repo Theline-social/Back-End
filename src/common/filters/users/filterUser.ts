@@ -22,7 +22,7 @@ export const filterUser = (user: User): userDto => {
   };
 };
 
-export const filterUserProfile = (user: User, userId: number): ProfileDto => {
+export const getPartialUserProfile = (user: User, userId: number): ProfileDto => {
   return {
     userId: user.userId,
     imageUrl: user.imageUrl,

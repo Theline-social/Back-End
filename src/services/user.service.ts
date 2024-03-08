@@ -1,3 +1,4 @@
+import { ILike, Like } from 'typeorm';
 import {
   AppError,
   ChangePasswordBody,
@@ -5,7 +6,7 @@ import {
   emailRegex,
   filterTweet,
   filterUser,
-  filterUserProfile,
+  getPartialUserProfile,
   getFullUserProfile,
   isPhoneValid,
 } from '../common';
@@ -244,7 +245,7 @@ export class UsersService {
 
     return {
       followers: user?.followers.map((follower) =>
-        filterUserProfile(follower, userId)
+        getPartialUserProfile(follower, userId)
       ),
     };
   };
@@ -268,7 +269,7 @@ export class UsersService {
 
     return {
       followings: user?.following.map((followee) =>
-        filterUserProfile(followee, userId)
+        getPartialUserProfile(followee, userId)
       ),
     };
   };
@@ -292,7 +293,7 @@ export class UsersService {
 
     return {
       blocked: user?.blocking.map((blocked) =>
-        filterUserProfile(blocked, userId)
+        getPartialUserProfile(blocked, userId)
       ),
     };
   };
@@ -315,7 +316,36 @@ export class UsersService {
     });
 
     return {
-      muted: user?.muting.map((muted) => filterUserProfile(muted, userId)),
+      muted: user?.muting.map((muted) => getPartialUserProfile(muted, userId)),
+    };
+  };
+
+  search = async (
+    userId: number,
+    nameorusernametosearch: string,
+    page: number = 1,
+    limit: number = 30
+  ) => {
+    const userRepository = AppDataSource.getRepository(User);
+
+    const users = await userRepository.find({
+      where: [
+        { name: ILike(`%${nameorusernametosearch.toLowerCase()}%`) },
+        { username: ILike(`%${nameorusernametosearch.toLowerCase()}%`) },
+      ],
+      relations: {
+        followers: true,
+        following: true,
+        blocked: true,
+        muted: true,
+      },
+      order: { name: 'ASC' },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    return {
+      users: users.map((user) => getPartialUserProfile(user, userId)),
     };
   };
 }

@@ -278,7 +278,7 @@ router.route('/signout').post(authController.signout);
 
 /**
  * @swagger
- * /sign-with-google:
+ * /auth/sign-with-google:
  *   post:
  *     summary: Sign in with Google
  *     description: Authenticate user using Google OAuth2 access token

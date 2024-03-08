@@ -127,7 +127,7 @@ export class ReelsService {
     if (type == ReelType.Reel && (!body.reelUrl || !body.topics))
       throw new AppError('Must provide a reel vedio and topic', 400);
 
-    if (type == ReelType.Quote && !body.content)
+    if ((type == ReelType.Quote || type == ReelType.Reply) && !body.content)
       throw new AppError('Must provide a quote', 400);
 
     const supportedtopics = body.topics
@@ -199,7 +199,7 @@ export class ReelsService {
   addReelReply = async (
     userId: number,
     reelId: number,
-    body: { content: string; reelUrl: string; topics: string[] }
+    body: { content: string }
   ) => {
     const reelReplyRepository = AppDataSource.getRepository(Reel);
     const userRepository = AppDataSource.getRepository(User);

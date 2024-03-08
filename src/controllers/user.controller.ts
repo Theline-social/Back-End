@@ -33,7 +33,7 @@ export const resizePhoto = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.file) return new AppError('No file Uploaded!', 400);
+  if (!req.file) return next();
   const { userId } = res.locals.currentUser;
   const uniqueSuffix = Date.now() + '-' + userId;
 
@@ -54,16 +54,20 @@ export const resizePhoto = async (
     }
   );
 
+  next();
+};
+
+export const uploadPhoto = upload.single('image_profile');
+
+export const uploadProfilePhoto = async (req: Request, res: Response) => {
   res.status(200).json({
     status: 200,
     message: 'Photo Uploaded Successfully',
     data: {
-      imageUrl: `user-${uniqueSuffix}.jpeg`,
+      imageUrl: req.body.imageUrl,
     },
   });
 };
-
-export const uploadPhoto = upload.single('image_profile');
 
 export const getMe = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -260,6 +264,50 @@ export const searchUsers = catchAsync(
     res.status(200).json({
       status: true,
       data: { users },
+    });
+  }
+);
+
+export const editUserProfile = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { user } = await usersService.editUserProfile(+userId, req.body);
+
+    res.status(200).json({
+      status: true,
+      message: 'User profile updated successfully',
+      data: { user },
+    });
+  }
+);
+
+export const getUserTweets = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { tweets } = await usersService.getUserTweets(+userId);
+
+    res.status(200).json({
+      status: true,
+      message: 'User profile updated successfully',
+      data: { tweets },
+    });
+  }
+);
+
+export const getUserReels = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const lang = req.headers['accept-language'] as string;
+
+    const { reels } = await usersService.getUserReels(+userId, lang);
+
+    res.status(200).json({
+      status: true,
+      message: 'User profile updated successfully',
+      data: { reels },
     });
   }
 );

@@ -227,7 +227,8 @@ router
   .post(
     authController.requireAuth,
     usersController.uploadPhoto,
-    usersController.resizePhoto
+    usersController.resizePhoto,
+    usersController.uploadProfilePhoto
   );
 
 /**
@@ -516,5 +517,112 @@ router
 router
   .route('/search')
   .get(authController.requireAuth, usersController.searchUsers);
+
+/**
+ * @swagger
+ * /users/current/edit-profile:
+ *   patch:
+ *     summary: Edit current user's profile
+ *     description: Edit the profile of the currently authenticated user.
+ *     tags:
+ *       - users
+ *     security:
+ *       - bearerAuth: []
+ *     consumes:
+ *       - multipart/form-data
+ *     parameters:
+ *       - name: image_profile
+ *         in: formData
+ *         description: file of the user's profile image.
+ *         required: false
+ *         type: file
+ *       - name: name
+ *         in: formData
+ *         description: Name of the user.
+ *         required: false
+ *         type: string
+ *       - name: bio
+ *         in: formData
+ *         description: Biography of the user.
+ *         required: false
+ *         type: string
+ *       - name: location
+ *         in: formData
+ *         description: Location of the user.
+ *         required: false
+ *         type: string
+ *       - name: jobtitle
+ *         in: formData
+ *         description: Job title of the user.
+ *         required: false
+ *         type: string
+ *       - name: birthday
+ *         in: formData
+ *         description: Birthday of the user.
+ *         required: false
+ *         type: string
+ *         format: date
+ *     responses:
+ *       '200':
+ *         description: Profile edited successfully.
+ *       '400':
+ *         description: Bad request. Invalid data provided.
+ *       '401':
+ *         description: Unauthorized. User must be authenticated.
+ *       '500':
+ *         description: Internal server error. Failed to edit profile.
+ */
+router
+  .route('/current/edit-profile')
+  .patch(
+    authController.requireAuth,
+    usersController.uploadPhoto,
+    usersController.resizePhoto,
+    usersController.editUserProfile
+  );
+
+/**
+ * @swagger
+ * /users/current/tweets:
+ *   get:
+ *     summary: Get current user's tweets
+ *     description: Retrieve tweets posted by the currently authenticated user.
+ *     tags:
+ *       - users
+ *     security:
+ *       - jwt: []
+ *     responses:
+ *       '200':
+ *         description: Successful operation. Returns the user's tweets.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve tweets.
+ */
+router
+  .route('/current/tweets')
+  .get(authController.requireAuth, usersController.getUserTweets);
+
+/**
+ * @swagger
+ * /users/current/reels:
+ *   get:
+ *     summary: Get current user's reels
+ *     description: Retrieve reels posted by the currently authenticated user.
+ *     tags:
+ *       - users
+ *     security:
+ *       - jwt: []
+ *     responses:
+ *       '200':
+ *         description: Successful operation. Returns the user's reels.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve reels.
+ */
+router
+  .route('/current/reels')
+  .get(authController.requireAuth, usersController.getUserReels);
 
 export { router as usersRouter };

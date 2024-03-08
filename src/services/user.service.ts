@@ -1,4 +1,4 @@
-import { ILike, Like } from 'typeorm';
+import { ILike, Like, Not } from 'typeorm';
 import {
   AppError,
   ChangePasswordBody,
@@ -9,6 +9,7 @@ import {
   getPartialUserProfile,
   getFullUserProfile,
   isPhoneValid,
+  editProfileBody,
 } from '../common';
 import { filterReel } from '../common/filters/reels/filterReel';
 import {
@@ -21,7 +22,15 @@ import {
 } from '../common/filters/tweets/tweetSelectOptions';
 import { userProfileSelectOptions } from '../common/filters/users/userSelectOptions';
 import { AppDataSource } from '../dataSource';
-import { ReelMention, TweetMention, User } from '../entities';
+import {
+  Reel,
+  ReelMention,
+  ReelType,
+  Tweet,
+  TweetMention,
+  TweetType,
+  User,
+} from '../entities';
 
 export class UsersService {
   constructor() {}
@@ -346,6 +355,73 @@ export class UsersService {
 
     return {
       users: users.map((user) => getPartialUserProfile(user, userId)),
+    };
+  };
+
+  editUserProfile = async (userId: number, body: editProfileBody) => {
+    const userProfileRepository = AppDataSource.getRepository(User);
+
+    let userProfile = await userProfileRepository.findOne({
+      where: { userId },
+      relations: { followers: true, following: true },
+    });
+
+    if (!userProfile) {
+      throw new Error('User profile not found');
+    }
+
+    if (body.name !== undefined) {
+      userProfile.name = body.name;
+    }
+    if (body.bio !== undefined) {
+      userProfile.bio = body.bio;
+    }
+    if (body.location !== undefined) {
+      userProfile.location = body.location;
+    }
+    if (body.jobtitle !== undefined) {
+      userProfile.jobtitle = body.jobtitle;
+    }
+    if (body.dateOfBirth !== undefined) {
+      userProfile.dateOfBirth = body.dateOfBirth;
+    }
+
+    const saveduser = await userProfileRepository.save(userProfile);
+
+    return { user: filterUser(saveduser) };
+  };
+
+  getUserReels = async (userId: number, lang: string = 'ar') => {
+    const reelRepository = AppDataSource.getRepository(Reel);
+
+    const reels = await reelRepository.find({
+      where: { reeler: { userId }, type: Not(ReelType.Reply) },
+      select: reelSelectOptions,
+      relations: reelRelations,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return {
+      reels: reels.map((reel) => filterReel(reel, userId, lang)),
+    };
+  };
+
+  getUserTweets = async (userId: number) => {
+    const tweetRepository = AppDataSource.getRepository(Tweet);
+
+    const tweets = await tweetRepository.find({
+      where: { tweeter: { userId } },
+      select: tweetSelectOptions,
+      relations: tweetRelations,
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+
+    return {
+      tweets: tweets.map((tweet) => filterTweet(tweet, userId)),
     };
   };
 }

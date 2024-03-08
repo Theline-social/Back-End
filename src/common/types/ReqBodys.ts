@@ -44,3 +44,11 @@ export interface AddTopicBody {
   topic_en: string;
   topic_ar: string;
 }
+
+export interface editProfileBody {
+  name?: string;
+  bio?: string;
+  location?: string;
+  jobtitle?: string;
+  dateOfBirth?: Date;
+}

@@ -331,25 +331,28 @@ router
  *     tags:
  *       - reels
  *     consumes:
- *       - multipart/form-data
+ *       - application/json
  *     parameters:
- *       - name: content
- *         in: formData
- *         description: The content of the reel.
+ *       - in: path
+ *         name: reelId
  *         required: true
- *         type: string
- *       - name: topics
- *         in: formData
- *         description: List of topics related to the reel.
- *         required: false
- *         type: array
- *         items:
+ *         schema:
  *           type: string
- *       - name: reel
- *         in: formData
- *         description: List of image files to be attached to the reel.
- *         required: false
- *         type: file
+ *         description: The ID of the reel to which the reply will be added.
+ *       - in: body
+ *         name: requestBody
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             content:
+ *               type: string
+ *               description: The content of the reel.
+ *             topics:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               description: List of topics related to the reel.
  *     responses:
  *       '201':
  *         description: Created. Reply successfully added.
@@ -369,7 +372,6 @@ router
     authController.requireAuth,
     reelIdParamsValidation,
     validateRequest,
-    reelsController.uploadReel,
     reelsController.addReelReply
   );
 

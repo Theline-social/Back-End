@@ -405,7 +405,7 @@ router
  *     security:
  *       - jwt: []
  *     tags:
- *       - users
+ *       - profile
  *     responses:
  *       '200':
  *         description: OK. Tweet bookmarks successfully retrieved.
@@ -432,7 +432,7 @@ router
  *     security:
  *       - jwt: []
  *     tags:
- *       - users
+ *       - profile
  *     responses:
  *       '200':
  *         description: OK. reel bookmarks successfully retrieved.
@@ -457,7 +457,7 @@ router
  *     security:
  *       - jwt: []
  *     tags:
- *       - users
+ *       - profile
  *     responses:
  *       '200':
  *         description: OK. Tweets successfully retrieved.
@@ -480,7 +480,7 @@ router
  *     security:
  *       - jwt: []
  *     tags:
- *       - users
+ *       - profile
  *     responses:
  *       '200':
  *         description: OK. Reels successfully retrieved.

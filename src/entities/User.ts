@@ -178,4 +178,8 @@ export class User {
   get followingsCount(): number {
     return this.following ? this.following.length : 0;
   }
+
+  get postsCount(): number {
+    return this.tweets.length + this.reels.length;
+  }
 }

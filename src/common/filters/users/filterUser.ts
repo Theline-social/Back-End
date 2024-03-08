@@ -22,7 +22,10 @@ export const filterUser = (user: User): userDto => {
   };
 };
 
-export const getPartialUserProfile = (user: User, userId: number): ProfileDto => {
+export const getPartialUserProfile = (
+  user: User,
+  userId: number
+): ProfileDto => {
   return {
     userId: user.userId,
     imageUrl: user.imageUrl,
@@ -45,6 +48,7 @@ export const getFullUserProfile = (
   isMuted: boolean;
   isBlocked: boolean;
   isFollowed: boolean;
+  postsCount: number;
 } => {
   return {
     userId: user.userId,
@@ -66,5 +70,6 @@ export const getFullUserProfile = (
     isMuted: user.isMutedBy(userId),
     isBlocked: user.isBlockedBy(userId),
     isFollowed: user.isFollowedBy(userId),
+    postsCount: user.postsCount,
   };
 };

@@ -2,7 +2,12 @@ import express, { Router } from 'express';
 import * as usersController from '../controllers/user.controller';
 import * as authController from '../controllers/auth.controller';
 
-import { userIdParamsValidation, validateRequest } from '../common';
+import {
+  changeEmailValidationRules,
+  changePhoneValidationRules,
+  userIdParamsValidation,
+  validateRequest,
+} from '../common';
 import {
   changePasswordValidationRules,
   changeUsernameValidationRules,
@@ -42,7 +47,7 @@ router.route('/current').get(authController.requireAuth, usersController.getMe);
  *     security:
  *       - jwt: []
  *     tags:
- *       - users
+ *       - settings
  *     requestBody:
  *       required: true
  *       content:
@@ -82,7 +87,7 @@ router
  *     security:
  *       - jwt: []
  *     tags:
- *       - users
+ *       - settings
  *     requestBody:
  *       required: true
  *       content:
@@ -117,6 +122,89 @@ router
     changePasswordValidationRules,
     validateRequest,
     usersController.changePassword
+  );
+
+/**
+ * @swagger
+ * /users/current/change-email:
+ *   patch:
+ *     summary: Change user's email
+ *     description: Change the email address of the currently authenticated user.
+ *     tags:
+ *       - settings
+ *     security:
+ *       - jwt: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newEmail:
+ *                 type: string
+ *                 description: The new email address for the user.
+ *           required:
+ *             - newEmail
+ *     responses:
+ *       '200':
+ *         description: Email changed successfully.
+ *       '400':
+ *         description: Bad Request. Invalid request parameters.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to change email.
+ */
+
+router
+  .route('/current/change-email')
+  .patch(
+    authController.requireAuth,
+    changeEmailValidationRules,
+    validateRequest,
+    usersController.changeEmail
+  );
+
+/**
+ * @swagger
+ * /users/current/change-phonenumber:
+ *   patch:
+ *     summary: Change user's phone number
+ *     description: Change the phone number of the currently authenticated user.
+ *     tags:
+ *       - settings
+ *     security:
+ *       - jwt: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               newPhoneNumber:
+ *                 type: string
+ *                 description: The new phone number for the user.
+ *           required:
+ *             - newPhoneNumber
+ *     responses:
+ *       '200':
+ *         description: Phone number changed successfully.
+ *       '400':
+ *         description: Bad Request. Invalid request parameters.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to change phone number.
+ */
+router
+  .route('/current/change-phonenumber')
+  .patch(
+    authController.requireAuth,
+    changePhoneValidationRules,
+    validateRequest,
+    usersController.changePhoneNumber
   );
 
 /**
@@ -414,7 +502,7 @@ router
  *     description: Retrieve a list of muted users for the current user.
  *     security:
  *       - jwt: []
- *     tags: [users]
+ *     tags: [profile]
  *     responses:
  *       '200':
  *         description: OK. Muted users retrieved successfully.
@@ -435,7 +523,7 @@ router
  *     description: Retrieve a list of blocked users for the current user.
  *     security:
  *       - jwt: []
- *     tags: [users]
+ *     tags: [profile]
  *     responses:
  *       '200':
  *         description: OK. Blocked users retrieved successfully.
@@ -456,7 +544,8 @@ router
  *     description: Retrieve the profile data.
  *     security:
  *       - jwt: []
- *     tags: [users]
+ *     tags: 
+ *       - profile
  *     parameters:
  *       - name: username
  *         in: path
@@ -486,7 +575,7 @@ router
  *       This endpoint allows authenticated users to search for other users by their name or username.
  *       Results are sorted by relevance and returned with pagination.
  *     tags:
- *       - users
+ *       - search
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -525,7 +614,7 @@ router
  *     summary: Edit current user's profile
  *     description: Edit the profile of the currently authenticated user.
  *     tags:
- *       - users
+ *       - profile
  *     security:
  *       - bearerAuth: []
  *     consumes:
@@ -588,7 +677,7 @@ router
  *     summary: Get current user's tweets
  *     description: Retrieve tweets posted by the currently authenticated user.
  *     tags:
- *       - users
+ *       - profile
  *     security:
  *       - jwt: []
  *     responses:
@@ -610,7 +699,7 @@ router
  *     summary: Get current user's reels
  *     description: Retrieve reels posted by the currently authenticated user.
  *     tags:
- *       - users
+ *       - profile
  *     security:
  *       - jwt: []
  *     responses:

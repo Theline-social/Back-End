@@ -26,6 +26,12 @@ export const isuserFoundValidationRules = [
     .withMessage('username or phone or email is required'),
 ];
 
+export const changeEmailValidationRules = [
+  body('newEmail').isString().notEmpty().withMessage('newEmail is required'),
+];
+export const changePhoneValidationRules = [
+  body('newPhoneNumber').isString().notEmpty().withMessage('newPhone is required'),
+];
 export const changePasswordValidationRules = [
   body('currPassword')
     .isString()

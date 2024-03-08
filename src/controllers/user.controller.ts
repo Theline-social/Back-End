@@ -311,3 +311,29 @@ export const getUserReels = catchAsync(
     });
   }
 );
+
+export const changeEmail = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    await usersService.changeEmail(+userId, req.body);
+
+    res.status(200).json({
+      status: true,
+      message: 'email updated successfully',
+    });
+  }
+);
+
+export const changePhoneNumber = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    await usersService.changePhoneNumber(+userId, req.body);
+
+    res.status(200).json({
+      status: true,
+      message: 'phone number updated successfully',
+    });
+  }
+);

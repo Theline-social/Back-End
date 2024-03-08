@@ -23,6 +23,8 @@ import {
 import { userProfileSelectOptions } from '../common/filters/users/userSelectOptions';
 import { AppDataSource } from '../dataSource';
 import {
+  OtpCodes,
+  OtpProvider,
   Reel,
   ReelMention,
   ReelType,
@@ -67,6 +69,51 @@ export class UsersService {
     const hashedPassword = await Password.hashPassword(body.newPassword);
     existingUser.password = hashedPassword;
     await userRepository.save(existingUser);
+  };
+
+  changeEmail = async (userId: number, body: { newEmail: string }) => {
+    const otpCodesRepository = AppDataSource.getRepository(OtpCodes);
+    const userRepository = AppDataSource.getRepository(User);
+
+    const emailOtpCode = await otpCodesRepository.findOne({
+      where: { input: body.newEmail, provider: OtpProvider.EMAIL },
+    });
+    if (!emailOtpCode) throw new AppError('Go to verifiy your email', 400);
+    if (!emailOtpCode.isVerified) throw new AppError('Email not verified', 400);
+
+    const user = await userRepository.findOne({
+      where: { userId },
+    });
+
+    if (!user) throw new AppError('User not found', 404);
+
+    user.email = body.newEmail;
+    await userRepository.save(user);
+  };
+
+  changePhoneNumber = async (
+    userId: number,
+    body: { newPhoneNumber: string }
+  ) => {
+    const otpCodesRepository = AppDataSource.getRepository(OtpCodes);
+    const userRepository = AppDataSource.getRepository(User);
+
+    const phoneOtpCode = await otpCodesRepository.findOne({
+      where: { input: body.newPhoneNumber, provider: OtpProvider.PHONE },
+    });
+    if (!phoneOtpCode)
+      throw new AppError('Go to verifiy your phone number', 400);
+    if (!phoneOtpCode.isVerified)
+      throw new AppError('phone number not verified', 400);
+
+    const user = await userRepository.findOne({
+      where: { userId },
+    });
+
+    if (!user) throw new AppError('User not found', 404);
+
+    user.phoneNumber = body.newPhoneNumber;
+    await userRepository.save(user);
   };
 
   currentAuthedUser = async (userId: number) => {

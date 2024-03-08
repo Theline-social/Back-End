@@ -100,8 +100,8 @@ export const getTimelineTweets = catchAsync(
 
     const { timelineTweets } = await tweetsService.getTimelineTweets(
       userId,
-      +(page as string),
-      +(limit as string)
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(201).json({

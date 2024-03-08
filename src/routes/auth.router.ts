@@ -4,6 +4,7 @@ import {
   checkOTPVerificationEmailValidationRules,
   googleSignValidationRules,
   signinValidationRules,
+  signupGoogleValidationRules,
   signupValidationRules,
   validateRecaptchaValidationRules,
   validateRequest,
@@ -257,28 +258,48 @@ router
 
 /**
  * @swagger
- * /auth/signout:
+ * /auth/google-signup:
  *   post:
- *     summary: Sign out
- *     description: Signs out the currently authenticated user.
- *     security:
- *       - jwt: []
  *     tags:
  *       - Auth
+ *     summary: User Signup
+ *     description: Registers a new user with the provided information.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               googleAccessToken:
+ *                 type: string
+ *               phoneNumber:
+ *                 type: string
+ *                 pattern: '^[0-9]+$'
+ *                 description: The phone number of the user.
+ *               jobtitle:
+ *                 type: string
+ *                 description: The specialization of the user.
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
+ *                 description: The date of birth of the user in the format YYYY-MM-DD.
  *     responses:
- *       '200':
- *         description: OK. User successfully signed out.
- *       '401':
- *         description: Unauthorized. User authentication failed.
+ *       '201':
+ *         description: OK. User signed up successfully.
+ *       '400':
+ *         description: Bad Request. Invalid input or missing required fields.
  *       '500':
- *         description: Internal Server Error. Failed to sign out user.
+ *         description: Internal Server Error. Failed to sign up user.
  */
 
-router.route('/signout').post(authController.signout);
+router
+  .route('/google-signup')
+  .post(signupGoogleValidationRules, validateRequest, authController.signup);
 
 /**
  * @swagger
- * /auth/sign-with-google:
+ * /auth/google-signin:
  *   post:
  *     summary: Sign in with Google
  *     description: Authenticate user using Google OAuth2 access token
@@ -306,7 +327,28 @@ router.route('/signout').post(authController.signout);
  */
 
 router
-  .route('/sign-with-google')
-  .post(googleSignValidationRules, authController.signWithGoogle);
+  .route('/google-signin')
+  .post(googleSignValidationRules, authController.signinWithGoogle);
+
+/**
+ * @swagger
+ * /auth/signout:
+ *   post:
+ *     summary: Sign out
+ *     description: Signs out the currently authenticated user.
+ *     security:
+ *       - jwt: []
+ *     tags:
+ *       - Auth
+ *     responses:
+ *       '200':
+ *         description: OK. User successfully signed out.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to sign out user.
+ */
+
+router.route('/signout').post(authController.signout);
 
 export { router as authRouter };

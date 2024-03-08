@@ -54,8 +54,8 @@ export const getTimelineReels = catchAsync(
 
     const { timelineReels } = await reelsService.getTimelineReels(
       userId,
-      +(page as string),
-      +(limit as string),
+      +(page as string) || 1,
+      +(limit as string) || 10,
       lang
     );
 

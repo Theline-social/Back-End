@@ -11,6 +11,7 @@ import {
   Password,
   Email,
   MsegatSmsRepository,
+  SignupGoogleRequestBody,
 } from '../common';
 import { AuthProvider, User } from '../entities';
 import { OtpCodes, OtpProvider } from '../entities/OtpCodes';
@@ -55,6 +56,53 @@ class AuthService {
     user.dateOfBirth = body.dateOfBirth;
     user.phoneNumber = body.phoneNumber;
     user.name = body.name;
+    user.username = `user${body.phoneNumber}`;
+
+    const saveduser = await userRepository.save(user);
+
+    return { user: filterUser(saveduser) };
+  };
+
+  getUserdataFromGoogle = async (googleAccessToken: string) => {
+    const response = await fetch(
+      `https://www.googleapis.com/oauth2/v3/userinfo`,
+      {
+        headers: {
+          Authorization: `Bearer ${googleAccessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) throw new AppError('Error in Google Request', 400);
+
+    const { email, name, picture, sub } = await response.json();
+
+    return { email, name, picture, sub };
+  };
+
+  signupWithGoogle = async (body: SignupGoogleRequestBody) => {
+    const userRepository = AppDataSource.getRepository(User);
+    const otpCodesRepository = AppDataSource.getRepository(OtpCodes);
+
+    const phoneOtpCode = await otpCodesRepository.findOne({
+      where: { input: body.phoneNumber, provider: OtpProvider.PHONE },
+    });
+    if (!phoneOtpCode)
+      throw new AppError('Go to verifiy your phone number', 400);
+    if (!phoneOtpCode.isVerified)
+      throw new AppError('Phone number not verified', 400);
+
+    const { email, name, picture, sub } = await this.getUserdataFromGoogle(
+      body.googleAccessToken
+    );
+
+    const user = new User();
+    user.email = email;
+    user.jobtitle = body.jobtitle;
+    user.dateOfBirth = body.dateOfBirth;
+    user.phoneNumber = body.phoneNumber;
+    user.name = name;
+    user.imageUrl = picture;
     user.username = `user${body.phoneNumber}`;
 
     const saveduser = await userRepository.save(user);
@@ -189,25 +237,11 @@ class AuthService {
     }
   };
 
-  signWithGoogle = async (body: { googleAccessToken: string }) => {
+  signinWithGoogle = async (body: { googleAccessToken: string }) => {
     const { googleAccessToken } = body;
     const userRepository = AppDataSource.getRepository(User);
 
-    const response = await fetch(
-      `https://www.googleapis.com/oauth2/v3/userinfo?scope=email profile https://www.googleapis.com/auth/user.phonenumbers.read openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile`,
-      {
-        headers: {
-          Authorization: `Bearer ${googleAccessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) throw new AppError('Error in Google Request', 400);
-
-    const { email, name, picture, phone_number, username, sub } =
-      await response.json();
-
-    console.log(email, name, picture, phone_number, username);
+    const { email } = await this.getUserdataFromGoogle(googleAccessToken);
 
     let existingUser: User | null = null;
     const isUserExists = await userRepository.exists({
@@ -215,22 +249,14 @@ class AuthService {
     });
 
     if (!isUserExists) {
-      await userRepository.insert({
-        authProvider: AuthProvider.GOOGLE,
-        email,
-        name,
-        imageUrl: picture,
-        phoneNumber: phone_number,
-        username,
-        password: await Password.hashPassword(`${sub}-${Date.now()}`),
-      });
+      return { isUserExists: false };
     }
 
     existingUser = await userRepository.findOne({
       where: { email },
     });
 
-    return { existingUser };
+    return { isUserExists: true, data: existingUser };
   };
 
   checkAuth = async (token: string, secretKey: string) => {

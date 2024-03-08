@@ -9,6 +9,13 @@ export interface SignupRequestBody {
   dateOfBirth: Date;
 }
 
+export interface SignupGoogleRequestBody {
+  phoneNumber: string;
+  jobtitle: string;
+  dateOfBirth: Date;
+  googleAccessToken: string;
+}
+
 export interface CheckValidOtpBody {
   otp: string;
   input: string;

@@ -78,6 +78,14 @@ export const signup = catchAsync(async (req: Request, res: Response) => {
   createAndSendToken(user, req, res, 201);
 });
 
+export const signupWithGoogle = catchAsync(
+  async (req: Request, res: Response) => {
+    const { user } = await authService.signupWithGoogle(req.body);
+
+    createAndSendToken(user, req, res, 201);
+  }
+);
+
 export const checkValidOtp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const isValid = await authService.checkValidOtp(req.body);
@@ -113,7 +121,7 @@ export const checkValidOtpAndAssignResetToken = catchAsync(
 export const sendConfirmationOtp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const lang = req.headers['accept-language'] as string;
-    
+
     await authService.sendConfirmationOtp(req.body, lang);
 
     res.status(200).json({
@@ -142,12 +150,21 @@ export const validateRecaptcha = catchAsync(
   }
 );
 
-export const signWithGoogle = catchAsync(
+export const signinWithGoogle = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { body } = req;
-    const { existingUser } = await authService.signWithGoogle(body);
+    const { isUserExists, data } = await authService.signinWithGoogle(body);
 
-    createAndSendToken(existingUser as User, req, res, 200);
+    if (!isUserExists) {
+      res.status(200).json({
+        status: true,
+        message: 'user does not exist',
+        data: { isUserExists },
+      });
+
+      return;
+    }
+    createAndSendToken(data as User, req, res, 200);
   }
 );
 

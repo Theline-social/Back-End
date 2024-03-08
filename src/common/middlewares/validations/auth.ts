@@ -81,6 +81,25 @@ export const signupValidationRules = [
     .withMessage('Invalid date format. Use YYYY-MM-DD'),
 ];
 
+export const signupGoogleValidationRules = [
+  body('phoneNumber')
+    .notEmpty()
+    .custom(isPhoneValid)
+    .withMessage('Enter phone number'),
+  body('jobtitle').isString().withMessage('jobtitle is required'),
+  body('dateOfBirth')
+    .custom((val) => {
+      const date = Date.parse(val);
+      if (date) return true;
+      return false;
+    })
+    .withMessage('Invalid date format. Use YYYY-MM-DD'),
+  body('googleAccessToken')
+    .isString()
+    .notEmpty()
+    .withMessage('googleAccessToken is required'),
+];
+
 export const signinValidationRules = [
   body('input').notEmpty().withMessage('input is required  '),
   body('password').isString().notEmpty().withMessage('Password is required'),

@@ -50,7 +50,7 @@ export class User {
   @Column({ type: 'varchar', length: 70, nullable: true })
   location: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   password: string;
 
   @Column({ type: 'varchar', nullable: true, default: `/users/default.jpeg` })

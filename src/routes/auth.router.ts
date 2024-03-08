@@ -295,7 +295,7 @@ router
 
 router
   .route('/google-signup')
-  .post(signupGoogleValidationRules, validateRequest, authController.signup);
+  .post(signupGoogleValidationRules, validateRequest, authController.signupWithGoogle);
 
 /**
  * @swagger

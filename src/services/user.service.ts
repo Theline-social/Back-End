@@ -439,7 +439,7 @@ export class UsersService {
     if (body.imageUrl !== undefined) {
       userProfile.imageUrl = body.imageUrl;
     }
-    if (body. !== undefined) {
+    if (body.bannerUrl !== undefined) {
       userProfile.bannerUrl = body.bannerUrl;
     }
     if (body.name !== undefined) {

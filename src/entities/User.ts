@@ -53,10 +53,10 @@ export class User {
   @Column({ type: 'varchar', length: 100, nullable: true })
   password: string;
 
-  @Column({ type: 'varchar', nullable: true, default: `/users/default.jpeg` })
+  @Column({ type: 'varchar', nullable: true, default: `default.jpeg` })
   imageUrl: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, default: 'banner_default2.jpeg' })
   bannerUrl: string;
 
   @Column({ type: 'varchar', length: 160, nullable: true })

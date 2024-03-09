@@ -286,6 +286,12 @@ export class ReelsService {
         reelId: true,
         content: true,
         createdAt: true,
+        replyTo: {
+          createdAt: true,
+          reeler: {
+            username: true,
+          },
+        },
         reeler: {
           username: true,
           jobtitle: true,
@@ -321,6 +327,7 @@ export class ReelsService {
           },
         },
         reacts: true,
+        replyTo: { reeler: true },
         reeler: {
           followers: true,
           following: true,
@@ -343,7 +350,9 @@ export class ReelsService {
           content: reply.content,
           createdAt: reply.createdAt,
           type: ReelType.Reply,
-
+          originalReeler: {
+            username: reply.replyTo.reeler.username,
+          },
           replier: {
             imageUrl: reply.reeler.imageUrl,
             username: reply.reeler.username,

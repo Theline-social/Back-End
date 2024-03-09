@@ -28,38 +28,74 @@ const upload = multer({
   limits: { fileSize: 1024 * 1024 * 10 },
 });
 
-export const resizePhoto = async (
+export const uploadProfileMedia = upload.fields([
+  { name: 'banner_profile', maxCount: 1 },
+  { name: 'image_profile', maxCount: 1 },
+]);
+
+export const processProfileMedia = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.file) return next();
-  const { userId } = res.locals.currentUser;
-  const uniqueSuffix = Date.now() + '-' + userId;
+  if (!req.files) return next();
 
-  await sharp(req.file.buffer)
-    .resize(500, 500)
-    .toFormat('jpeg')
-    .jpeg({ quality: 90 })
-    .toFile(
-      process.env.NODE_ENV !== 'production'
-        ? `${process.env.DEV_MEDIA_PATH}/users/user-${uniqueSuffix}.jpeg`
-        : `${process.env.PROD_MEDIA_PATH}/users/user-${uniqueSuffix}.jpeg`
-    );
+  try {
+    const image_profile = (req.files as Record<string, any>)[
+      'image_profile'
+    ] as Express.Multer.File[];
 
-  await AppDataSource.getRepository(User).update(
-    { userId },
-    {
-      imageUrl: `user-${uniqueSuffix}.jpeg`,
+    if (image_profile) {
+      const imageUrl = `user-${
+        Date.now() + '-' + Math.round(Math.random() * 1e9)
+      }.jpeg`;
+
+      await sharp(image_profile[0].buffer, { animated: true })
+        .toFormat('jpeg')
+        .resize(500, 500)
+        .jpeg({ quality: 90 })
+        .toFile(
+          process.env.NODE_ENV !== 'production'
+            ? `${process.env.DEV_MEDIA_PATH}/users/${imageUrl}`
+            : `${process.env.PROD_MEDIA_PATH}/users/${imageUrl}`
+        );
+
+      req.body.imageUrl = imageUrl;
     }
-  );
 
-  next();
+    const banner_profile = (req.files as Record<string, any>)[
+      'banner_profile'
+    ] as Express.Multer.File[];
+
+    if (banner_profile) {
+      const bannerUrl = `user-${
+        Date.now() + '-' + Math.round(Math.random() * 1e9)
+      }.jpeg`;
+
+      await sharp(banner_profile[0].buffer, { animated: true })
+        .toFormat('jpeg')
+        .resize(500, 500)
+        .jpeg({ quality: 90 })
+        .toFile(
+          process.env.NODE_ENV !== 'production'
+            ? `${process.env.DEV_MEDIA_PATH}/users/${bannerUrl}`
+            : `${process.env.PROD_MEDIA_PATH}/users/${bannerUrl}`
+        );
+
+      req.body.bannerUrl = bannerUrl;
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const uploadPhoto = upload.single('image_profile');
+export const savePhoto = async (req: Request, res: Response) => {
+  const { userId } = res.locals.currentUser;
 
-export const uploadProfilePhoto = async (req: Request, res: Response) => {
+  await usersService.savePhoto(userId, req.body.imageUrl);
+
   res.status(200).json({
     status: 200,
     message: 'Photo Uploaded Successfully',

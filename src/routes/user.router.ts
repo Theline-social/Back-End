@@ -6,6 +6,7 @@ import {
   changeEmailValidationRules,
   changePhoneValidationRules,
   userIdParamsValidation,
+  usernameParamsValidation,
   validateRequest,
 } from '../common';
 import {
@@ -314,9 +315,9 @@ router
   .route('/current/upload-photo-profile')
   .post(
     authController.requireAuth,
-    usersController.uploadPhoto,
-    usersController.resizePhoto,
-    usersController.uploadProfilePhoto
+    usersController.uploadProfileMedia,
+    usersController.processProfileMedia,
+    usersController.savePhoto
   );
 
 /**
@@ -665,14 +666,14 @@ router
   .route('/current/edit-profile')
   .patch(
     authController.requireAuth,
-    usersController.uploadPhoto,
-    usersController.resizePhoto,
+    usersController.uploadProfileMedia,
+    usersController.processProfileMedia,
     usersController.editUserProfile
   );
 
 /**
  * @swagger
- * /users/current/tweets:
+ * /users/{username}/tweets:
  *   get:
  *     summary: Get current user's tweets
  *     description: Retrieve tweets posted by the currently authenticated user.
@@ -690,11 +691,16 @@ router
  */
 router
   .route('/:username/tweets')
-  .get(authController.requireAuth, usersController.getUserTweets);
+  .get(
+    authController.requireAuth,
+    usernameParamsValidation,
+    validateRequest,
+    usersController.getUserTweets
+  );
 
 /**
  * @swagger
- * /users/current/reels:
+ * /users/{username}/reels:
  *   get:
  *     summary: Get current user's reels
  *     description: Retrieve reels posted by the currently authenticated user.
@@ -712,6 +718,11 @@ router
  */
 router
   .route('/:username/reels')
-  .get(authController.requireAuth, usersController.getUserReels);
+  .get(
+    authController.requireAuth,
+    usernameParamsValidation,
+    validateRequest,
+    usersController.getUserReels
+  );
 
 export { router as usersRouter };

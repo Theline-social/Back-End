@@ -50,5 +50,7 @@ export interface editProfileBody {
   bio?: string;
   location?: string;
   jobtitle?: string;
+  bannerUrl?: string;
+  imageUrl?: string;
   dateOfBirth?: Date;
 }

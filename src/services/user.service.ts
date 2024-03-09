@@ -180,6 +180,15 @@ export class UsersService {
     };
   };
 
+  savePhoto = async (userId: number, imageUrl: string) => {
+    await AppDataSource.getRepository(User).update(
+      { userId },
+      {
+        imageUrl,
+      }
+    );
+  };
+
   getUserProfile = async (username: string, userId: number) => {
     const user = await AppDataSource.getRepository(User).findOne({
       where: { username },
@@ -427,6 +436,12 @@ export class UsersService {
       throw new Error('User profile not found');
     }
 
+    if (body.imageUrl !== undefined) {
+      userProfile.imageUrl = body.imageUrl;
+    }
+    if (body. !== undefined) {
+      userProfile.bannerUrl = body.bannerUrl;
+    }
     if (body.name !== undefined) {
       userProfile.name = body.name;
     }

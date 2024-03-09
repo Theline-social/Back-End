@@ -30,7 +30,10 @@ export const changeEmailValidationRules = [
   body('newEmail').isString().notEmpty().withMessage('newEmail is required'),
 ];
 export const changePhoneValidationRules = [
-  body('newPhoneNumber').isString().notEmpty().withMessage('newPhone is required'),
+  body('newPhoneNumber')
+    .isString()
+    .notEmpty()
+    .withMessage('newPhone is required'),
 ];
 export const changePasswordValidationRules = [
   body('currPassword')
@@ -77,4 +80,15 @@ export const userIdParamsValidation = [
       }
     })
     .withMessage('userId is required'),
+];
+
+export const usernameParamsValidation = [
+  param('username')
+    .exists()
+    .custom(async (username) => {
+      const exists = await usersService.isUserFoundByUsername(username);
+      if (!exists) {
+        throw new Error('user does not exist');
+      }
+    }),
 ];

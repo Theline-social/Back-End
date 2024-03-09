@@ -75,12 +75,35 @@ This document outlines the various events emitted and received by the WebSocket 
 ### 2. `msg-receive`
 
 - **Description:** This event is received when a new message is received.
-- **Data Format:** Message data.
+- **Data Format:**
+```typescript
+{
+  senderId: number,
+  messageId: number,
+  conversationId: number,
+  isSeen: boolean,
+  createdAt: string,
+  text: string,
+  isFromMe: boolean
+}
+```
 
 ### 3. `msg-redirect`
 
 - **Description:** This event is received when a message sent by the client is redirected back.
-- **Data Format:** Message data.
+- **Data Format:** 
+
+```typescript
+{
+  senderId: number,
+  messageId: number,
+  conversationId: number,
+  isSeen: boolean,
+  createdAt: string,
+  text: string,
+  isFromMe: boolean
+}
+```
 
 ### 4. `status-of-contact`
 

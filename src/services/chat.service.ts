@@ -29,6 +29,12 @@ export class ChatService {
     return { conversation: savedchat };
   };
 
+  exists = async (conversationId: number): Promise<boolean> => {
+    return await AppDataSource.getRepository(Conversation).exists({
+      where: { conversationId },
+    });
+  };
+
   getUnseenConversationsCnt = async (userId: number) => {
     const conversationRepository = AppDataSource.getRepository(Conversation);
 

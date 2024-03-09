@@ -74,7 +74,6 @@ export const processProfileMedia = async (
 
       await sharp(banner_profile[0].buffer, { animated: true })
         .toFormat('jpeg')
-        .resize(500, 500)
         .jpeg({ quality: 90 })
         .toFile(
           process.env.NODE_ENV !== 'production'

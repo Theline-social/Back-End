@@ -20,6 +20,7 @@ export * from './middlewares/validations/reel';
 export * from './middlewares/validations/interaction';
 export * from './middlewares/validations/tweet';
 export * from './middlewares/validations/topic';
+export * from './middlewares/validations/conversation';
 
 export * from './constants/regex';
 

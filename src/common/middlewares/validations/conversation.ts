@@ -1,15 +1,20 @@
-import { body } from "express-validator";
+import { body, param } from 'express-validator';
+import { ChatService } from '../../../services/chat.service';
 
+const chatService = new ChatService();
 
-exports.startChatValidationRules = [
-  body('userIds')
-    .isArray({ min: 1 })
-    .withMessage('You can start a new conversation with at least one user'),
+export const startChatValidationRules = [
+  body('username').isString().isEmpty().withMessage('username is required'),
 ];
 
-exports.leaveChatValidationRules = [
-  body('conversationId')
-    .not()
-    .isEmpty()
-    .withMessage('conversation Id required'),
+export const conversationIdParamValidationRules = [
+  param('conversationId')
+    .exists()
+    .toInt()
+    .custom(async (conversationId) => {
+      const exists = await chatService.exists(conversationId);
+      if (!exists) {
+        throw new Error('tweet id does not exist');
+      }
+    }),
 ];

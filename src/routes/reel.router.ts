@@ -348,11 +348,6 @@ router
  *             content:
  *               type: string
  *               description: The content of the reel.
- *             topics:
- *               type: array
- *               items:
- *                 type: string
- *               description: List of topics related to the reel.
  *     responses:
  *       '201':
  *         description: Created. Reply successfully added.

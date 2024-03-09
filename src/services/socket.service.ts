@@ -132,7 +132,6 @@ class SocketService {
         }
 
         socket.data.user = user ? user : {};
-        console.log(user);
 
         socket.join(`user_${user.userId}_room`);
 

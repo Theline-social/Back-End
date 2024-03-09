@@ -448,11 +448,15 @@ export class UsersService {
     return { user: filterUser(saveduser) };
   };
 
-  getUserReels = async (userId: number, lang: string = 'ar') => {
+  getUserReels = async (
+    userId: number,
+    username: string,
+    lang: string = 'ar'
+  ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
 
     const reels = await reelRepository.find({
-      where: { reeler: { userId }, type: Not(ReelType.Reply) },
+      where: { reeler: { username }, type: Not(ReelType.Reply) },
       select: reelSelectOptions,
       relations: reelRelations,
       order: {
@@ -465,11 +469,11 @@ export class UsersService {
     };
   };
 
-  getUserTweets = async (userId: number) => {
+  getUserTweets = async (userId: number, username: string) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
     const tweets = await tweetRepository.find({
-      where: { tweeter: { userId } },
+      where: { tweeter: { username } },
       select: tweetSelectOptions,
       relations: tweetRelations,
       order: {

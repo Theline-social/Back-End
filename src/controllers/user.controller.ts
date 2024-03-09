@@ -286,7 +286,10 @@ export const getUserTweets = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { tweets } = await usersService.getUserTweets(+userId);
+    const { tweets } = await usersService.getUserTweets(
+      +userId,
+      req.params.username
+    );
 
     res.status(200).json({
       status: true,
@@ -302,7 +305,11 @@ export const getUserReels = catchAsync(
 
     const lang = req.headers['accept-language'] as string;
 
-    const { reels } = await usersService.getUserReels(+userId, lang);
+    const { reels } = await usersService.getUserReels(
+      +userId,
+      req.params.username,
+      lang
+    );
 
     res.status(200).json({
       status: true,

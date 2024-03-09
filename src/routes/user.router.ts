@@ -544,7 +544,7 @@ router
  *     description: Retrieve the profile data.
  *     security:
  *       - jwt: []
- *     tags: 
+ *     tags:
  *       - profile
  *     parameters:
  *       - name: username
@@ -689,7 +689,7 @@ router
  *         description: Internal Server Error. Failed to retrieve tweets.
  */
 router
-  .route('/current/tweets')
+  .route('/:username/tweets')
   .get(authController.requireAuth, usersController.getUserTweets);
 
 /**
@@ -711,7 +711,7 @@ router
  *         description: Internal Server Error. Failed to retrieve reels.
  */
 router
-  .route('/current/reels')
+  .route('/:username/reels')
   .get(authController.requireAuth, usersController.getUserReels);
 
 export { router as usersRouter };

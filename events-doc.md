@@ -8,30 +8,37 @@ This document outlines the various events emitted and received by the WebSocket 
 
 - **Description:** This event is emitted when a client sends a message.
 - **Data Format:**
-  - `receiverId`: ID of the message receiver.
-  - `conversationId`: ID of the conversation.
-  - `text`: Message text.
+  ```typescript
+  {
+  contactId: number,
+  conversationId: number,
+  text: string,
+  }
+  ```
 - **Response:** The server emits `msg-receive` and `msg-redirect` events to the relevant users.
-
-### 2. `mark-notifications-as-seen`
-
-- **Description:** This event is emitted when a client wants to mark notifications as seen.
-- **Response:** The server updates the notifications as seen for the user.
 
 ### 3. `chat-opened`
 
 - **Description:** This event is emitted when a client opens a chat.
 - **Data Format:**
-  - `conversationId`: ID of the conversation.
-  - `contactId`: ID of the contact with whom the chat is opened.
+  ```typescript
+  {
+  contactId: number,
+  conversationId: number
+  }
+  ```
 - **Response:** The server emits `status-of-contact` event to the relevant user indicating the conversation status.
 
 ### 4. `chat-closed`
 
 - **Description:** This event is emitted when a client closes a chat.
 - **Data Format:**
-  - `contactId`: ID of the contact with whom the chat is closed.
-  - `conversationId`: ID of the conversation.
+  ```typescript
+  {
+  contactId: number,
+  conversationId: number
+  }
+  ```
 - **Response:** The server emits `status-of-contact` event to the relevant user indicating the conversation status.
 
 ## Events Received by Client

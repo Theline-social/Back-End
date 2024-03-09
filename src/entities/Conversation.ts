@@ -4,20 +4,16 @@ import {
   Column,
   ManyToOne,
   Index,
+  OneToMany,
 } from 'typeorm';
 import { User } from './User';
+import { Message } from './Message';
 
 @Entity()
 @Index(['user1Id', 'user2Id'], { unique: true })
 export class Conversation {
   @PrimaryGeneratedColumn()
   conversationId: number;
-
-  @Column({ type: 'int' })
-  user1Id: number;
-
-  @Column({ type: 'int' })
-  user2Id: number;
 
   @Column({ type: 'jsonb', default: {} })
   isUsersActive: Record<string, any>;
@@ -27,4 +23,7 @@ export class Conversation {
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   user2: User;
+
+  @OneToMany(() => Message, (message) => message.conversation)
+  messages: Message[];
 }

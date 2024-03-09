@@ -25,7 +25,9 @@ export class Message {
   @Column({ type: 'boolean' })
   isSeen: boolean;
 
-  @ManyToOne(() => Conversation, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Conversation, (conversation) => conversation.messages, {
+    onDelete: 'SET NULL',
+  })
   conversation: Conversation;
 
   @ManyToOne(() => User, { onDelete: 'SET NULL' })

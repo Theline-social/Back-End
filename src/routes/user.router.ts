@@ -626,6 +626,11 @@ router
  *         description: file of the user's profile image.
  *         required: false
  *         type: file
+ *       - name: banner_profile
+ *         in: formData
+ *         description: banner file of the user's profile.
+ *         required: false
+ *         type: file
  *       - name: name
  *         in: formData
  *         description: Name of the user.

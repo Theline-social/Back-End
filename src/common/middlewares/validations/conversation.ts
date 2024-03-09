@@ -4,7 +4,7 @@ import { ChatService } from '../../../services/chat.service';
 const chatService = new ChatService();
 
 export const startChatValidationRules = [
-  body('username').isString().isEmpty().withMessage('username is required'),
+  body('username').isString().notEmpty().withMessage('username is required'),
 ];
 
 export const conversationIdParamValidationRules = [

@@ -15,12 +15,13 @@ export class ChatService {
 
     const user2 = await userRepository.findOne({
       where: { username },
-      select: { userId: true },
+      select: { userId: true },    //other chat
     });
 
     const newConversation = new Conversation();
     newConversation.user1 = user1;
     newConversation.user2 = user2 as User;
+    newConversation.isUsersActive = {};
     newConversation.isUsersActive[`userId_${userId}`] = false;
     newConversation.isUsersActive[`userId_${user2?.userId}`] = false;
 

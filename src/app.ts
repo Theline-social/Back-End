@@ -17,6 +17,7 @@ import { reelsRouter } from './routes/reel.router';
 import { topicsRouter } from './routes/topic.router';
 import { notificationsRouter } from './routes/notification.router';
 import { tagsRouter } from './routes/tag.router';
+import { chatRouter } from './routes/chat.router';
 
 const app = express();
 
@@ -75,6 +76,7 @@ app.use('/api/v1/users/current', notificationsRouter);
 app.use('/api/v1/reels', reelsRouter);
 app.use('/api/v1/topics', topicsRouter);
 app.use('/api/v1/tags', tagsRouter);
+app.use('/api/v1/chats', chatRouter);
 
 // Swagger
 app.use('/api/v1/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

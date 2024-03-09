@@ -393,6 +393,12 @@ export class TweetsService {
         media: true,
         content: true,
         createdAt: true,
+        replyTo: {
+          createdAt: true,
+          tweeter: {
+            username: true,
+          },
+        },
         tweeter: {
           username: true,
           jobtitle: true,
@@ -444,6 +450,7 @@ export class TweetsService {
         },
         media: true,
         reacts: true,
+        replyTo: { tweeter: true },
         tweeter: {
           followers: true,
           following: true,
@@ -479,6 +486,9 @@ export class TweetsService {
                 totalVotesCount: reply.poll.totalVoters,
               }
             : {},
+          originalTweeter: {
+            username: reply.replyTo.tweeter.username,
+          },
           replier: {
             imageUrl: reply.tweeter.imageUrl,
             username: reply.tweeter.username,

@@ -61,6 +61,10 @@ export const filterTweet = (
           isBlocked: tweet.retweetTo.tweeter.isBlockedBy(userId),
           isFollowed: tweet.retweetTo.tweeter.isFollowedBy(userId),
         }
+      : tweet.replyTo
+      ? {
+          username: tweet.replyTo.tweeter.username,
+        }
       : undefined,
     originalTweet: tweet.retweetTo
       ? {

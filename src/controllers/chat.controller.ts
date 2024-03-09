@@ -49,3 +49,16 @@ export const getConversationHistory = catchAsync(
     });
   }
 );
+
+export const getConversations = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { conversations } = await chatService.getConversations(userId);
+
+    res.status(201).json({
+      status: true,
+      data: { conversations },
+    });
+  }
+);

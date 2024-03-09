@@ -52,6 +52,10 @@ export const filterReel = (
           isBlocked: reel.rereelTo.reeler.isBlockedBy(userId),
           isFollowed: reel.rereelTo.reeler.isFollowedBy(userId),
         }
+      : reel.replyTo
+      ? {
+          username: reel.replyTo.reeler.username,
+        }
       : undefined,
     originalReel: reel.rereelTo
       ? {

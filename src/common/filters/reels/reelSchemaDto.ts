@@ -1,4 +1,4 @@
-import { ProfileDto } from "../users/userDto";
+import { ProfileDto } from '../users/userDto';
 
 export interface FilteredReelDto {
   reelId: number;
@@ -8,7 +8,7 @@ export interface FilteredReelDto {
   type: string;
   topics: { topic: string; description: string }[];
   reeler: ProfileDto;
-  originalReeler?: ProfileDto;
+  originalReeler?: ProfileDto | { username: string };
   originalReel?: {
     reelId: number;
     reelUrl: string;

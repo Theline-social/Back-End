@@ -21,7 +21,7 @@ export interface TweetAPISchemaDto {
     votedOptionId?: number;
   };
   tweeter: ProfileDto;
-  originalTweeter?: ProfileDto;
+  originalTweeter?: ProfileDto | { username: string };
   originalTweet?: {
     tweetId: number;
     media?: {

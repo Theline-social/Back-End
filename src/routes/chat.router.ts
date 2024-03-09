@@ -11,6 +11,28 @@ const router: Router = express.Router();
 
 /**
  * @swagger
+ * /chats:
+ *   post:
+ *     summary: Get user conversations
+ *     description: Retrieve conversations for the authenticated user.
+ *     tags:
+ *       - chats
+ *     security:
+ *       - jwt: []
+ *     responses:
+ *       '200':
+ *         description: Successful operation. Returns the user's conversations.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve conversations.
+ */
+router
+  .route('/')
+  .post(authController.requireAuth, chatController.getConversations);
+
+/**
+ * @swagger
  * /chats/start-chat:
  *   post:
  *     summary: Start a chat conversation
@@ -26,8 +48,8 @@ const router: Router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               username: 
- *                 type: string 
+ *               username:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: Chat conversation started successfully.

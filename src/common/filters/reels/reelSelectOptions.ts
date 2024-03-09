@@ -5,6 +5,10 @@ export const reelSelectOptions = {
   content: true,
   createdAt: true,
   type: true,
+  replyTo: {
+    reelId: true,
+    reeler: { username: true },
+  },
   rereelTo: {
     reelUrl: true,
     reelId: true,
@@ -62,7 +66,7 @@ export const reelRelations = {
     mentions: { userMentioned: true },
   },
   supportedTopics: true,
-
+  replyTo: { reeler: true },
   replies: true,
   reacts: true,
   reeler: {

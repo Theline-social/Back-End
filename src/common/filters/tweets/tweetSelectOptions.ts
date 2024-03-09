@@ -6,6 +6,10 @@ export const tweetSelectOptions = {
   content: true,
   createdAt: true,
   type: true,
+  replyTo: {
+    tweetId: true,
+    tweeter: { username: true },
+  },
   retweetTo: {
     tweetId: true,
     media: true,
@@ -68,6 +72,7 @@ export const tweetRelations = {
     mentions: { userMentioned: true },
     poll: { options: { voters: true } },
   },
+  replyTo: { tweeter: true },
   media: true,
   replies: true,
   reacts: true,

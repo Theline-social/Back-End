@@ -686,6 +686,13 @@ router
  *       - profile
  *     security:
  *       - jwt: []
+ *     parameters:
+ *       - name: username
+ *         in: path
+ *         description: ID of the user to get followings for.
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       '200':
  *         description: Successful operation. Returns the user's tweets.
@@ -713,6 +720,13 @@ router
  *       - profile
  *     security:
  *       - jwt: []
+ *     parameters:
+ *       - name: username
+ *         in: path
+ *         description: ID of the user to get followings for.
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       '200':
  *         description: Successful operation. Returns the user's reels.

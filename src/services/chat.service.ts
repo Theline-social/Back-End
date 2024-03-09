@@ -10,12 +10,32 @@ export class ChatService {
     const conversationRepository = AppDataSource.getRepository(Conversation);
     const userRepository = AppDataSource.getRepository(User);
 
+    const existingConversation = await conversationRepository.exists({
+      where: [
+        { user1: { userId }, user2: { username } },
+        { user1: { username }, user2: { userId } },
+      ],
+    });
+
+    if (existingConversation) throw new AppError('Chat already exists', 400);
+
     const user1 = new User();
     user1.userId = userId;
 
     const user2 = await userRepository.findOne({
       where: { username },
-      select: { userId: true },    //other chat
+      select: {
+        followers: { userId: true },
+        following: { userId: true },
+        muted: { userId: true },
+        blocked: { userId: true },
+      },
+      relations: {
+        followers: true,
+        following: true,
+        muted: true,
+        blocked: true,
+      },
     });
 
     const newConversation = new Conversation();
@@ -27,7 +47,13 @@ export class ChatService {
 
     const savedchat = await conversationRepository.save(newConversation);
 
-    return { conversation: savedchat };
+    return {
+      conversation: {
+        conversationId: savedchat.conversationId,
+        isActive: false,
+        othercontact: getPartialUserProfile(user2 as User, userId),
+      },
+    };
   };
 
   exists = async (conversationId: number): Promise<boolean> => {
@@ -59,7 +85,17 @@ export class ChatService {
 
     if (!conversation) throw new AppError('conversation not found', 404);
 
-    return { messages: conversation.messages };
+    return {
+      messages: conversation.messages.map((message) => ({
+        senderId: message.senderId,
+        messageId: message.messageId,
+        conversationId: conversation.conversationId,
+        isSeen: message.isSeen,
+        createdAt: message.createdAt,
+        text: message.text,
+        isFromMe: message.senderId === userId,
+      })),
+    };
   };
 
   getConversations = async (userId: number) => {
@@ -83,7 +119,7 @@ export class ChatService {
 
         return {
           conversationId: conversation.conversationId,
-          isUsersActive: conversation.isUsersActive,
+          isActive: conversation.isUsersActive[`userId_${otherContact.userId}`],
           otherContact: getPartialUserProfile(otherContact, userId),
         };
       }),

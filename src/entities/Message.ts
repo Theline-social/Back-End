@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+} from 'typeorm';
 import { Conversation } from './Conversation';
 import { User } from './User';
 
@@ -8,16 +14,16 @@ export class Message {
   messageId: number;
 
   @Column({ type: 'int', nullable: true })
-  conversationId: number;
-
-  @Column({ type: 'int', nullable: true })
   senderId: number;
 
   @Column({ type: 'int', nullable: true })
   receiverId: number;
 
-  @Column({ type: 'timestamptz' })
-  time: Date;
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  createdAt: Date;
 
   @Column({ type: 'varchar' })
   text: string;
@@ -29,10 +35,4 @@ export class Message {
     onDelete: 'SET NULL',
   })
   conversation: Conversation;
-
-  @ManyToOne(() => User, { onDelete: 'SET NULL' })
-  sender: User;
-
-  @ManyToOne(() => User, { onDelete: 'SET NULL' })
-  receiver: User;
 }

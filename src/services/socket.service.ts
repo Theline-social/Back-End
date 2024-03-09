@@ -131,6 +131,7 @@ class SocketService {
         }
 
         socket.data.user = user ? user : {};
+        console.log(user);
 
         socket.join(`user_${user.userId}_room`);
 
@@ -149,8 +150,8 @@ class SocketService {
             const conversation = await this.AppDataSource.getRepository(
               Conversation
             ).findOne({
-              where: { conversationId: conversationId },
-              select: ['isUsersActive'],
+              where: { conversationId },
+              select: ['isUsersActive', 'conversationId'],
             });
 
             if (!conversation) return;
@@ -159,22 +160,23 @@ class SocketService {
             isSeen = conversation.isUsersActive[`userId_${receiverId}`];
 
             const newMessage = new Message();
-            newMessage.conversationId = conversationId;
             newMessage.senderId = userId;
             newMessage.receiverId = receiverId;
             newMessage.text = text;
             newMessage.isSeen = isSeen;
-
-            await this.AppDataSource.getRepository(Message).insert(newMessage);
+            newMessage.conversation = conversation;
+            const savedMessages = await this.AppDataSource.getRepository(
+              Message
+            ).save(newMessage);
 
             if (receiverId) {
               socket.to(`user_${receiverId}_room`).emit('msg-receive', {
-                senderId: newMessage.senderId,
-                messageId: newMessage.messageId,
-                conversationId: newMessage.conversationId,
-                isSeen: newMessage.isSeen,
-                time: newMessage.time,
-                text: newMessage.text,
+                senderId: savedMessages.senderId,
+                messageId: savedMessages.messageId,
+                conversationId: savedMessages.conversation.conversationId,
+                isSeen: savedMessages.isSeen,
+                createdAt: savedMessages.createdAt,
+                text: savedMessages.text,
                 senderUsername: username,
                 isFromMe: false,
               });
@@ -182,12 +184,12 @@ class SocketService {
 
             if (userId) {
               this.io?.sockets.in(`user_${userId}_room`).emit('msg-redirect', {
-                senderId: newMessage.senderId,
-                messageId: newMessage.messageId,
-                conversationId: newMessage.conversationId,
-                isSeen: newMessage.isSeen,
-                time: newMessage.time,
-                text: newMessage.text,
+                senderId: savedMessages.senderId,
+                messageId: savedMessages.messageId,
+                conversationId: savedMessages.conversation.conversationId,
+                isSeen: savedMessages.isSeen,
+                createdAt: savedMessages.createdAt,
+                text: savedMessages.text,
                 senderUsername: username,
                 isFromMe: true,
               });
@@ -228,7 +230,7 @@ class SocketService {
           }
 
           await this.AppDataSource.getRepository(Message).update(
-            { conversationId, receiverId: userId },
+            { conversation: { conversationId }, receiverId: userId },
             { isSeen: true }
           );
         });

@@ -10,7 +10,6 @@ import { User } from './User';
 import { Message } from './Message';
 
 @Entity()
-@Index(['user1Id', 'user2Id'], { unique: true })
 export class Conversation {
   @PrimaryGeneratedColumn()
   conversationId: number;

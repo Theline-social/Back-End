@@ -85,6 +85,7 @@ export class ChatService {
         user1: { followers: true, following: true, blocked: true, muted: true },
         user2: { followers: true, following: true, muted: true, blocked: true },
       },
+      order: { messages: { createdAt: 'ASC' } },
     });
 
     if (!conversation) throw new AppError('conversation not found', 404);

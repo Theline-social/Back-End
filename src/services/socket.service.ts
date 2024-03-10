@@ -142,13 +142,10 @@ class SocketService {
         }
       })
       .on('connection', (socket: Socket) => {
-        console.log('socket connected');
-
         socket.on(
           'msg-send',
           async ({ receiverId, conversationId, text }: any) => {
-            if (!receiverId || !conversationId || !text)
-              return;
+            if (!receiverId || !conversationId || !text) return;
             const { userId, username } = socket.data.user;
 
             const conversation = await this.AppDataSource.getRepository(
@@ -210,9 +207,9 @@ class SocketService {
         });
 
         socket.on('chat-opened', async ({ conversationId, contactId }: any) => {
-          if (!conversationId || !contactId)
-            return;
+          if (!conversationId || !contactId) return;
           const { userId } = socket.data.user;
+          console.log(1);
 
           await this.AppDataSource.createQueryBuilder()
             .update(Conversation)
@@ -224,6 +221,7 @@ class SocketService {
               conversationId,
             })
             .execute();
+          console.log(2);
 
           if (contactId) {
             socket.to(`user_${contactId}_room`).emit('status-of-contact', {
@@ -231,6 +229,7 @@ class SocketService {
               inConversation: true,
             });
           }
+          console.log(3);
 
           await this.AppDataSource.getRepository(Message).update(
             { conversation: { conversationId }, receiverId: userId },
@@ -239,8 +238,7 @@ class SocketService {
         });
 
         socket.on('chat-closed', async ({ contactId, conversationId }: any) => {
-          if (!contactId || !conversationId)
-            return;
+          if (!contactId || !conversationId) return;
           const { userId } = socket.data.user;
 
           await this.AppDataSource.createQueryBuilder()
@@ -263,7 +261,6 @@ class SocketService {
         });
 
         socket.on('disconnect', async () => {
-          console.log(`Server disconnected from a client`);
           const { userId } = socket.data.user;
 
           if (!userId) return;

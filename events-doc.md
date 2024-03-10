@@ -10,7 +10,7 @@ This document outlines the various events emitted and received by the WebSocket 
 - **Data Format:**
   ```typescript
   {
-  contactId: number,
+  receiverId: number,
   conversationId: number,
   text: string,
   }

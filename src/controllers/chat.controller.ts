@@ -38,14 +38,14 @@ export const getConversationHistory = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { messages } = await chatService.getConversationHistory(
+    const { messages, otherContact } = await chatService.getConversationHistory(
       userId,
       +req.params.conversationId
     );
 
     res.status(201).json({
       status: true,
-      data: { messages },
+      data: { otherContact, messages },
     });
   }
 );

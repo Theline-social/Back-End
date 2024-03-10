@@ -58,8 +58,9 @@ const limiter = rateLimit({
 
 // Apply the rate limiting middleware to API calls only
 app.use('/api', limiter);
+const allowedOrigins = ['http://localhost:3000', 'https://theline.social'];
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 // Just a testing middleware
 app.use((req: Request, res: Response, next: NextFunction) => {

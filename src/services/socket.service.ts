@@ -276,7 +276,7 @@ class SocketService {
               isUsersActive: () =>
                 `jsonb_set(isUsersActive, '{userId_${userId}}', 'false')`,
             })
-            .where('"user1Id" = :userId OR "user2Id" = :userId', {
+            .where('user1.userId = :userId OR user2.userId = :userId', {
               userId,
             })
             .execute();

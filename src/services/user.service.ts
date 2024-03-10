@@ -33,6 +33,7 @@ import {
   TweetType,
   User,
 } from '../entities';
+import * as fs from 'fs';
 
 export class UsersService {
   constructor() {}
@@ -437,9 +438,26 @@ export class UsersService {
     }
 
     if (body.imageUrl !== undefined) {
+      if (userProfile.imageUrl !== 'default.jpeg')
+        process.env.NODE_ENV !== 'production'
+          ? fs.unlinkSync(
+              `${process.env.DEV_MEDIA_PATH}/users/${userProfile.imageUrl}`
+            )
+          : fs.unlinkSync(
+              `${process.env.PROD_MEDIA_PATH}/users/${userProfile.imageUrl}`
+            );
+
       userProfile.imageUrl = body.imageUrl;
     }
     if (body.bannerUrl !== undefined) {
+      if (userProfile.bannerUrl !== 'banner_default2.jpeg')
+        process.env.NODE_ENV !== 'production'
+          ? fs.unlinkSync(
+              `${process.env.DEV_MEDIA_PATH}/users/${userProfile.bannerUrl}`
+            )
+          : fs.unlinkSync(
+              `${process.env.PROD_MEDIA_PATH}/users/${userProfile.bannerUrl}`
+            );
       userProfile.bannerUrl = body.bannerUrl;
     }
     if (body.name !== undefined) {

@@ -1,9 +1,10 @@
 import { AppError } from '../common';
 import { AppDataSource } from '../dataSource';
 import { NotificationType, User } from '../entities';
+import { NotificationsService } from './notification.service';
 
 import socketService from './socket.service';
-
+const notificationService = new NotificationsService();
 
 export class InteractionsService {
   constructor() {}
@@ -21,16 +22,26 @@ export class InteractionsService {
       (user) => user.username === followingUsername
     );
 
-    if (userIndex !== -1) {
-      user.following.splice(userIndex, 1);
-    } else {
-      let followingUser = (await userRepository.findOne({
+    let followingUser = (await userRepository.findOne({
         where: { username: followingUsername },
         select: { userId: true },
       })) as User;
 
+    if (userIndex !== -1) {
+      user.following.splice(userIndex, 1);
+      await notificationService.deleteNotificationBySenderAndReceiver(
+        userId,
+        followingUser.userId,
+        NotificationType.Follow
+      );
+    } else {
+    
       user.following.push(followingUser);
-      await socketService.emitNotification(userId,followingUsername,NotificationType.Follow)
+      await socketService.emitNotification(
+        userId,
+        followingUsername,
+        NotificationType.Follow
+      );
     }
 
     await userRepository.save(user);

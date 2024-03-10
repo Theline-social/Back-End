@@ -15,11 +15,13 @@ export enum NotificationType {
   React_Reel = 'REACT_REEL',
   Reply_Reel = 'REPLY_REEL',
   Repost_Reel = 'REPOST_REEL',
+  Quote_Reel = 'QUOTE_REEL',
 
   Mention_Tweet = 'MENTION_TWEET',
   React_Tweet = 'REACT_TWEET',
   Reply_Tweet = 'REPLY_TWEET',
   Repost_Tweet = 'REPOST_TWEET',
+  Quote_Tweet = 'QUOTE_TWEET',
 }
 
 @Entity()

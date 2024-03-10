@@ -1,10 +1,11 @@
+import { json } from 'express';
 import { filterNotification } from '../common';
 import {
   userProfileRelations,
   userProfileSelectOptions,
 } from '../common/filters/users/userSelectOptions';
 import { AppDataSource } from '../dataSource';
-import { Notification } from '../entities';
+import { Notification, NotificationType } from '../entities';
 
 export class NotificationsService {
   constructor() {}
@@ -51,5 +52,29 @@ export class NotificationsService {
       { isSeen: false, notificationTo: { userId } },
       { isSeen: true }
     );
+  };
+
+  deleteNotification = async (
+    metadata: Record<string, any>,
+    type: NotificationType
+  ) => {
+    await AppDataSource.getRepository(Notification)
+      .createQueryBuilder()
+      .delete()
+      .where('metadata::jsonb @> :metadata', { metadata }) 
+      .andWhere('type = :type', { type })
+      .execute();
+  };
+
+  deleteNotificationBySenderAndReceiver = async (
+    fromUserId: number,
+    toUserId: number,
+    type: NotificationType
+  ) => {
+    await AppDataSource.getRepository(Notification).delete({
+      type,
+      notificationTo: { userId: toUserId },
+      notificationFrom: { userId: fromUserId },
+    });
   };
 }

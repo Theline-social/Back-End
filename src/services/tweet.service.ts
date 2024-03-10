@@ -18,6 +18,9 @@ import {
   tweetSelectOptions,
 } from '../common/filters/tweets/tweetSelectOptions';
 import { Tag } from '../entities/Tag';
+import { NotificationsService } from './notification.service';
+
+const notificationService = new NotificationsService();
 
 export class TweetsService {
   constructor() {}
@@ -722,6 +725,10 @@ export class TweetsService {
 
     if (userIndex !== -1) {
       tweet.reacts.splice(userIndex, 1);
+      await notificationService.deleteNotification(
+        { tweetId },
+        NotificationType.React_Tweet
+      );
     } else {
       let user = new User();
       user.userId = userId;
@@ -772,6 +779,10 @@ export class TweetsService {
 
       if (tweetIdx !== -1) {
         await this.deleteTweet(user.tweets[tweetIdx].tweetId);
+        await notificationService.deleteNotification(
+          { retweetId: user.tweets[tweetIdx].tweetId },
+          NotificationType.Repost_Tweet
+        );
 
         return { retweet: {}, message: 'Repost deleted successfully' };
       }
@@ -794,7 +805,9 @@ export class TweetsService {
       await socketService.emitNotification(
         userId,
         orgTweeter.username,
-        NotificationType.Repost_Tweet,
+        type === TweetType.Repost
+          ? NotificationType.Repost_Tweet
+          : NotificationType.Quote_Tweet,
         { retweetId: savedtweet.tweetId }
       );
     }

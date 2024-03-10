@@ -16,6 +16,9 @@ import {
   reelSelectOptions,
 } from '../common/filters/reels/reelSelectOptions';
 import { filterReel } from '../common/filters/reels/filterReel';
+import { NotificationsService } from './notification.service';
+
+const notificationService = new NotificationsService();
 
 export class ReelsService {
   constructor() {}
@@ -591,30 +594,34 @@ export class ReelsService {
 
     if (userIndex !== -1) {
       reel.reacts.splice(userIndex, 1);
+      await notificationService.deleteNotification(
+        { reelId },
+        NotificationType.React_Reel
+      );
     } else {
       let user = new User();
       user.userId = userId;
       reel.reacts.push(user);
+
+      const orgReeler = await userRepository.findOne({
+        where: { reels: { reelId } },
+        relations: { following: true },
+      });
+
+      if (
+        orgReeler &&
+        orgReeler.following.some((followee) => followee.userId === userId)
+      ) {
+        await socketService.emitNotification(
+          userId,
+          orgReeler.username,
+          NotificationType.React_Reel,
+          { reelId: reelId }
+        );
+      }
     }
 
-    const savedreel = await reelRepository.save(reel);
-
-    const orgReeler = await userRepository.findOne({
-      where: { reels: { reelId } },
-      relations: { following: true },
-    });
-
-    if (
-      orgReeler &&
-      orgReeler.following.some((followee) => followee.userId === userId)
-    ) {
-      await socketService.emitNotification(
-        userId,
-        orgReeler.username,
-        NotificationType.React_Reel,
-        { reelId: savedreel.reelId }
-      );
-    }
+    await reelRepository.save(reel);
   };
 
   addRereel = async (
@@ -643,7 +650,10 @@ export class ReelsService {
 
       if (reelIdx !== -1) {
         await this.deleteReel(user.reels[reelIdx].reelId);
-
+        await notificationService.deleteNotification(
+          { rereelId: user.reels[reelIdx].reelId },
+          NotificationType.Repost_Reel
+        );
         return { rereel: {}, message: 'Repost deleted successfully' };
       }
     }
@@ -665,7 +675,9 @@ export class ReelsService {
       await socketService.emitNotification(
         userId,
         orgReeler.username,
-        NotificationType.Repost_Reel,
+        type === ReelType.Repost
+          ? NotificationType.Repost_Reel
+          : NotificationType.Quote_Reel,
         { rereelId: savedreel.reelId }
       );
     }

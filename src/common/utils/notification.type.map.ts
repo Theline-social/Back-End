@@ -11,4 +11,6 @@ export const notificationTypeContentMap: Record<NotificationType, string> = {
   [NotificationType.React_Tweet]: 'reacted to your tweet',
   [NotificationType.Repost_Reel]: 'reposted your reel',
   [NotificationType.Repost_Tweet]: 'reposted your tweet',
+  [NotificationType.Quote_Tweet]: 'quoted your tweet',
+  [NotificationType.Quote_Reel]: 'quoted your reel',
 };

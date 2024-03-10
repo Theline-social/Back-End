@@ -148,7 +148,7 @@ class SocketService {
           'msg-send',
           async ({ receiverId, conversationId, text }: any) => {
             if (!receiverId || !conversationId || !text)
-              throw new AppError('message data are required', 400);
+              return;
             const { userId, username } = socket.data.user;
 
             const conversation = await this.AppDataSource.getRepository(
@@ -211,7 +211,7 @@ class SocketService {
 
         socket.on('chat-opened', async ({ conversationId, contactId }: any) => {
           if (!conversationId || !contactId)
-            throw new AppError('chat data is required', 400);
+            return;
           const { userId } = socket.data.user;
 
           await this.AppDataSource.createQueryBuilder()
@@ -241,7 +241,7 @@ class SocketService {
 
         socket.on('chat-closed', async ({ contactId, conversationId }: any) => {
           if (!contactId || !conversationId)
-            throw new AppError('chat data are required', 400);
+            return;
           const { userId } = socket.data.user;
 
           await this.AppDataSource.createQueryBuilder()

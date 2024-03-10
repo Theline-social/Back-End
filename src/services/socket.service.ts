@@ -112,30 +112,34 @@ class SocketService {
         if (!socket.handshake.headers.token)
           return next(new AppError('you are not logged in', 401));
 
-        const payload = await jwtVerifyPromisified(
-          socket.handshake.headers.token as string,
-          process.env.ACCESSTOKEN_SECRET_KEY as string
-        );
+        try {
+          const payload = await jwtVerifyPromisified(
+            socket.handshake.headers.token as string,
+            process.env.ACCESSTOKEN_SECRET_KEY as string
+          );
 
-        const user = await this.AppDataSource.getRepository(User).findOne({
-          where: { userId: payload.id },
-          select: {
-            userId: true,
-            username: true,
-            email: true,
-            name: true,
-          },
-        });
+          const user = await this.AppDataSource.getRepository(User).findOne({
+            where: { userId: payload.id },
+            select: {
+              userId: true,
+              username: true,
+              email: true,
+              name: true,
+            },
+          });
 
-        if (!user) {
-          return next(new AppError('User does no longer exist', 401));
+          if (!user) {
+            return next(new AppError('User does no longer exist', 401));
+          }
+
+          socket.data.user = user ? user : {};
+
+          socket.join(`user_${user.userId}_room`);
+
+          next();
+        } catch (error) {
+          return next(new AppError('error in socket connection', 400));
         }
-
-        socket.data.user = user ? user : {};
-
-        socket.join(`user_${user.userId}_room`);
-
-        next();
       })
       .on('connection', (socket: Socket) => {
         console.log('socket connected');

@@ -76,6 +76,7 @@ This document outlines the various events emitted and received by the WebSocket 
 
 - **Description:** This event is received when a new message is received.
 - **Data Format:**
+
 ```typescript
 {
   senderId: number,
@@ -91,7 +92,7 @@ This document outlines the various events emitted and received by the WebSocket 
 ### 3. `msg-redirect`
 
 - **Description:** This event is received when a message sent by the client is redirected back.
-- **Data Format:** 
+- **Data Format:**
 
 ```typescript
 {
@@ -108,4 +109,11 @@ This document outlines the various events emitted and received by the WebSocket 
 ### 4. `status-of-contact`
 
 - **Description:** This event is received when the status of a contact changes.
-- **Data Format:** Contact status data.
+- **Data Format:**
+
+```typescript
+{
+   conversationId: number,
+    inConversation: boolean
+}
+```

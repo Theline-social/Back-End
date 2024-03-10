@@ -229,7 +229,6 @@ class SocketService {
             socket.to(`user_${contactId}_room`).emit('status-of-contact', {
               conversationId,
               inConversation: true,
-              isLeaved: false,
             });
           }
 
@@ -259,7 +258,6 @@ class SocketService {
             socket.to(`user_${contactId}_room`).emit('status-of-contact', {
               conversationId,
               inConversation: false,
-              isLeaved: false,
             });
           }
         });

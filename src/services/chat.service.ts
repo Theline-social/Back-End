@@ -80,12 +80,22 @@ export class ChatService {
 
     const conversation = await conversationRepository.findOne({
       where: { conversationId },
-      relations: { messages: true },
+      relations: {
+        messages: true,
+        user1: { followers: true, following: true, blocked: true, muted: true },
+        user2: { followers: true, following: true, muted: true, blocked: true },
+      },
     });
 
     if (!conversation) throw new AppError('conversation not found', 404);
 
+    const otherContact =
+      conversation.user1.userId === userId
+        ? conversation.user2
+        : conversation.user1;
+
     return {
+      otherContact: getPartialUserProfile(otherContact, userId),
       messages: conversation.messages.map((message) => ({
         senderId: message.senderId,
         messageId: message.messageId,

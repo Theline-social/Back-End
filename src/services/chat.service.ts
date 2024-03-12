@@ -128,8 +128,15 @@ export class ChatService {
             ? conversation.user2
             : conversation.user1;
 
+        const unseenCount = conversation.messages.reduce((count, message) => {
+          return (
+            count + (message.receiverId === userId && !message.isSeen ? 1 : 0)
+          );
+        }, 0);
+
         return {
           conversationId: conversation.conversationId,
+          unseenCount,
           isActive: conversation.isUsersActive[`userId_${otherContact.userId}`],
           otherContact: getPartialUserProfile(otherContact, userId),
         };

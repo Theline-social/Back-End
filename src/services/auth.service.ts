@@ -241,7 +241,7 @@ class AuthService {
     const { googleAccessToken } = body;
     const userRepository = AppDataSource.getRepository(User);
 
-    const { email } = await this.getUserdataFromGoogle(googleAccessToken);
+    const { email, name } = await this.getUserdataFromGoogle(googleAccessToken);
 
     let existingUser: User | null = null;
     const isUserExists = await userRepository.exists({
@@ -249,7 +249,7 @@ class AuthService {
     });
 
     if (!isUserExists) {
-      return { isUserExists: false };
+      return { isUserExists: false, name };
     }
 
     existingUser = await userRepository.findOne({

@@ -55,24 +55,28 @@ export class ReelsService {
       select: reelSelectOptions,
       relations: reelRelations,
       order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
     });
 
-    const randomReels = await reelRepository.find({
-      where: {
-        reeler: { userId: Not(In([...followingsIds])) },
-        type: In([ReelType.Reel, ReelType.Repost, ReelType.Quote]),
-      },
-      select: reelSelectOptions,
-      relations: reelRelations,
-      order: {
-        createdAt: 'DESC',
-      },
-      take: limit - reelsOfFollowings.length,
-    });
+    let randomReels: Reel[] = [];
+    if (reelsOfFollowings.length < limit) {
+      randomReels = await reelRepository.find({
+        where: {
+          reeler: { userId: Not(In([...followingsIds])) },
+          type: In([ReelType.Reel, ReelType.Repost, ReelType.Quote]),
+        },
+        select: reelSelectOptions,
+        relations: reelRelations,
+        order: { createdAt: 'DESC' },
+      });
+    }
 
-    const timelineReels = [...reelsOfFollowings, ...randomReels].map((reel) =>
+    const mergedReels = [...reelsOfFollowings, ...randomReels];
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedReels = mergedReels.slice(startIndex, endIndex);
+
+    const timelineReels = paginatedReels.map((reel) =>
       filterReel(reel, userId, lang)
     );
 

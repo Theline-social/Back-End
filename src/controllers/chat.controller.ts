@@ -38,9 +38,13 @@ export const getConversationHistory = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
+    const { page, limit } = req.query;
+
     const { messages, otherContact } = await chatService.getConversationHistory(
       userId,
-      +req.params.conversationId
+      +req.params.conversationId,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(201).json({
@@ -54,7 +58,13 @@ export const getConversations = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { conversations } = await chatService.getConversations(userId);
+    const { page, limit } = req.query;
+
+    const { conversations } = await chatService.getConversations(
+      userId,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(201).json({
       status: true,

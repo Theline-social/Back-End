@@ -57,25 +57,29 @@ export class TweetsService {
       select: tweetSelectOptions,
       relations: tweetRelations,
       order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
     });
 
-    const randomTweets = await tweetRepository.find({
-      where: {
-        tweeter: { userId: Not(In([...followingsIds])) },
-        type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
-      },
-      select: tweetSelectOptions,
-      relations: tweetRelations,
-      order: {
-        createdAt: 'DESC',
-      },
-      take: limit - tweetsOfFollowings.length,
-    });
+    let randomTweets: Tweet[] = [];
+    if (tweetsOfFollowings.length < limit) {
+      randomTweets = await tweetRepository.find({
+        where: {
+          tweeter: { userId: Not(In([...followingsIds])) },
+          type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
+        },
+        select: tweetSelectOptions,
+        relations: tweetRelations,
+        order: { createdAt: 'DESC' },
+      });
+    }
 
-    const timelineTweets = [...tweetsOfFollowings, ...randomTweets].map(
-      (tweet) => filterTweet(tweet, userId)
+    const mergedTweets = [...tweetsOfFollowings, ...randomTweets];
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedTweets = mergedTweets.slice(startIndex, endIndex);
+
+    const timelineTweets = paginatedTweets.map((tweet) =>
+      filterTweet(tweet, userId)
     );
 
     return { timelineTweets };
@@ -670,7 +674,7 @@ export class TweetsService {
     limit: number = 30
   ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
-  
+
     const tweet = await tweetRepository.findOne({
       where: { tweetId },
       select: {
@@ -693,16 +697,16 @@ export class TweetsService {
         },
       },
     });
-  
+
     if (!tweet) throw new AppError('Tweet not found', 404);
-  
+
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-  
+
     const paginatedReacters = tweet.reacts
       .slice(startIndex, endIndex)
       .map((reacter) => getPartialUserProfile(reacter, userId));
-  
+
     return {
       reacters: paginatedReacters,
       currentPage: page,

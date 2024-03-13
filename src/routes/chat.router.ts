@@ -105,7 +105,7 @@ router
 /**
  * @swagger
  * /chats/{conversationId}/history:
- *   post:
+ *   get:
  *     summary: Get conversation history
  *     description: Get the history of a chat conversation by its ID.
  *     tags:
@@ -141,7 +141,7 @@ router
  */
 router
   .route('/:conversationId/history')
-  .post(
+  .get(
     authController.requireAuth,
     conversationIdParamValidationRules,
     validateRequest,

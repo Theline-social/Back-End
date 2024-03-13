@@ -75,7 +75,12 @@ export class ChatService {
     return { count };
   };
 
-  getConversationHistory = async (userId: number, conversationId: number) => {
+  getConversationHistory = async (
+    userId: number,
+    conversationId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const conversationRepository = AppDataSource.getRepository(Conversation);
 
     const conversation = await conversationRepository.findOne({
@@ -95,9 +100,12 @@ export class ChatService {
         ? conversation.user2
         : conversation.user1;
 
-    return {
-      otherContact: getPartialUserProfile(otherContact, userId),
-      messages: conversation.messages.map((message) => ({
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const paginatedMessages = conversation.messages
+      .slice(startIndex, endIndex)
+      .map((message) => ({
         senderId: message.senderId,
         messageId: message.messageId,
         conversationId: conversation.conversationId,
@@ -105,11 +113,21 @@ export class ChatService {
         createdAt: message.createdAt,
         text: message.text,
         isFromMe: message.senderId === userId,
-      })),
+      }));
+
+    return {
+      otherContact: getPartialUserProfile(otherContact, userId),
+      messages: paginatedMessages,
+      currentPage: page,
+      totalPages: Math.ceil(conversation.messages.length / limit),
     };
   };
 
-  getConversations = async (userId: number) => {
+  getConversations = async (
+    userId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const conversationRepository = AppDataSource.getRepository(Conversation);
 
     const conversations = await conversationRepository.find({
@@ -119,6 +137,8 @@ export class ChatService {
         user1: { followers: true, following: true, blocked: true, muted: true },
         user2: { followers: true, following: true, muted: true, blocked: true },
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {

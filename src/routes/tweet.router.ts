@@ -241,6 +241,16 @@ router
  *     tags:
  *       - tweets
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: tweetId
  *         in: path
  *         description: ID of the tweet to get replies for.
@@ -277,6 +287,16 @@ router
  *     tags:
  *       - tweets
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: tweetId
  *         in: path
  *         description: ID of the tweet to get reacters for.
@@ -316,6 +336,16 @@ router
  *     tags:
  *       - tweets
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: tweetId
  *         in: path
  *         description: ID of the tweet to get retweeters for.
@@ -355,6 +385,16 @@ router
  *     tags:
  *       - tweets
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: tweetId
  *         in: path
  *         description: ID of the tweet to retrieve.
@@ -629,6 +669,16 @@ router
  *     description: |
  *       This endpoint retrieves tweets that support a specific tag.
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - in: path
  *         name: tag
  *         required: true

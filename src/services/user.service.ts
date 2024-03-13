@@ -216,7 +216,11 @@ export class UsersService {
     return { user: getFullUserProfile(user, userId) };
   };
 
-  getTweetBookmarks = async (userId: number) => {
+  getTweetBookmarks = async (
+    userId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const userRepository = AppDataSource.getRepository(User);
 
     const user = await userRepository.findOne({
@@ -231,12 +235,25 @@ export class UsersService {
 
     if (!user?.tweetBookmarks) return { bookmarks: [] };
 
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const bookmarks = user.tweetBookmarks
+      .slice(startIndex, endIndex)
+      .map((tweet) => filterTweet(tweet, userId));
+
     return {
-      bookmarks: user.tweetBookmarks.map((tweet) => filterTweet(tweet, userId)),
+      bookmarks,
+      currentPage: page,
+      totalPages: Math.ceil(user.tweetBookmarks.length / limit),
     };
   };
 
-  getTweetMentions = async (userId: number) => {
+  getTweetMentions = async (
+    userId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
 
     const user = new User();
@@ -250,6 +267,8 @@ export class UsersService {
       relations: {
         tweet: tweetRelations,
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -257,7 +276,12 @@ export class UsersService {
     };
   };
 
-  getReelBookmarks = async (userId: number, lang: string = 'ar') => {
+  getReelBookmarks = async (
+    userId: number,
+    lang: string = 'ar',
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const userRepository = AppDataSource.getRepository(User);
 
     const user = await userRepository.findOne({
@@ -272,14 +296,26 @@ export class UsersService {
 
     if (!user?.reelBookmarks) return { bookmarks: [] };
 
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const bookmarks = user.reelBookmarks
+      .slice(startIndex, endIndex)
+      .map((reel) => filterReel(reel, userId, lang));
+
     return {
-      bookmarks: user.reelBookmarks.map((reel) =>
-        filterReel(reel, userId, lang)
-      ),
+      bookmarks,
+      currentPage: page,
+      totalPages: Math.ceil(user.reelBookmarks.length / limit),
     };
   };
 
-  getReelMentions = async (userId: number, lang: string = 'ar') => {
+  getReelMentions = async (
+    userId: number,
+    lang: string = 'ar',
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const reelMentionRepository = AppDataSource.getRepository(ReelMention);
 
     const user = new User();
@@ -293,6 +329,8 @@ export class UsersService {
       relations: {
         reel: reelRelations,
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -302,8 +340,13 @@ export class UsersService {
     };
   };
 
-  getFollowers = async (userId: number) => {
+  getFollowers = async (
+    userId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const userRepository = AppDataSource.getRepository(User);
+
     const user = await userRepository.findOne({
       where: { userId },
       select: {
@@ -319,15 +362,29 @@ export class UsersService {
       },
     });
 
+    if (!user?.followers) return { followers: [] };
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const followers = user.followers
+      .slice(startIndex, endIndex)
+      .map((follower) => getPartialUserProfile(follower, userId));
+
     return {
-      followers: user?.followers.map((follower) =>
-        getPartialUserProfile(follower, userId)
-      ),
+      followers,
+      currentPage: page,
+      totalPages: Math.ceil(user.followers.length / limit),
     };
   };
 
-  getFollowings = async (userId: number) => {
+  getFollowings = async (
+    userId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const userRepository = AppDataSource.getRepository(User);
+
     const user = await userRepository.findOne({
       where: { userId },
       select: {
@@ -343,15 +400,25 @@ export class UsersService {
       },
     });
 
+    if (!user?.following) return { followings: [] };
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const followings = user.following
+      .slice(startIndex, endIndex)
+      .map((followee) => getPartialUserProfile(followee, userId));
+
     return {
-      followings: user?.following.map((followee) =>
-        getPartialUserProfile(followee, userId)
-      ),
+      followings,
+      currentPage: page,
+      totalPages: Math.ceil(user.following.length / limit),
     };
   };
 
-  getBlocked = async (userId: number) => {
+  getBlocked = async (userId: number, page: number = 1, limit: number = 30) => {
     const userRepository = AppDataSource.getRepository(User);
+
     const user = await userRepository.findOne({
       where: { userId },
       select: {
@@ -367,15 +434,25 @@ export class UsersService {
       },
     });
 
+    if (!user?.blocking) return { blocked: [] };
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const blocked = user.blocking
+      .slice(startIndex, endIndex)
+      .map((blockedUser) => getPartialUserProfile(blockedUser, userId));
+
     return {
-      blocked: user?.blocking.map((blocked) =>
-        getPartialUserProfile(blocked, userId)
-      ),
+      blocked,
+      currentPage: page,
+      totalPages: Math.ceil(user.blocking.length / limit),
     };
   };
 
-  getMuted = async (userId: number) => {
+  getMuted = async (userId: number, page: number = 1, limit: number = 30) => {
     const userRepository = AppDataSource.getRepository(User);
+
     const user = await userRepository.findOne({
       where: { userId },
       select: {
@@ -391,8 +468,19 @@ export class UsersService {
       },
     });
 
+    if (!user?.muting) return { muted: [] };
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const muted = user.muting
+      .slice(startIndex, endIndex)
+      .map((mutedUser) => getPartialUserProfile(mutedUser, userId));
+
     return {
-      muted: user?.muting.map((muted) => getPartialUserProfile(muted, userId)),
+      muted,
+      currentPage: page,
+      totalPages: Math.ceil(user.muting.length / limit),
     };
   };
 
@@ -484,7 +572,9 @@ export class UsersService {
   getUserReels = async (
     userId: number,
     username: string,
-    lang: string = 'ar'
+    lang: string = 'ar',
+    page: number = 1,
+    limit: number = 30
   ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
 
@@ -495,6 +585,8 @@ export class UsersService {
       order: {
         createdAt: 'DESC',
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -502,7 +594,12 @@ export class UsersService {
     };
   };
 
-  getUserTweets = async (userId: number, username: string) => {
+  getUserTweets = async (
+    userId: number,
+    username: string,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
     const tweets = await tweetRepository.find({
@@ -512,6 +609,8 @@ export class UsersService {
       order: {
         createdAt: 'DESC',
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {

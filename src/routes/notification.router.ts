@@ -14,6 +14,17 @@ const router: Router = express.Router();
  *       - jwt: []
  *     tags:
  *       - notifications
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *     responses:
  *       '200':
  *         description: OK. Notifications retrieved successfully.

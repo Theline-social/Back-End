@@ -8,7 +8,12 @@ export const getNotifications = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const notifications = await notificationsService.getNotifications(userId);
+    const { page, limit } = req.query;
+    const notifications = await notificationsService.getNotifications(
+      userId,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(200).json({
       status: true,

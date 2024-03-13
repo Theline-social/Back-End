@@ -198,9 +198,13 @@ export const getTweetReacters = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
+    const { page, limit } = req.query;
+
     const { reacters } = await tweetsService.getTweetReacters(
       +userId,
-      +req.params.tweetId
+      +req.params.tweetId,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({

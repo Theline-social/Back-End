@@ -1,5 +1,11 @@
 import { In, Not } from 'typeorm';
-import { AppError, extractTags, filterTweet, usernameRegex } from '../common';
+import {
+  AppError,
+  extractTags,
+  filterTweet,
+  getPartialUserProfile,
+  usernameRegex,
+} from '../common';
 import { AppDataSource } from '../dataSource';
 import { Poll, PollOption } from '../entities/Poll';
 import {
@@ -581,8 +587,12 @@ export class TweetsService {
     };
   };
 
-  getTweetReTweeters = async (userId: number, tweetId: number,    page: number = 1,
-    limit: number = 30) => {
+  getTweetReTweeters = async (
+    userId: number,
+    tweetId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const userRepository = AppDataSource.getRepository(User);
 
     const retweeters = await userRepository.find({
@@ -632,8 +642,12 @@ export class TweetsService {
     };
   };
 
-  getTweetReTweets = async (userId: number, tweetId: number,     page: number = 1,
-    limit: number = 30) => {
+  getTweetReTweets = async (
+    userId: number,
+    tweetId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const retweetRepository = AppDataSource.getRepository(Tweet);
 
     const retweets = await retweetRepository.find({
@@ -649,11 +663,15 @@ export class TweetsService {
     };
   };
 
-  getTweetReacters = async (userId: number, tweetId: number,     page: number = 1,
-    limit: number = 30) => {
+  getTweetReacters = async (
+    userId: number,
+    tweetId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
-
-    const tweets = await tweetRepository.findOne({
+  
+    const tweet = await tweetRepository.findOne({
       where: { tweetId },
       select: {
         reacts: {
@@ -674,34 +692,21 @@ export class TweetsService {
           muted: true,
         },
       },
-      
     });
-
+  
+    if (!tweet) throw new AppError('Tweet not found', 404);
+  
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+  
+    const paginatedReacters = tweet.reacts
+      .slice(startIndex, endIndex)
+      .map((reacter) => getPartialUserProfile(reacter, userId));
+  
     return {
-      reacters: tweets?.reacts.map((reacter) => {
-        const isBlocked = reacter.blocked.some(
-          (user: User) => user.userId === userId
-        );
-        const isMuted = reacter.muted.some(
-          (user: User) => user.userId === userId
-        );
-        const isFollowed = reacter.followers.some(
-          (user: User) => user.userId === userId
-        );
-
-        return {
-          imageUrl: reacter.imageUrl,
-          username: reacter.username,
-          jobtitle: reacter.jobtitle,
-          name: reacter.name,
-          bio: reacter.bio,
-          followersCount: reacter.followers.length,
-          followingsCount: reacter.following.length,
-          isFollowed,
-          isMuted,
-          isBlocked,
-        };
-      }),
+      reacters: paginatedReacters,
+      currentPage: page,
+      totalPages: Math.ceil(tweet.reacts.length / limit),
     };
   };
 
@@ -864,8 +869,12 @@ export class TweetsService {
     await userRepository.save(user);
   };
 
-  getTweetsSupportingTag = async (userId: number, tag: string,     page: number = 1,
-    limit: number = 30) => {
+  getTweetsSupportingTag = async (
+    userId: number,
+    tag: string,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const tweets = await AppDataSource.getRepository(Tweet).find({
       where: { tags: { tag } },
       select: tweetSelectOptions,

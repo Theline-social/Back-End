@@ -145,6 +145,16 @@ router
  *     tags:
  *       - reels
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: reelId
  *         in: path
  *         description: ID of the reel to get replies for.
@@ -181,6 +191,16 @@ router
  *     tags:
  *       - reels
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: reelId
  *         in: path
  *         description: ID of the reel to get reacters for.
@@ -220,6 +240,16 @@ router
  *     tags:
  *       - reels
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: reelId
  *         in: path
  *         description: ID of the reel to get rereelers for.
@@ -286,6 +316,16 @@ router
  *     tags:
  *       - reels
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: reelId
  *         in: path
  *         description: ID of the tweet to retrieve.
@@ -499,6 +539,16 @@ router
  *     description: |
  *       This endpoint retrieves reels that support a specific tag.
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - in: path
  *         name: tag
  *         required: true

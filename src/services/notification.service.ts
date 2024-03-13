@@ -10,7 +10,11 @@ import { Notification, NotificationType } from '../entities';
 export class NotificationsService {
   constructor() {}
 
-  getNotifications = async (userId: number) => {
+  getNotifications = async (
+    userId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const notificationRepository = AppDataSource.getRepository(Notification);
 
     const notifications = await notificationRepository.find({
@@ -28,6 +32,8 @@ export class NotificationsService {
         notificationFrom: userProfileRelations,
       },
       order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -61,7 +67,7 @@ export class NotificationsService {
     await AppDataSource.getRepository(Notification)
       .createQueryBuilder()
       .delete()
-      .where('metadata::jsonb @> :metadata', { metadata }) 
+      .where('metadata::jsonb @> :metadata', { metadata })
       .andWhere('type = :type', { type })
       .execute();
   };

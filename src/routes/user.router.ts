@@ -331,6 +331,16 @@ router
  *     tags:
  *       - users
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: userId
  *         in: path
  *         description: ID of the user to get followers for.
@@ -370,6 +380,16 @@ router
  *     tags:
  *       - users
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: userId
  *         in: path
  *         description: ID of the user to get followings for.
@@ -407,6 +427,17 @@ router
  *       - jwt: []
  *     tags:
  *       - profile
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *     responses:
  *       '200':
  *         description: OK. Tweet bookmarks successfully retrieved.
@@ -434,6 +465,17 @@ router
  *       - jwt: []
  *     tags:
  *       - profile
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *     responses:
  *       '200':
  *         description: OK. reel bookmarks successfully retrieved.
@@ -459,6 +501,17 @@ router
  *       - jwt: []
  *     tags:
  *       - profile
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *     responses:
  *       '200':
  *         description: OK. Tweets successfully retrieved.
@@ -482,6 +535,17 @@ router
  *       - jwt: []
  *     tags:
  *       - profile
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *     responses:
  *       '200':
  *         description: OK. Reels successfully retrieved.
@@ -504,6 +568,17 @@ router
  *     security:
  *       - jwt: []
  *     tags: [profile]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *     responses:
  *       '200':
  *         description: OK. Muted users retrieved successfully.
@@ -525,6 +600,17 @@ router
  *     security:
  *       - jwt: []
  *     tags: [profile]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *     responses:
  *       '200':
  *         description: OK. Blocked users retrieved successfully.
@@ -687,6 +773,16 @@ router
  *     security:
  *       - jwt: []
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: username
  *         in: path
  *         description: ID of the user to get followings for.
@@ -721,6 +817,16 @@ router
  *     security:
  *       - jwt: []
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: username
  *         in: path
  *         description: ID of the user to get followings for.

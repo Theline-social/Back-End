@@ -1,6 +1,11 @@
 import { In, Not } from 'typeorm';
 import * as fs from 'fs';
-import { AppError, extractTags, usernameRegex } from '../common';
+import {
+  AppError,
+  extractTags,
+  getPartialUserProfile,
+  usernameRegex,
+} from '../common';
 import { AppDataSource } from '../dataSource';
 import {
   Reel,
@@ -279,8 +284,12 @@ export class ReelsService {
     await reelRepository.delete({ reelId });
   };
 
-  getReelReplies = async (userId: number, reelId: number,    page: number = 1,
-    limit: number = 30) => {
+  getReelReplies = async (
+    userId: number,
+    reelId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
 
     const replies = await reelRepository.find({
@@ -441,8 +450,12 @@ export class ReelsService {
     };
   };
 
-  getReelReReelers = async (userId: number, reelId: number,     page: number = 1,
-    limit: number = 30) => {
+  getReelReReelers = async (
+    userId: number,
+    reelId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
 
     const rereels = await reelRepository.find({
@@ -519,11 +532,15 @@ export class ReelsService {
     };
   };
 
-  getReelReacters = async (userId: number, reelId: number,     page: number = 1,
-    limit: number = 30) => {
+  getReelReacters = async (
+    userId: number,
+    reelId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
 
-    const reels = await reelRepository.findOne({
+    const reel = await reelRepository.findOne({
       where: { reelId },
       select: {
         reacts: {
@@ -546,31 +563,19 @@ export class ReelsService {
       },
     });
 
-    return {
-      reacters: reels?.reacts.map((reacter) => {
-        const isBlocked = reacter.blocked.some(
-          (user: User) => user.userId === userId
-        );
-        const isMuted = reacter.muted.some(
-          (user: User) => user.userId === userId
-        );
-        const isFollowed = reacter.followers.some(
-          (user: User) => user.userId === userId
-        );
+    if (!reel) throw new AppError('Reel not found', 404);
 
-        return {
-          imageUrl: reacter.imageUrl,
-          username: reacter.username,
-          jobtitle: reacter.jobtitle,
-          name: reacter.name,
-          bio: reacter.bio,
-          followersCount: reacter.followers.length,
-          followingsCount: reacter.following.length,
-          isFollowed,
-          isMuted,
-          isBlocked,
-        };
-      }),
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const paginatedReacters = reel.reacts
+      .slice(startIndex, endIndex)
+      .map((reacter) => getPartialUserProfile(reacter, userId));
+
+    return {
+      reacters: paginatedReacters,
+      currentPage: page,
+      totalPages: Math.ceil(reel.reacts.length / limit),
     };
   };
 
@@ -731,8 +736,13 @@ export class ReelsService {
     await userRepository.save(user);
   };
 
-  getReelsSupportingTag = async (userId: number, tag: string, lang: string,     page: number = 1,
-    limit: number = 30) => {
+  getReelsSupportingTag = async (
+    userId: number,
+    tag: string,
+    lang: string,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const reels = await AppDataSource.getRepository(Reel).find({
       where: { tags: { tag } },
       select: reelSelectOptions,

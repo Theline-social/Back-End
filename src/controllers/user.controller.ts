@@ -169,9 +169,16 @@ export const isUserFound = catchAsync(
     });
   }
 );
+
 export const getFollowers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { followers } = await usersService.getFollowers(+req.params.userId);
+    const { page, limit } = req.query;
+
+    const { followers } = await usersService.getFollowers(
+      +req.params.userId,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(200).json({
       status: true,
@@ -182,7 +189,13 @@ export const getFollowers = catchAsync(
 
 export const getFollowings = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { followings } = await usersService.getFollowings(+req.params.userId);
+    const { page, limit } = req.query;
+
+    const { followings } = await usersService.getFollowings(
+      +req.params.userId,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(200).json({
       status: true,
@@ -195,7 +208,12 @@ export const getTweetBookmarks = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { bookmarks } = await usersService.getTweetBookmarks(+userId);
+    const { page, limit } = req.query;
+    const { bookmarks } = await usersService.getTweetBookmarks(
+      +userId,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(200).json({
       status: true,
@@ -209,7 +227,13 @@ export const getReelBookmarks = catchAsync(
     const userId = res.locals.currentUser.userId;
     const lang = req.headers['accept-language'] as string;
 
-    const { bookmarks } = await usersService.getReelBookmarks(+userId, lang);
+    const { page, limit } = req.query;
+    const { bookmarks } = await usersService.getReelBookmarks(
+      +userId,
+      lang,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(200).json({
       status: true,
@@ -222,7 +246,12 @@ export const getTweetMentions = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { mentions } = await usersService.getTweetMentions(+userId);
+    const { page, limit } = req.query;
+    const { mentions } = await usersService.getTweetMentions(
+      +userId,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(200).json({
       status: true,
@@ -236,7 +265,13 @@ export const getReelMentions = catchAsync(
     const userId = res.locals.currentUser.userId;
     const lang = req.headers['accept-language'] as string;
 
-    const { mentions } = await usersService.getReelMentions(+userId, lang);
+    const { page, limit } = req.query;
+    const { mentions } = await usersService.getReelMentions(
+      +userId,
+      lang,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(200).json({
       status: true,
@@ -248,7 +283,13 @@ export const getReelMentions = catchAsync(
 export const getBlocked = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
-    const { blocked } = await usersService.getBlocked(+userId);
+    const { page, limit } = req.query;
+
+    const { blocked } = await usersService.getBlocked(
+      +userId,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(200).json({
       status: true,
@@ -260,7 +301,13 @@ export const getBlocked = catchAsync(
 export const getMuted = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
-    const { muted } = await usersService.getMuted(+userId);
+    const { page, limit } = req.query;
+
+    const { muted } = await usersService.getMuted(
+      +userId,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
 
     res.status(200).json({
       status: true,
@@ -320,10 +367,12 @@ export const editUserProfile = catchAsync(
 export const getUserTweets = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
-
+    const { page, limit } = req.query;
     const { tweets } = await usersService.getUserTweets(
       +userId,
-      req.params.username
+      req.params.username,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({
@@ -337,13 +386,15 @@ export const getUserTweets = catchAsync(
 export const getUserReels = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
-
+    const { page, limit } = req.query;
     const lang = req.headers['accept-language'] as string;
 
     const { reels } = await usersService.getUserReels(
       +userId,
       req.params.username,
-      lang
+      lang,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({

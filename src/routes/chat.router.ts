@@ -12,13 +12,24 @@ const router: Router = express.Router();
 /**
  * @swagger
  * /chats:
- *   post:
+ *   get:
  *     summary: Get user conversations
  *     description: Retrieve conversations for the authenticated user.
  *     tags:
  *       - chats
  *     security:
  *       - jwt: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *     responses:
  *       '200':
  *         description: Successful operation. Returns the user's conversations.
@@ -29,7 +40,7 @@ const router: Router = express.Router();
  */
 router
   .route('/')
-  .post(authController.requireAuth, chatController.getConversations);
+  .get(authController.requireAuth, chatController.getConversations);
 
 /**
  * @swagger
@@ -102,6 +113,16 @@ router
  *     security:
  *       - jwt: []
  *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
  *       - name: conversationId
  *         in: path
  *         description: ID of the conversation to get history for.

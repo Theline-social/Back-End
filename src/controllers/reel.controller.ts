@@ -96,9 +96,12 @@ export const getReelReplies = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
+    const { page, limit } = req.query;
     const { replies } = await reelsService.getReelReplies(
       +userId,
-      +req.params.reelId
+      +req.params.reelId,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({
@@ -111,10 +114,12 @@ export const getReelReplies = catchAsync(
 export const getReelReReelers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
-
+    const { page, limit } = req.query;
     const { rereelers } = await reelsService.getReelReReelers(
       +userId,
-      +req.params.reelId
+      +req.params.reelId,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({
@@ -128,9 +133,12 @@ export const getReelReacters = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
+    const { page, limit } = req.query;
     const { reacters } = await reelsService.getReelReacters(
       +userId,
-      +req.params.reelId
+      +req.params.reelId,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({
@@ -245,10 +253,13 @@ export const getReelsSupportingTag = catchAsync(
     const userId = res.locals.currentUser.userId;
     const lang = req.headers['accept-language'] as string;
 
+    const { page, limit } = req.query;
     const { reels } = await reelsService.getReelsSupportingTag(
       +userId,
       req.params.tag,
-      lang
+      lang,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({

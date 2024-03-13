@@ -158,9 +158,13 @@ export const getTweetReplies = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
+    const { page, limit } = req.query;
+
     const { replies } = await tweetsService.getTweetReplies(
       +userId,
-      +req.params.tweetId
+      +req.params.tweetId,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({
@@ -174,9 +178,13 @@ export const getTweetReTweeters = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
+    const { page, limit } = req.query;
+
     const { retweeters } = await tweetsService.getTweetReTweeters(
       +userId,
-      +req.params.tweetId
+      +req.params.tweetId,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({
@@ -206,9 +214,13 @@ export const getTweetReTweets = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
+    const { page, limit } = req.query;
+
     const { retweets } = await tweetsService.getTweetReTweets(
       +userId,
-      +req.params.tweetId
+      +req.params.tweetId,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({
@@ -302,9 +314,12 @@ export const getTweetsSupportingTag = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
+    const { page, limit } = req.query;
     const { tweets } = await tweetsService.getTweetsSupportingTag(
       +userId,
-      req.params.tag
+      req.params.tag,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({

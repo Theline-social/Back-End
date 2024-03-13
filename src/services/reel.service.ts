@@ -279,7 +279,8 @@ export class ReelsService {
     await reelRepository.delete({ reelId });
   };
 
-  getReelReplies = async (userId: number, reelId: number) => {
+  getReelReplies = async (userId: number, reelId: number,    page: number = 1,
+    limit: number = 30) => {
     const reelRepository = AppDataSource.getRepository(Reel);
 
     const replies = await reelRepository.find({
@@ -342,6 +343,8 @@ export class ReelsService {
         mentions: { userMentioned: true },
         supportedTopics: true,
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -438,7 +441,8 @@ export class ReelsService {
     };
   };
 
-  getReelReReelers = async (userId: number, reelId: number) => {
+  getReelReReelers = async (userId: number, reelId: number,     page: number = 1,
+    limit: number = 30) => {
     const reelRepository = AppDataSource.getRepository(Reel);
 
     const rereels = await reelRepository.find({
@@ -461,6 +465,8 @@ export class ReelsService {
           muted: true,
         },
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -494,7 +500,9 @@ export class ReelsService {
   getReelReReels = async (
     userId: number,
     reelId: number,
-    lang: string = 'ar'
+    lang: string = 'ar',
+    page: number = 1,
+    limit: number = 30
   ) => {
     const rereelRepository = AppDataSource.getRepository(Reel);
 
@@ -502,6 +510,8 @@ export class ReelsService {
       where: { rereelTo: { reelId }, type: ReelType.Quote },
       select: reelSelectOptions,
       relations: reelRelations,
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -509,7 +519,8 @@ export class ReelsService {
     };
   };
 
-  getReelReacters = async (userId: number, reelId: number) => {
+  getReelReacters = async (userId: number, reelId: number,     page: number = 1,
+    limit: number = 30) => {
     const reelRepository = AppDataSource.getRepository(Reel);
 
     const reels = await reelRepository.findOne({
@@ -720,11 +731,14 @@ export class ReelsService {
     await userRepository.save(user);
   };
 
-  getReelsSupportingTag = async (userId: number, tag: string, lang: string) => {
+  getReelsSupportingTag = async (userId: number, tag: string, lang: string,     page: number = 1,
+    limit: number = 30) => {
     const reels = await AppDataSource.getRepository(Reel).find({
       where: { tags: { tag } },
       select: reelSelectOptions,
       relations: reelRelations,
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {

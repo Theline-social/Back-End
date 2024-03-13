@@ -386,7 +386,12 @@ export class TweetsService {
     await tweetRepository.delete({ tweetId });
   };
 
-  getTweetReplies = async (userId: number, tweetId: number) => {
+  getTweetReplies = async (
+    userId: number,
+    tweetId: number,
+    page: number = 1,
+    limit: number = 30
+  ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
     const replies = await tweetRepository.find({
@@ -465,6 +470,8 @@ export class TweetsService {
         mentions: { userMentioned: true },
         poll: { options: { voters: true } },
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -574,7 +581,8 @@ export class TweetsService {
     };
   };
 
-  getTweetReTweeters = async (userId: number, tweetId: number) => {
+  getTweetReTweeters = async (userId: number, tweetId: number,    page: number = 1,
+    limit: number = 30) => {
     const userRepository = AppDataSource.getRepository(User);
 
     const retweeters = await userRepository.find({
@@ -597,6 +605,8 @@ export class TweetsService {
         blocked: true,
         muted: true,
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -622,13 +632,16 @@ export class TweetsService {
     };
   };
 
-  getTweetReTweets = async (userId: number, tweetId: number) => {
+  getTweetReTweets = async (userId: number, tweetId: number,     page: number = 1,
+    limit: number = 30) => {
     const retweetRepository = AppDataSource.getRepository(Tweet);
 
     const retweets = await retweetRepository.find({
       where: { retweetTo: { tweetId }, type: TweetType.Quote },
       select: tweetSelectOptions,
       relations: tweetRelations,
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {
@@ -636,7 +649,8 @@ export class TweetsService {
     };
   };
 
-  getTweetReacters = async (userId: number, tweetId: number) => {
+  getTweetReacters = async (userId: number, tweetId: number,     page: number = 1,
+    limit: number = 30) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
 
     const tweets = await tweetRepository.findOne({
@@ -660,6 +674,7 @@ export class TweetsService {
           muted: true,
         },
       },
+      
     });
 
     return {
@@ -849,11 +864,14 @@ export class TweetsService {
     await userRepository.save(user);
   };
 
-  getTweetsSupportingTag = async (userId: number, tag: string) => {
+  getTweetsSupportingTag = async (userId: number, tag: string,     page: number = 1,
+    limit: number = 30) => {
     const tweets = await AppDataSource.getRepository(Tweet).find({
       where: { tags: { tag } },
       select: tweetSelectOptions,
       relations: tweetRelations,
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
     return {

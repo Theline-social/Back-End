@@ -153,13 +153,15 @@ export const validateRecaptcha = catchAsync(
 export const signinWithGoogle = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { body } = req;
-    const { isUserExists, data } = await authService.signinWithGoogle(body);
+    const { isUserExists, data, name } = await authService.signinWithGoogle(
+      body
+    );
 
     if (!isUserExists) {
       res.status(200).json({
         status: true,
         message: 'user does not exist',
-        data: { isUserExists },
+        data: { isUserExists, name: !isUserExists ? name : undefined },
       });
 
       return;

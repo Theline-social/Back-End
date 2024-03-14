@@ -80,7 +80,7 @@ export class Reel {
   })
   bookmarkedBy: User[];
 
-  @ManyToMany(() => Tag, (trend) => trend.reels, { onDelete: 'NO ACTION' })
+  @ManyToMany(() => Tag, (trend) => trend.reels, { onDelete: 'CASCADE' })
   tags: Tag[];
 
   get reactCount(): number {

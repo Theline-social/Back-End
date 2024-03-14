@@ -85,7 +85,7 @@ export class Tweet {
   })
   poll: Poll;
 
-  @ManyToMany(() => Tag, (trend) => trend.tweets, { onDelete: 'NO ACTION' })
+  @ManyToMany(() => Tag, (trend) => trend.tweets, { onDelete: 'CASCADE' })
   tags: Tag[];
 
   get reactCount(): number {

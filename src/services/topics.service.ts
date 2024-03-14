@@ -57,7 +57,9 @@ export class TopicsService {
   getTopicReels = async (
     userId: number,
     topicName: string,
-    lang: string = 'ar'
+    lang: string = 'ar',
+    page: number = 1,
+    limit: number = 30
   ) => {
     const topicRepository = AppDataSource.getRepository(Topic);
 
@@ -82,8 +84,13 @@ export class TopicsService {
       return reactCountB - reactCountA;
     });
 
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const paginatedReels = sortedReels.slice(startIndex, endIndex);
+
     return {
-      supportingreels: sortedReels.map((reel) =>
+      supportingreels: paginatedReels.map((reel) =>
         filterReel(reel, userId, lang)
       ),
     };

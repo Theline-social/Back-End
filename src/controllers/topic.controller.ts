@@ -34,10 +34,14 @@ export const getTopicReels = catchAsync(
     const userId = res.locals.currentUser.userId;
     const lang = req.headers['accept-language'] as string;
 
+    const { page, limit } = req.query;
+
     const { supportingreels } = await topicsService.getTopicReels(
       userId,
       req.params.topic,
-      lang
+      lang,
+      +(page as string) || 1,
+      +(limit as string) || 10
     );
 
     res.status(200).json({

@@ -23,19 +23,25 @@ export class InteractionsService {
     );
 
     let followingUser = (await userRepository.findOne({
-        where: { username: followingUsername },
-        select: { userId: true },
-      })) as User;
+      where: { username: followingUsername },
+      select: { userId: true },
+    })) as User;
 
     if (userIndex !== -1) {
       user.following.splice(userIndex, 1);
-      await notificationService.deleteNotificationBySenderAndReceiver(
-        userId,
-        followingUser.userId,
-        NotificationType.Follow
+      const { notificationId } =
+        await notificationService.deleteNotificationBySenderAndReceiver(
+          userId,
+          followingUser.userId,
+          NotificationType.Follow
+        );
+
+      socketService.emitDeleteNotification(
+        followingUser!.userId,
+        notificationId as number
       );
+      
     } else {
-    
       user.following.push(followingUser);
       await socketService.emitNotification(
         userId,

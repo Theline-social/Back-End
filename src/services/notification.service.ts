@@ -64,12 +64,23 @@ export class NotificationsService {
     metadata: Record<string, any>,
     type: NotificationType
   ) => {
+    const deletedNotifications = await AppDataSource.getRepository(Notification)
+      .createQueryBuilder()
+      .select('Notification.notificationId')
+      .where('metadata::jsonb @> :metadata', { metadata })
+      .andWhere('type = :type', { type })
+      .execute();
+
     await AppDataSource.getRepository(Notification)
       .createQueryBuilder()
       .delete()
       .where('metadata::jsonb @> :metadata', { metadata })
       .andWhere('type = :type', { type })
       .execute();
+
+      console.log(deletedNotifications);
+      
+    return { notificationId: deletedNotifications[0].Notification_notificationId };
   };
 
   deleteNotificationBySenderAndReceiver = async (
@@ -77,10 +88,23 @@ export class NotificationsService {
     toUserId: number,
     type: NotificationType
   ) => {
+    const notification = await AppDataSource.getRepository(
+      Notification
+    ).findOne({
+      select: { notificationId: true },
+      where: {
+        type,
+        notificationTo: { userId: toUserId },
+        notificationFrom: { userId: fromUserId },
+      },
+    });
+
     await AppDataSource.getRepository(Notification).delete({
       type,
       notificationTo: { userId: toUserId },
       notificationFrom: { userId: fromUserId },
     });
+
+    return { notificationId: notification?.notificationId };
   };
 }

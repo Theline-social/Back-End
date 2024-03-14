@@ -612,21 +612,23 @@ export class ReelsService {
 
     const userIndex = reel.reacts.findIndex((user) => user.userId === userId);
 
+    const orgReeler = await userRepository.findOne({
+      where: { reels: { reelId } },
+      relations: { following: true },
+    });
+
     if (userIndex !== -1) {
       reel.reacts.splice(userIndex, 1);
-      await notificationService.deleteNotification(
+      const { notificationId } = await notificationService.deleteNotification(
         { reelId },
         NotificationType.React_Reel
       );
+
+      socketService.emitDeleteNotification(orgReeler!.userId, notificationId);
     } else {
       let user = new User();
       user.userId = userId;
       reel.reacts.push(user);
-
-      const orgReeler = await userRepository.findOne({
-        where: { reels: { reelId } },
-        relations: { following: true },
-      });
 
       if (
         orgReeler &&
@@ -657,6 +659,11 @@ export class ReelsService {
     const orgReel = new Reel();
     orgReel.reelId = reelId;
 
+    const orgReeler = await userRepository.findOne({
+      where: { reels: { reelId } },
+      relations: { following: true },
+    });
+
     if (type === ReelType.Repost) {
       const user = (await userRepository.findOne({
         where: { userId },
@@ -670,10 +677,16 @@ export class ReelsService {
 
       if (reelIdx !== -1) {
         await this.deleteReel(user.reels[reelIdx].reelId);
-        await notificationService.deleteNotification(
+        const { notificationId } = await notificationService.deleteNotification(
           { rereelId: user.reels[reelIdx].reelId },
           NotificationType.Repost_Reel
         );
+
+        socketService.emitDeleteNotification(
+          orgReeler!.userId,
+          notificationId
+        );
+
         return { rereel: {}, message: 'Repost deleted successfully' };
       }
     }
@@ -682,11 +695,6 @@ export class ReelsService {
     reel.rereelTo = orgReel;
 
     const savedreel = await reelRepository.save(reel);
-
-    const orgReeler = await userRepository.findOne({
-      where: { reels: { reelId } },
-      relations: { following: true },
-    });
 
     if (
       orgReeler &&

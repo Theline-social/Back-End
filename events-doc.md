@@ -117,3 +117,13 @@ This document outlines the various events emitted and received by the WebSocket 
     inConversation: boolean
 }
 ```
+### 5. `notification-deleted`
+
+- **Description:** This event is received when a notification deleted.
+- **Data Format:**
+
+```typescript
+{
+   notificationId: number,
+}
+```

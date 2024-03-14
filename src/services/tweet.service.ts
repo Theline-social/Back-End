@@ -749,10 +749,16 @@ export class TweetsService {
 
     if (userIndex !== -1) {
       tweet.reacts.splice(userIndex, 1);
-      await notificationService.deleteNotification(
+      const { notificationId } = await notificationService.deleteNotification(
         { tweetId },
         NotificationType.React_Tweet
       );
+
+      socketService.emitDeleteNotification(
+        tweet.tweeter!.userId,
+        notificationId
+      );
+      
     } else {
       let user = new User();
       user.userId = userId;
@@ -790,6 +796,11 @@ export class TweetsService {
     const orgTweet = new Tweet();
     orgTweet.tweetId = tweetId;
 
+    const orgTweeter = await userRepository.findOne({
+      where: { tweets: { tweetId } },
+      relations: { following: true },
+    });
+
     if (type === TweetType.Repost) {
       const user = (await userRepository.findOne({
         where: { userId },
@@ -803,9 +814,14 @@ export class TweetsService {
 
       if (tweetIdx !== -1) {
         await this.deleteTweet(user.tweets[tweetIdx].tweetId);
-        await notificationService.deleteNotification(
+        const { notificationId } = await notificationService.deleteNotification(
           { retweetId: user.tweets[tweetIdx].tweetId },
           NotificationType.Repost_Tweet
+        );
+
+        socketService.emitDeleteNotification(
+          orgTweeter!.userId,
+          notificationId
         );
 
         return { retweet: {}, message: 'Repost deleted successfully' };
@@ -816,11 +832,6 @@ export class TweetsService {
     tweet.retweetTo = orgTweet;
 
     const savedtweet = await tweetRepository.save(tweet);
-
-    const orgTweeter = await userRepository.findOne({
-      where: { tweets: { tweetId } },
-      relations: { following: true },
-    });
 
     if (
       orgTweeter &&

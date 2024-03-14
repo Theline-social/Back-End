@@ -36,6 +36,15 @@ class SocketService {
     this.socket = null;
   }
 
+  emitDeleteNotification(receiverId: number, notificationId: number) {
+    if (receiverId && notificationId)
+      this.io?.sockets
+        .in(`user_${receiverId}_room`)
+        .emit('notification-deleted', {
+          notificationId,
+        });
+  }
+
   async emitNotification(
     senderId: number,
     receiverUsername: string,

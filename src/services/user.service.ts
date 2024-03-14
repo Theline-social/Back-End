@@ -197,6 +197,7 @@ export class UsersService {
         followers: { userId: true },
         following: { userId: true },
         blocked: { userId: true },
+        blocking: { userId: true },
         muted: { userId: true },
         tweets: { tweetId: true },
         reels: { reelId: true },
@@ -207,6 +208,7 @@ export class UsersService {
         blocked: true,
         muted: true,
         tweets: true,
+        blocking: true,
         reels: true,
       },
     });

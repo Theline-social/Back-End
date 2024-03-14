@@ -47,6 +47,7 @@ export const getFullUserProfile = (
 ): userDto & {
   isMuted: boolean;
   isBlocked: boolean;
+  isBlocking: boolean;
   isFollowed: boolean;
   postsCount: number;
 } => {
@@ -69,6 +70,7 @@ export const getFullUserProfile = (
     followingsCount: user.followingsCount,
     isMuted: user.isMutedBy(userId),
     isBlocked: user.isBlockedBy(userId),
+    isBlocking: user.isBlocking(userId),
     isFollowed: user.isFollowedBy(userId),
     postsCount: user.postsCount,
   };

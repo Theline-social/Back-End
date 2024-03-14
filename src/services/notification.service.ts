@@ -6,9 +6,10 @@ import {
 } from '../common/filters/users/userSelectOptions';
 import { AppDataSource } from '../dataSource';
 import { Notification, NotificationType } from '../entities';
-
 export class NotificationsService {
-  constructor() {}
+  constructor() {
+  
+  }
 
   getNotifications = async (
     userId: number,
@@ -56,7 +57,7 @@ export class NotificationsService {
 
     await notificationRepository.update(
       { isSeen: false, notificationTo: { userId } },
-      { isSeen: true }
+      { isSeen: true, seenAt: new Date() }
     );
   };
 
@@ -78,9 +79,11 @@ export class NotificationsService {
       .andWhere('type = :type', { type })
       .execute();
 
-      console.log(deletedNotifications);
-      
-    return { notificationId: deletedNotifications[0].Notification_notificationId };
+    console.log(deletedNotifications);
+
+    return {
+      notificationId: deletedNotifications[0].Notification_notificationId,
+    };
   };
 
   deleteNotificationBySenderAndReceiver = async (
@@ -106,5 +109,24 @@ export class NotificationsService {
     });
 
     return { notificationId: notification?.notificationId };
+  };
+
+  deleteOldNotifications = async () => {
+    try {
+      const notificationRepository = AppDataSource.getRepository(Notification);
+
+      const threeDaysAgo = new Date();
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+      await notificationRepository
+        .createQueryBuilder()
+        .delete()
+        .where('seenAt <= :threeDaysAgo', { threeDaysAgo })
+        .execute();
+
+      console.log('Old notifications deleted successfully');
+    } catch (error) {
+      console.error('Error deleting old notifications:', error);
+    }
   };
 }

@@ -44,6 +44,9 @@ export class Notification {
   })
   createdAt: Date;
 
+  @Column({ type: 'timestamp', nullable: true })
+  seenAt: Date;
+
   @Column({ type: 'json' })
   metadata: any;
 

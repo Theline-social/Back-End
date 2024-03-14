@@ -7,7 +7,7 @@ export const extractTags = async (content: string) => {
   const tagRepository = AppDataSource.getRepository(Tag);
 
   const hashtags = content.match(hashtagRegex);
-
+  
   if (!hashtags || hashtags.length === 0) {
     return { hashtags: undefined };
   }

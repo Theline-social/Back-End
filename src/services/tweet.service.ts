@@ -280,6 +280,9 @@ export class TweetsService {
     const tweet = new Tweet();
     tweet.poll = poll;
     tweet.tweeter = user;
+    
+    const { hashtags } = await extractTags(body.question);
+    tweet.tags = hashtags || [];
 
     const savedtweet = await tweetRepository.save(tweet);
 

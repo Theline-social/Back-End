@@ -40,16 +40,17 @@ export const getConversationHistory = catchAsync(
 
     const { page, limit } = req.query;
 
-    const { messages, otherContact } = await chatService.getConversationHistory(
-      userId,
-      +req.params.conversationId,
-      +(page as string) || 1,
-      +(limit as string) || 10
-    );
+    const { messages, otherContact, isBlockedByOtherContact } =
+      await chatService.getConversationHistory(
+        userId,
+        +req.params.conversationId,
+        +(page as string) || 1,
+        +(limit as string) || 10
+      );
 
     res.status(201).json({
       status: true,
-      data: { otherContact, messages },
+      data: { otherContact, isBlockedByOtherContact, messages },
     });
   }
 );

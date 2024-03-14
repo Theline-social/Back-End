@@ -166,7 +166,9 @@ export class User {
   isBlockedBy(userId: number): boolean {
     return this.blocked.some((user) => user.userId === userId);
   }
-
+  isBlocking(userId: number): boolean {
+    return this.blocking.some((user) => user.userId === userId);
+  }
   isFollowedBy(userId: number): boolean {
     return this.followers.some((user) => user.userId === userId);
   }

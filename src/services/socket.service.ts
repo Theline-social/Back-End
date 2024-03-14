@@ -157,6 +157,7 @@ class SocketService {
             if (!receiverId || !conversationId || !text) return;
             const { userId, username } = socket.data.user;
 
+            
             const conversation = await this.AppDataSource.getRepository(
               Conversation
             ).findOne({

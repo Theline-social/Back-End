@@ -87,8 +87,20 @@ export class ChatService {
       where: { conversationId },
       relations: {
         messages: true,
-        user1: { followers: true, following: true, blocked: true, muted: true },
-        user2: { followers: true, following: true, muted: true, blocked: true },
+        user1: {
+          followers: true,
+          following: true,
+          blocked: true,
+          muted: true,
+          blocking: true,
+        },
+        user2: {
+          followers: true,
+          following: true,
+          muted: true,
+          blocked: true,
+          blocking: true,
+        },
       },
       order: { messages: { createdAt: 'ASC' } },
     });
@@ -116,6 +128,7 @@ export class ChatService {
       }));
 
     return {
+      isBlockedByOtherContact: otherContact.isBlocking(userId),
       otherContact: getPartialUserProfile(otherContact, userId),
       messages: paginatedMessages,
       currentPage: page,

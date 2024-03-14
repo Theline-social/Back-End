@@ -6,4 +6,4 @@ export const passwordRegex: RegExp =
 
 export const usernameRegex = /@\w+/g;
 
-export const hashtagRegex = /#\w+/g; 
+export const hashtagRegex = /#[\p{L}\p{N}_]+/gu;

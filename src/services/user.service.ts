@@ -1,4 +1,4 @@
-import { ILike, Like, Not } from 'typeorm';
+import { ILike, In, Like, Not } from 'typeorm';
 import {
   AppError,
   ChangePasswordBody,
@@ -255,12 +255,25 @@ export class UsersService {
     limit: number = 30
   ) => {
     const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
+    const userRepository = AppDataSource.getRepository(User);
 
-    const user = new User();
-    user.userId = userId;
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: { blocking: { userId: true } },
+      relations: { blocking: true },
+    });
+
+    if (!user) throw new AppError('User not found', 404);
+
+    const blockingsIds = user.blocking.map((blocking) => blocking.userId);
+
+    if (blockingsIds.includes(userId)) return { reels: [] };
 
     const mentions = await tweetMentionRepository.find({
-      where: { userMentioned: user },
+      where: {
+        userMentioned: user,
+        userMakingMention: { userId: Not(In([...blockingsIds])) },
+      },
       select: {
         tweet: tweetSelectOptions,
       },
@@ -577,6 +590,19 @@ export class UsersService {
     limit: number = 30
   ) => {
     const reelRepository = AppDataSource.getRepository(Reel);
+    const userRepository = AppDataSource.getRepository(User);
+
+    const user = await userRepository.findOne({
+      where: { username },
+      select: { blocking: { userId: true } },
+      relations: { blocking: true },
+    });
+
+    if (!user) throw new AppError('User not found', 404);
+
+    const blockingsIds = user.blocking.map((blocking) => blocking.userId);
+
+    if (blockingsIds.includes(userId)) return { reels: [] };
 
     const reels = await reelRepository.find({
       where: { reeler: { username }, type: Not(ReelType.Reply) },
@@ -601,6 +627,19 @@ export class UsersService {
     limit: number = 30
   ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
+    const userRepository = AppDataSource.getRepository(User);
+
+    const user = await userRepository.findOne({
+      where: { username },
+      select: { blocking: { userId: true } },
+      relations: { blocking: true },
+    });
+
+    if (!user) throw new AppError('User not found', 404);
+
+    const blockingsIds = user.blocking.map((blocking) => blocking.userId);
+
+    if (blockingsIds.includes(userId)) return { tweets: [] };
 
     const tweets = await tweetRepository.find({
       where: { tweeter: { username } },

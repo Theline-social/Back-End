@@ -64,11 +64,21 @@ class SocketService {
 
     const receiver = await userRepository.findOne({
       where: { username: receiverUsername },
-      select: { userId: true },
+      select: {
+        userId: true,
+        blocking: { userId: true },
+        muting: { userId: true },
+      },
+      relations: { muting: true, blocking: true },
     });
 
     if (!receiver) throw new AppError('User not found', 404);
 
+    const blockingsIds = receiver.blocking.map((blocking) => blocking.userId);
+    const mutingsIds = receiver.muting.map((muting) => muting.userId);
+
+    if ([...blockingsIds, ...mutingsIds].includes(senderId)) return;
+    
     const content = notificationTypeContentMap[type] || 'Unknown notification';
 
     const notification = new Notification();
@@ -157,7 +167,6 @@ class SocketService {
             if (!receiverId || !conversationId || !text) return;
             const { userId, username } = socket.data.user;
 
-            
             const conversation = await this.AppDataSource.getRepository(
               Conversation
             ).findOne({

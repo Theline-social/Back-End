@@ -39,17 +39,23 @@ export class ReelsService {
 
     const user = await userRepository.findOne({
       where: { userId },
-      select: { following: { userId: true } },
-      relations: { following: true },
+      select: { following: { userId: true }, blocking: { userId: true } },
+      relations: { following: true, blocking: true },
     });
 
     if (!user) throw new AppError('User not found', 404);
 
     const followingsIds = user.following.map((following) => following.userId);
+    const blockingsIds = user.blocking.map((blocking) => blocking.userId);
 
     const reelsOfFollowings = await reelRepository.find({
       where: {
-        reeler: { userId: In([...followingsIds]) },
+        reeler: {
+          userId: In([...followingsIds]),
+          ...(blockingsIds.length > 0 && {
+            userId: Not(In([...blockingsIds])),
+          }),
+        },
         type: In([ReelType.Reel, ReelType.Repost, ReelType.Quote]),
       },
       select: reelSelectOptions,
@@ -61,7 +67,12 @@ export class ReelsService {
     if (reelsOfFollowings.length < limit) {
       randomReels = await reelRepository.find({
         where: {
-          reeler: { userId: Not(In([...followingsIds])) },
+          reeler: {
+            userId: Not(In([...followingsIds])),
+            ...(blockingsIds.length > 0 && {
+              userId: Not(In([...blockingsIds])),
+            }),
+          },
           type: In([ReelType.Reel, ReelType.Repost, ReelType.Quote]),
         },
         select: reelSelectOptions,
@@ -682,10 +693,7 @@ export class ReelsService {
           NotificationType.Repost_Reel
         );
 
-        socketService.emitDeleteNotification(
-          orgReeler!.userId,
-          notificationId
-        );
+        socketService.emitDeleteNotification(orgReeler!.userId, notificationId);
 
         return { rereel: {}, message: 'Repost deleted successfully' };
       }

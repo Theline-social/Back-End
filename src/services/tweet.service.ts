@@ -41,17 +41,23 @@ export class TweetsService {
 
     const user = await userRepository.findOne({
       where: { userId },
-      select: { following: { userId: true } },
-      relations: { following: true },
+      select: { following: { userId: true }, blocking: { userId: true } },
+      relations: { following: true, blocking: true },
     });
 
     if (!user) throw new AppError('User not found', 404);
 
     const followingsIds = user.following.map((following) => following.userId);
+    const blockingsIds = user.blocking.map((blocking) => blocking.userId);
 
     const tweetsOfFollowings = await tweetRepository.find({
       where: {
-        tweeter: { userId: In([...followingsIds]) },
+        tweeter: {
+          userId: In([...followingsIds]),
+          ...(blockingsIds.length > 0 && {
+            userId: Not(In([...blockingsIds])),
+          }),
+        },
         type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
       },
       select: tweetSelectOptions,
@@ -63,7 +69,12 @@ export class TweetsService {
     if (tweetsOfFollowings.length < limit) {
       randomTweets = await tweetRepository.find({
         where: {
-          tweeter: { userId: Not(In([...followingsIds])) },
+          tweeter: {
+            userId: Not(In([...followingsIds])),
+            ...(blockingsIds.length > 0 && {
+              userId: Not(In([...blockingsIds])),
+            }),
+          },
           type: In([TweetType.Tweet, TweetType.Repost, TweetType.Quote]),
         },
         select: tweetSelectOptions,
@@ -280,7 +291,7 @@ export class TweetsService {
     const tweet = new Tweet();
     tweet.poll = poll;
     tweet.tweeter = user;
-    
+
     const { hashtags } = await extractTags(body.question);
     tweet.tags = hashtags || [];
 
@@ -761,7 +772,6 @@ export class TweetsService {
         tweet.tweeter!.userId,
         notificationId
       );
-      
     } else {
       let user = new User();
       user.userId = userId;

@@ -43,16 +43,27 @@ export class TagsService {
   search = async (tag: string, page: number = 1, limit: number = 30) => {
     const tagRepository = AppDataSource.getRepository(Tag);
 
-    const tags = await tagRepository.find({
-      where: { tag: ILike(`%${tag.toLowerCase()}%`) },
+    let trendingTags = await tagRepository
+      .createQueryBuilder('tag')
+      .leftJoinAndSelect('tag.tweets', 'tweets')
+      .leftJoinAndSelect('tag.reels', 'reels')
+      .select([
+        'tag.tag AS tag',
+        'COUNT(DISTINCT tweets.tweetId) + COUNT(DISTINCT reels.reelId) AS totalSupport',
+      ])
+      .where({ tag: ILike(`%${tag.toLowerCase()}%`) })
+      .groupBy('tag.tag')
+      .orderBy('totalSupport', 'DESC')
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getRawMany();
 
-      order: { tag: 'ASC' },
-      take: limit,
-      skip: (page - 1) * limit,
-    });
+    let filteredTrendingTags = trendingTags.filter(
+      (trendingTag) => trendingTag.totalsupport > 0
+    );
 
     return {
-      tags,
+      tags: filteredTrendingTags,
     };
   };
 }

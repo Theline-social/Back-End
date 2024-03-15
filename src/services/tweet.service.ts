@@ -96,7 +96,11 @@ export class TweetsService {
     return { timelineTweets };
   };
 
-  extractMentions = async (user: User, content: string, tweet: Tweet) => {
+  extractMentions = async (
+    user: User,
+    content: string,
+    tweet: Tweet,
+  ) => {
     const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
     const userRepository = AppDataSource.getRepository(User);
 
@@ -134,7 +138,8 @@ export class TweetsService {
         NotificationType.Mention_Tweet,
         {
           tweetId: tweet.tweetId,
-        }
+        },
+       
       );
     }
 

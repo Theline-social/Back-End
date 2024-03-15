@@ -28,10 +28,7 @@ export enum NotificationType {
 export class Notification {
   @PrimaryGeneratedColumn()
   notificationId: number;
-
-  @Column({ type: 'varchar' })
-  content: string;
-
+  
   @Column({ type: 'boolean', default: false })
   isSeen: boolean;
 

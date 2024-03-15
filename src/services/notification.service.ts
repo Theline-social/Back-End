@@ -23,7 +23,6 @@ export class NotificationsService {
       select: {
         notificationId: true,
         type: true,
-        content: true,
         createdAt: true,
         isSeen: true,
         metadata: true,

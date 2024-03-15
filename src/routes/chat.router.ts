@@ -113,16 +113,6 @@ router
  *     security:
  *       - jwt: []
  *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: Page number (default 1)
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Number of tweets per page (default 10, max 100)
  *       - name: conversationId
  *         in: path
  *         description: ID of the conversation to get history for.

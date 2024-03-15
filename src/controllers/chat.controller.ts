@@ -38,14 +38,10 @@ export const getConversationHistory = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { page, limit } = req.query;
-
     const { messages, otherContact, isBlockedByOtherContact } =
       await chatService.getConversationHistory(
         userId,
         +req.params.conversationId,
-        +(page as string) || 1,
-        +(limit as string) || 10
       );
 
     res.status(201).json({

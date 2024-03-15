@@ -7,7 +7,6 @@ export const filterNotification = (
 ): NotificationDto => {
   return {
     notificationId: notification.notificationId,
-    content: notification.content,
     isSeen: notification.isSeen,
     type: notification.type,
     createdAt: notification.createdAt,

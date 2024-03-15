@@ -49,7 +49,7 @@ class SocketService {
     senderId: number,
     receiverUsername: string,
     type: NotificationType,
-    metadata: any = {}
+    metadata: any = {},
   ): Promise<void> {
     const userRepository: Repository<User> =
       this.AppDataSource.getRepository(User);
@@ -78,12 +78,9 @@ class SocketService {
     const mutingsIds = receiver.muting.map((muting) => muting.userId);
 
     if ([...blockingsIds, ...mutingsIds].includes(senderId)) return;
-    
-    const content = notificationTypeContentMap[type] || 'Unknown notification';
 
     const notification = new Notification();
     notification.notificationFrom = sender;
-    notification.content = content;
     notification.notificationTo = receiver;
     notification.isSeen = false;
     notification.type = type;

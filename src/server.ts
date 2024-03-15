@@ -8,8 +8,10 @@ import fs from 'fs'; // Import the 'fs' module
 import app from './app';
 import socketService from './services/socket.service';
 import { AppDataSource } from './dataSource';
-import { CronJob } from 'cron';
-import { NotificationsService } from './services/notification.service';
+import {
+  deleteOldNotificationJob,
+  deleteTerminatedTagsJob,
+} from './common/cronJobs';
 
 process.on('uncaughtException', (err: Error) => {
   console.log('uncaught exception'.toUpperCase(), ',Shutting down......');
@@ -56,13 +58,8 @@ let server: http.Server | https.Server;
 
       socketService.initializeSocket(server, AppDataSource);
 
-      const notificationService = new NotificationsService();
-      const job = new CronJob('0 0 * * *', async () => {
-        console.log('Running cron job to delete old notifications...');
-        await notificationService.deleteOldNotifications();
-      });
-
-      job.start();
+      deleteOldNotificationJob.start();
+      deleteTerminatedTagsJob.start();
     }
   } catch (err) {
     console.log((err as Error).name, (err as Error).message);

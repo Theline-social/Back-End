@@ -66,4 +66,25 @@ export class TagsService {
       tags: filteredTrendingTags,
     };
   };
+
+  deleteTerminatedTags = async () => {
+    const tagRepository = AppDataSource.getRepository(Tag);
+
+    let trendingTags = await tagRepository
+      .createQueryBuilder('tag')
+      .leftJoinAndSelect('tag.tweets', 'tweets')
+      .leftJoinAndSelect('tag.reels', 'reels')
+      .select([
+        'tag.tag AS tag',
+        'COUNT(DISTINCT tweets.tweetId) + COUNT(DISTINCT reels.reelId) AS totalSupport',
+      ])
+      .groupBy('tag.tag')
+      .getRawMany();
+
+    for (const tag of trendingTags) {
+      if (tag.totalsupport > 0) continue;
+
+      await tagRepository.delete({ tag: tag.tag });
+    }
+  };
 }

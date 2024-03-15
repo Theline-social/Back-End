@@ -40,6 +40,10 @@ export class UsersService {
 
   changeUsername = async (userId: number, body: { newUsername: string }) => {
     const userRepository = AppDataSource.getRepository(User);
+    const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
+    const tweetRepository = AppDataSource.getRepository(Tweet);
+    const reelRepository = AppDataSource.getRepository(Reel);
+    const reelMentionRepository = AppDataSource.getRepository(ReelMention);
 
     const existingUser = await userRepository.findOne({
       where: { userId },
@@ -47,8 +51,51 @@ export class UsersService {
 
     if (!existingUser) throw new AppError(`User ${userId} does not exist`, 404);
 
+    const oldUsername = existingUser.username;
     existingUser.username = body.newUsername.replace('@', '');
     await userRepository.save(existingUser);
+
+    const tweetsMention = await tweetMentionRepository.find({
+      where: { userMentioned: { userId } },
+      relations: { tweet: true },
+    });
+
+    let updatedTweets = [];
+    for (const tweetMention of tweetsMention) {
+      if (tweetMention.tweet.content) {
+        console.log(oldUsername);
+        console.log(body.newUsername);
+        
+        const updatedContent = tweetMention.tweet.content.replace(
+          new RegExp(`@${oldUsername}`, 'g'),
+          `@${body.newUsername}`
+        );
+        console.log(updatedContent);
+        
+        const updatedTweet = { ...tweetMention.tweet, content: updatedContent };
+        updatedTweets.push(updatedTweet);
+      }
+    }
+    
+    await tweetRepository.save(updatedTweets);
+
+    const reelsMention = await reelMentionRepository.find({
+      where: { userMentioned: { userId } },
+      relations: { reel: true },
+    });
+
+    let updatedReels = [];
+    for (const reelMention of reelsMention) {
+      if (reelMention.reel.content) {
+        const updatedContent = reelMention.reel.content.replace(
+          new RegExp(`@${oldUsername}`, 'g'),
+          `@${body.newUsername}`
+        );
+        const updatedReel = { ...reelMention.reel, content: updatedContent };
+        updatedReels.push(updatedReel);
+      }
+    }
+    await reelRepository.save(updatedReels);
   };
 
   changePassword = async (userId: number, body: ChangePasswordBody) => {

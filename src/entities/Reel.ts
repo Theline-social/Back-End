@@ -25,7 +25,7 @@ export class Reel {
   @PrimaryGeneratedColumn()
   reelId: number;
 
-  @Column({ type: 'varchar', length: 200, nullable: true })
+  @Column({ type: 'varchar', length: 280, nullable: true })
   content: string;
 
   @Column({ type: 'varchar', nullable: true })

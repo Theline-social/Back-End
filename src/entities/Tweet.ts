@@ -27,7 +27,7 @@ export class Tweet {
   @PrimaryGeneratedColumn()
   tweetId: number;
 
-  @Column({ type: 'varchar', length: 200, nullable: true })
+  @Column({ type: 'varchar', length: 280, nullable: true })
   content: string;
 
   @CreateDateColumn({

@@ -63,14 +63,11 @@ export class UsersService {
     let updatedTweets = [];
     for (const tweetMention of tweetsMention) {
       if (tweetMention.tweet.content) {
-        console.log(oldUsername);
-        console.log(body.newUsername);
-        
+
         const updatedContent = tweetMention.tweet.content.replace(
           new RegExp(`@${oldUsername}`, 'g'),
           `@${body.newUsername}`
         );
-        console.log(updatedContent);
         
         const updatedTweet = { ...tweetMention.tweet, content: updatedContent };
         updatedTweets.push(updatedTweet);

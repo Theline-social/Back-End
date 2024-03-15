@@ -113,17 +113,6 @@ class AuthService {
   checkValidOtp = async (body: CheckValidOtpBody): Promise<boolean> => {
     const { otp, input, provider } = body;
 
-    if (otp === '11111111') {
-      ///temp check for test
-      await AppDataSource.getRepository(OtpCodes).update(
-        { input, provider },
-        {
-          isVerified: true,
-        }
-      );
-      return true;
-    }
-
     const otpCode = await AppDataSource.getRepository(OtpCodes).findOne({
       where: { input, provider },
     });
@@ -205,14 +194,6 @@ class AuthService {
 
     if (!user) throw new AppError('No User Found', 404);
 
-    if (password !== '11111111') {
-      const isCorrectPassword = await Password.comparePassword(
-        password,
-        user!.password
-      );
-
-      if (!isCorrectPassword) throw new AppError('Wrong Password', 400);
-    }
 
     return { user: filterUser(user) };
   };

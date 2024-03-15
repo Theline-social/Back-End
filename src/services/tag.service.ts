@@ -8,6 +8,9 @@ export class TagsService {
   getTrendingTags = async (page: number, limit: number) => {
     const tagRepository = AppDataSource.getRepository(Tag);
 
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 3);
+
     let trendingTags = await tagRepository
       .createQueryBuilder('tag')
       .leftJoinAndSelect('tag.tweets', 'tweets')
@@ -16,17 +19,21 @@ export class TagsService {
         'tag.tag AS tag',
         'COUNT(DISTINCT tweets.tweetId) + COUNT(DISTINCT reels.reelId) AS totalSupport',
       ])
+      .where(
+        'tweets.createdAt >= :startDate OR reels.createdAt >= :startDate',
+        { startDate }
+      )
       .groupBy('tag.tag')
       .orderBy('totalSupport', 'DESC')
       .getRawMany();
 
-    let filteredtrendingTags = trendingTags.filter(
+    let filteredTrendingTags = trendingTags.filter(
       (trendingTag) => trendingTag.totalsupport > 0
     );
 
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    const paginatedTags = filteredtrendingTags.slice(startIndex, endIndex);
+    const paginatedTags = filteredTrendingTags.slice(startIndex, endIndex);
 
     return {
       tags: paginatedTags,

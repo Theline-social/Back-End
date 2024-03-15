@@ -78,8 +78,6 @@ export class NotificationsService {
       .andWhere('type = :type', { type })
       .execute();
 
-    console.log(deletedNotifications);
-
     return {
       notificationId: deletedNotifications[0].Notification_notificationId,
     };

@@ -45,7 +45,7 @@ app.use(compression());
 // Limit the traffic => prevent DoS attacks
 const limiter = rateLimit({
   windowMs: 2 * 60 * 60 * 1000, // 60 minutes
-  max: 2000, // Limit each IP to 300 requests per `window` (here, per 60 minutes)
+  max: 3000, // Limit each IP to 300 requests per `window` (here, per 60 minutes)
   message: {
     message: 'Too many requests, try again in an hour',
     status: 'warning',

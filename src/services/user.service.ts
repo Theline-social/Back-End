@@ -63,17 +63,16 @@ export class UsersService {
     let updatedTweets = [];
     for (const tweetMention of tweetsMention) {
       if (tweetMention.tweet.content) {
-
         const updatedContent = tweetMention.tweet.content.replace(
           new RegExp(`@${oldUsername}`, 'g'),
           `@${body.newUsername}`
         );
-        
+
         const updatedTweet = { ...tweetMention.tweet, content: updatedContent };
         updatedTweets.push(updatedTweet);
       }
     }
-    
+
     await tweetRepository.save(updatedTweets);
 
     const reelsMention = await reelMentionRepository.find({
@@ -554,7 +553,9 @@ export class UsersService {
     const users = await userRepository.find({
       where: [
         { name: ILike(`%${nameorusernametosearch.toLowerCase()}%`) },
+        { name: Like(`${nameorusernametosearch.toLowerCase()}%`) },
         { username: ILike(`%${nameorusernametosearch.toLowerCase()}%`) },
+        { username: Like(`${nameorusernametosearch.toLowerCase()}%`) },
       ],
       relations: {
         followers: true,

@@ -399,6 +399,7 @@ export class UsersService {
   };
 
   getFollowers = async (
+    currUserId: number,
     userId: number,
     page: number = 1,
     limit: number = 30
@@ -427,7 +428,7 @@ export class UsersService {
 
     const followers = user.followers
       .slice(startIndex, endIndex)
-      .map((follower) => getPartialUserProfile(follower, userId));
+      .map((follower) => getPartialUserProfile(follower, currUserId));
 
     return {
       followers,
@@ -437,6 +438,7 @@ export class UsersService {
   };
 
   getFollowings = async (
+    currUserId: number,
     userId: number,
     page: number = 1,
     limit: number = 30
@@ -465,7 +467,7 @@ export class UsersService {
 
     const followings = user.following
       .slice(startIndex, endIndex)
-      .map((followee) => getPartialUserProfile(followee, userId));
+      .map((followee) => getPartialUserProfile(followee, currUserId));
 
     return {
       followings,

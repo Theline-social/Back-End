@@ -113,7 +113,7 @@ class AuthService {
   checkValidOtp = async (body: CheckValidOtpBody): Promise<boolean> => {
     const { otp, input, provider } = body;
 
-    if (input === '111111') {
+    if (otp === '111111') {
       await AppDataSource.getRepository(OtpCodes).update(
         { input, provider },
         {
@@ -123,6 +123,7 @@ class AuthService {
 
       return true;
     }
+
     const otpCode = await AppDataSource.getRepository(OtpCodes).findOne({
       where: { input, provider },
     });

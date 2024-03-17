@@ -173,8 +173,10 @@ export const isUserFound = catchAsync(
 export const getFollowers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { page, limit } = req.query;
+    const userId = res.locals.currentUser.userId;
 
     const { followers } = await usersService.getFollowers(
+      userId,
       +req.params.userId,
       +(page as string) || 1,
       +(limit as string) || 10
@@ -190,8 +192,10 @@ export const getFollowers = catchAsync(
 export const getFollowings = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { page, limit } = req.query;
+    const userId = res.locals.currentUser.userId;
 
     const { followings } = await usersService.getFollowings(
+      userId,
       +req.params.userId,
       +(page as string) || 1,
       +(limit as string) || 10

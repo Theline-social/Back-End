@@ -205,6 +205,13 @@ class AuthService {
 
     if (!user) throw new AppError('No User Found', 404);
 
+    const isCorrectPassword = await Password.comparePassword(
+      password,
+      user.password
+    );
+
+    if (!isCorrectPassword) throw new AppError('Wrong Password', 400);
+
     return { user: filterUser(user) };
   };
 

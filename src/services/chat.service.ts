@@ -67,8 +67,8 @@ export class ChatService {
 
     const count = await conversationRepository.count({
       where: [
-        { user1: { userId }, messages: { isSeen: false } },
-        { user2: { userId }, messages: { isSeen: false } },
+        { user1: { userId }, messages: { isSeen: false, receiverId: userId } },
+        { user2: { userId }, messages: { isSeen: false, receiverId: userId } },
       ],
     });
 

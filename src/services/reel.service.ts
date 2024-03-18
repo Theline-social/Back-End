@@ -471,57 +471,36 @@ export class ReelsService {
     page: number = 1,
     limit: number = 30
   ) => {
-    const reelRepository = AppDataSource.getRepository(Reel);
+    const userRepository = AppDataSource.getRepository(User);
 
-    const rereels = await reelRepository.find({
-      where: { rereelTo: { reelId } },
-      select: {
-        reeler: {
-          bio: true,
-          username: true,
-          jobtitle: true,
-          name: true,
-          imageUrl: true,
-          userId: true,
+    const rereelers = await userRepository.find({
+      where: {
+        reels: {
+          rereelTo: { reelId },
         },
       },
+      select: {
+        bio: true,
+        username: true,
+        jobtitle: true,
+        name: true,
+        imageUrl: true,
+        userId: true,
+      },
       relations: {
-        reeler: {
-          followers: true,
-          following: true,
-          blocked: true,
-          muted: true,
-        },
+        followers: true,
+        following: true,
+        blocked: true,
+        muted: true,
       },
       skip: (page - 1) * limit,
       take: limit,
     });
 
     return {
-      rereelers: rereels?.map((rereel) => {
-        const isBlocked = rereel.reeler.blocked.some(
-          (user: User) => user.userId === userId
-        );
-        const isMuted = rereel.reeler.muted.some(
-          (user: User) => user.userId === userId
-        );
-        const isFollowed = rereel.reeler.followers.some(
-          (user: User) => user.userId === userId
-        );
-
-        return {
-          imageUrl: rereel.reeler.imageUrl,
-          username: rereel.reeler.username,
-          jobtitle: rereel.reeler.jobtitle,
-          name: rereel.reeler.name,
-          bio: rereel.reeler.bio,
-          followersCount: rereel.reeler.followers.length,
-          followingsCount: rereel.reeler.following.length,
-          isFollowed,
-          isMuted,
-          isBlocked,
-        };
-      }),
+      rereelers: rereelers?.map((rereeler) =>
+        getPartialUserProfile(rereeler, userId)
+      ),
     };
   };
 

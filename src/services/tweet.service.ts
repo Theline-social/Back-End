@@ -96,11 +96,7 @@ export class TweetsService {
     return { timelineTweets };
   };
 
-  extractMentions = async (
-    user: User,
-    content: string,
-    tweet: Tweet,
-  ) => {
+  extractMentions = async (user: User, content: string, tweet: Tweet) => {
     const tweetMentionRepository = AppDataSource.getRepository(TweetMention);
     const userRepository = AppDataSource.getRepository(User);
 
@@ -138,8 +134,7 @@ export class TweetsService {
         NotificationType.Mention_Tweet,
         {
           tweetId: tweet.tweetId,
-        },
-       
+        }
       );
     }
 
@@ -643,25 +638,9 @@ export class TweetsService {
     });
 
     return {
-      retweeters: retweeters?.map((retweet) => {
-        return {
-          userId: retweet.userId,
-          imageUrl: retweet.imageUrl,
-          username: retweet.username,
-          jobtitle: retweet.jobtitle,
-          name: retweet.name,
-          bio: retweet.bio,
-          followersCount: retweet.followers.length,
-          followingsCount: retweet.following.length,
-          isFollowed: retweet.followers.some(
-            (user: User) => user.userId === userId
-          ),
-          isMuted: retweet.muted.some((user: User) => user.userId === userId),
-          isBlocked: retweet.blocked.some(
-            (user: User) => user.userId === userId
-          ),
-        };
-      }),
+      retweeters: retweeters?.map((retweeter) =>
+        getPartialUserProfile(retweeter, userId)
+      ),
     };
   };
 

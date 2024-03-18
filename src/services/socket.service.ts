@@ -225,7 +225,7 @@ class SocketService {
         socket.on('chat-opened', async ({ conversationId, contactId }: any) => {
           if (!conversationId || !contactId) return;
           const { userId } = socket.data.user;
-          console.log(1);
+          
 
           await this.AppDataSource.createQueryBuilder()
             .update(Conversation)
@@ -237,7 +237,7 @@ class SocketService {
               conversationId,
             })
             .execute();
-          console.log(2);
+          
 
           if (contactId) {
             socket.to(`user_${contactId}_room`).emit('status-of-contact', {
@@ -245,7 +245,7 @@ class SocketService {
               inConversation: true,
             });
           }
-          console.log(3);
+        
 
           await this.AppDataSource.getRepository(Message).update(
             { conversation: { conversationId }, receiverId: userId },

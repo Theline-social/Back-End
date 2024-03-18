@@ -20,8 +20,8 @@ export class Message {
   receiverId: number;
 
   @CreateDateColumn({
-    type: 'timestamptz',
-    default: () => `timezone('gmt'::text, now()) + interval '4 hours'`,
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
   })
   createdAt: Date;
 

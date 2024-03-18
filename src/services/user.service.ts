@@ -393,10 +393,12 @@ export class UsersService {
 
     const mentions = await reelMentionRepository.find({
       where: {
-        userMentioned: user,
+        userMentioned: { userId: user.userId },
         userMakingMention: { userId: Not(In([...blockingsIds])) },
       },
       select: {
+        mentionId: true,
+        mentionedAt: true,
         reel: reelSelectOptions,
       },
       relations: {

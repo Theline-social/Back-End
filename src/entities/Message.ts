@@ -20,7 +20,7 @@ export class Message {
   receiverId: number;
 
   @CreateDateColumn({
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   createdAt: Date;

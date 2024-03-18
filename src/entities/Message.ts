@@ -21,7 +21,7 @@ export class Message {
 
   @CreateDateColumn({
     type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    default: () => `timezone('gmt'::text, now()) + interval '3 hours'`,
   })
   createdAt: Date;
 

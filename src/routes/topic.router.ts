@@ -22,40 +22,9 @@ const router: Router = express.Router();
  *       '500':
  *         description: Internal Server Error. Failed to retrieve topics.
  *
-//  *   post:
-//  *     summary: Add a new topic
-//  *     description: Adds a new topic.
-//  *     security:
-//  *       - jwt: []
-//  *     tags: [topics]
-//  *     requestBody:
-//  *       required: true
-//  *       content:
-//  *         application/json:
-//  *           schema:
-//  *             type: object
-//  *             properties:
-//  *               topic_ar:
-//  *                 type: string
-//  *               topic_en:
-//  *                 type: string
-//  *               description_ar:
-//  *                 type: string
-//  *               description_en:
-//  *                 type: string
-//  *     responses:
-//  *       '201':
-//  *         description: Created. Topic successfully added.
-//  *       '400':
-//  *         description: Bad Request. Invalid request parameters.
-//  *       '401':
-//  *         description: Unauthorized. User authentication failed.
-//  *       '500':
-//  *         description: Internal Server Error. Failed to add the topic.
  */
-router
-  .route('/')
-  .get(authController.requireAuth, topicsController.getTopics)
+
+router.route('/').get(authController.requireAuth, topicsController.getTopics);
 //   .post(authController.requireAuth, topicsController.addTopic);
 
 // /**

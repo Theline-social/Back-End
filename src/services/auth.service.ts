@@ -59,7 +59,7 @@ class AuthService {
     
 
     const saveduser = await userRepository.save(user);
-    user.username = `${user.name}-${saveduser.userId}`;
+    user.username = `user-${saveduser.userId}`;
     const saveduser2 = await userRepository.save(user);
 
     return { user: filterUser(saveduser2) };
@@ -114,17 +114,6 @@ class AuthService {
 
   checkValidOtp = async (body: CheckValidOtpBody): Promise<boolean> => {
     const { otp, input, provider } = body;
-
-    if (otp === '111111') {
-      await AppDataSource.getRepository(OtpCodes).update(
-        { input, provider },
-        {
-          isVerified: true,
-        }
-      );
-
-      return true;
-    }
 
     const otpCode = await AppDataSource.getRepository(OtpCodes).findOne({
       where: { input, provider },

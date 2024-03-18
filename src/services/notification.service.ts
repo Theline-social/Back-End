@@ -79,7 +79,7 @@ export class NotificationsService {
       .execute();
 
     return {
-      notificationId: deletedNotifications[0].Notification_notificationId,
+      notificationId: deletedNotifications[0]?.Notification_notificationId,
     };
   };
 

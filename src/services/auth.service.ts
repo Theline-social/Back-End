@@ -56,11 +56,13 @@ class AuthService {
     user.dateOfBirth = body.dateOfBirth;
     user.phoneNumber = body.phoneNumber;
     user.name = body.name;
-    user.username = `user${body.phoneNumber}`;
+    
 
     const saveduser = await userRepository.save(user);
+    user.username = `${user.name}-${saveduser.userId}`;
+    const saveduser2 = await userRepository.save(user);
 
-    return { user: filterUser(saveduser) };
+    return { user: filterUser(saveduser2) };
   };
 
   getUserdataFromGoogle = async (googleAccessToken: string) => {

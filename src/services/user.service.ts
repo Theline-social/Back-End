@@ -312,14 +312,16 @@ export class UsersService {
 
     const blockingsIds = user.blocking.map((blocking) => blocking.userId);
 
-    if (blockingsIds.includes(userId)) return { reels: [] };
+    if (blockingsIds.includes(userId)) return { mentions: [] };
 
     const mentions = await tweetMentionRepository.find({
       where: {
-        userMentioned: user,
+        userMentioned: { userId: user.userId },
         userMakingMention: { userId: Not(In([...blockingsIds])) },
       },
       select: {
+        mentionId: true,
+        mentionedAt: true,
         tweet: tweetSelectOptions,
       },
       relations: {
@@ -375,12 +377,25 @@ export class UsersService {
     limit: number = 30
   ) => {
     const reelMentionRepository = AppDataSource.getRepository(ReelMention);
+    const userRepository = AppDataSource.getRepository(User);
 
-    const user = new User();
-    user.userId = userId;
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: { blocking: { userId: true } },
+      relations: { blocking: true },
+    });
+
+    if (!user) throw new AppError('User not found', 404);
+
+    const blockingsIds = user.blocking.map((blocking) => blocking.userId);
+
+    if (blockingsIds.includes(userId)) return { mentions: [] };
 
     const mentions = await reelMentionRepository.find({
-      where: { userMentioned: user },
+      where: {
+        userMentioned: user,
+        userMakingMention: { userId: Not(In([...blockingsIds])) },
+      },
       select: {
         reel: reelSelectOptions,
       },

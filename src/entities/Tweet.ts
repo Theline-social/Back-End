@@ -106,7 +106,10 @@ export class Tweet {
   }
 
   isRetweetedBy(userId: number): boolean {
-    return this.retweets.some((retweet) => retweet.tweeter.userId === userId);
+    return this.retweets.some(
+      (retweet) =>
+        retweet.tweeter.userId === userId && retweet.type === TweetType.Repost
+    );
   }
 
   isReactedBy(userId: number): boolean {

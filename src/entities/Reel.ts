@@ -101,7 +101,10 @@ export class Reel {
   }
 
   isRereeledBy(userId: number): boolean {
-    return this.rereels.some((retweet) => retweet.reeler.userId === userId);
+    return this.rereels.some(
+      (rereel) =>
+        rereel.reeler.userId === userId && rereel.type === ReelType.Repost
+    );
   }
 
   isReactedBy(userId: number): boolean {

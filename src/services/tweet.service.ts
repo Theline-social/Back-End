@@ -401,9 +401,15 @@ export class TweetsService {
 
     if (tweet.media.length > 0) {
       tweet.media.forEach((media) => {
-        process.env.NODE_ENV !== 'production'
-          ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/tweets/${media.url}`)
-          : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}/tweets/${media.url}`);
+        try {
+          process.env.NODE_ENV !== 'production'
+            ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/tweets/${media.url}`)
+            : fs.unlinkSync(
+                `${process.env.PROD_MEDIA_PATH}/tweets/${media.url}`
+              );
+        } catch (err) {
+          console.error('Error while unlinking file:', err);
+        }
       });
     }
 

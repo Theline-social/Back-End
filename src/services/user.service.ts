@@ -605,26 +605,33 @@ export class UsersService {
     }
 
     if (body.imageUrl !== undefined) {
-      if (userProfile.imageUrl !== 'default.jpeg')
-        process.env.NODE_ENV !== 'production'
-          ? fs.unlinkSync(
-              `${process.env.DEV_MEDIA_PATH}/users/${userProfile.imageUrl}`
-            )
-          : fs.unlinkSync(
-              `${process.env.PROD_MEDIA_PATH}/users/${userProfile.imageUrl}`
-            );
-
+      try {
+        if (userProfile.imageUrl !== 'default.jpeg')
+          process.env.NODE_ENV !== 'production'
+            ? fs.unlinkSync(
+                `${process.env.DEV_MEDIA_PATH}/users/${userProfile.imageUrl}`
+              )
+            : fs.unlinkSync(
+                `${process.env.PROD_MEDIA_PATH}/users/${userProfile.imageUrl}`
+              );
+      } catch (err) {
+        console.error('Error while unlinking file:', err);
+      }
       userProfile.imageUrl = body.imageUrl;
     }
     if (body.bannerUrl !== undefined) {
-      if (userProfile.bannerUrl !== 'banner_default2.jpeg')
-        process.env.NODE_ENV !== 'production'
-          ? fs.unlinkSync(
-              `${process.env.DEV_MEDIA_PATH}/users/${userProfile.bannerUrl}`
-            )
-          : fs.unlinkSync(
-              `${process.env.PROD_MEDIA_PATH}/users/${userProfile.bannerUrl}`
-            );
+      try {
+        if (userProfile.bannerUrl !== 'banner_default2.jpeg')
+          process.env.NODE_ENV !== 'production'
+            ? fs.unlinkSync(
+                `${process.env.DEV_MEDIA_PATH}/users/${userProfile.bannerUrl}`
+              )
+            : fs.unlinkSync(
+                `${process.env.PROD_MEDIA_PATH}/users/${userProfile.bannerUrl}`
+              );
+      } catch (err) {
+        console.error('Error while unlinking file:', err);
+      }
       userProfile.bannerUrl = body.bannerUrl;
     }
     if (body.name !== undefined) {

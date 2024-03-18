@@ -291,9 +291,15 @@ export class ReelsService {
     }
 
     if (reel.reelUrl) {
-      process.env.NODE_ENV !== 'production'
-        ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/reels/${reel.reelUrl}`)
-        : fs.unlinkSync(`${process.env.PROD_MEDIA_PATH}/reels/${reel.reelUrl}`);
+      try {
+        process.env.NODE_ENV !== 'production'
+          ? fs.unlinkSync(`${process.env.DEV_MEDIA_PATH}/reels/${reel.reelUrl}`)
+          : fs.unlinkSync(
+              `${process.env.PROD_MEDIA_PATH}/reels/${reel.reelUrl}`
+            );
+      } catch (err) {
+        console.error('Error while unlinking file:', err);
+      }
     }
 
     await reelRepository.delete({ reelId });

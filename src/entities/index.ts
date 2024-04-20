@@ -12,3 +12,5 @@ export * from './Reel';
 export * from './Poll';
 export * from './Media';
 export * from './Tag';
+export * from './Subscription';
+export * from './Employee';

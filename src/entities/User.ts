@@ -13,6 +13,7 @@ import { TweetMention } from './TweetMention';
 import { Reel } from './Reel';
 import { ReelMention } from './ReelMention';
 import { PollOption } from './Poll';
+import { Subscription } from './Subscription';
 
 export enum Gender {
   MALE = 'MALE',
@@ -158,6 +159,9 @@ export class User {
   @ManyToMany(() => PollOption, (option) => option.voters)
   @JoinTable()
   votedOptions: PollOption[];
+
+  @OneToMany(() => Subscription, (subscription) => subscription.user)
+  subscriptions: Subscription[];
 
   isMutedBy(userId: number): boolean {
     return this.muted.some((user) => user.userId === userId);

@@ -1,11 +1,34 @@
 import { body } from 'express-validator';
-import { Gender, OtpProvider } from '../../../entities';
+import {
+  EmployeeStatus,
+  EmployeeType,
+  Gender,
+  OtpProvider,
+} from '../../../entities';
 import { emailRegex, passwordRegex } from '../../constants/regex';
 import { isPhoneValid } from './user';
 
 const isValidProvider = (value: OtpProvider) => {
   if (![OtpProvider.EMAIL, OtpProvider.PHONE].includes(value)) {
     throw new Error('Invalid provider. Must be either "email" or "phone".');
+  }
+  return true;
+};
+
+const isValidEmpStatus = (value: EmployeeStatus) => {
+  if (![EmployeeStatus.ACTIVE, EmployeeStatus.INACTIVE].includes(value)) {
+    throw new Error(
+      'Invalid EmployeeStatus. Must be either "active" or "inActive".'
+    );
+  }
+  return true;
+};
+
+const isValidEmpType = (value: EmployeeType) => {
+  if (![EmployeeType.ADMIN, EmployeeType.EMPLOYEE].includes(value)) {
+    throw new Error(
+      'Invalid Employee Type. Must be either "employee" or "admin".'
+    );
   }
   return true;
 };
@@ -116,4 +139,34 @@ export const googleSignValidationRules = [
     .isString()
     .notEmpty()
     .withMessage('googleAccessToken is required'),
+];
+
+export const addEmpValidationRules = [
+  body('name')
+    .isString()
+    .isLength({ min: 3 })
+    .withMessage('Name must be at least 2 characters'),
+  body('email').toLowerCase().isEmail().withMessage('Invalid email address'),
+  body('phoneNumber')
+    .notEmpty()
+    .custom(isPhoneValid)
+    .withMessage('Enter phone number'),
+  body('status')
+    .isString()
+    .toUpperCase()
+    .notEmpty()
+    .withMessage('status is required')
+    .custom(isValidEmpStatus),
+  body('type')
+    .isString()
+    .toUpperCase()
+    .notEmpty()
+    .withMessage('type is required')
+    .custom(isValidEmpType),
+  body('password')
+    .isString()
+    .matches(passwordRegex)
+    .withMessage(
+      'Invalid Password, must be at least 8 characters including a special character'
+    ),
 ];

@@ -21,6 +21,7 @@ export * from './middlewares/validations/interaction';
 export * from './middlewares/validations/tweet';
 export * from './middlewares/validations/topic';
 export * from './middlewares/validations/conversation';
+export * from './middlewares/validations/subscription';
 
 export * from './constants/regex';
 
@@ -30,6 +31,9 @@ export * from './filters/users/filterUser';
 export * from './filters/users/userDto';
 export * from './filters/users/userSelectOptions';
 export * from './filters/notifications/filterNotification';
+export * from './filters/employees/filterEmp';
+export * from './filters/employees/empDto';
+export * from './filters/subscriptions/filterSubscription';
 
 
 export * from './utils/extractTags'

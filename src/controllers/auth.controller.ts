@@ -5,11 +5,12 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { catchAsync, userDto } from '../common';
+import { EmpDto, catchAsync, userDto } from '../common';
 import { AppError } from '../common';
 import AuthService from '../services/auth.service';
-import { OtpProvider, User } from '../entities';
+import { EmployeeStatus, OtpProvider, User } from '../entities';
 import { AppDataSource } from '../dataSource';
+import { log } from 'console';
 
 const authService = new AuthService();
 
@@ -38,7 +39,7 @@ export const signToken = (
   });
 
 const createAndSendToken = (
-  user: userDto,
+  user: userDto | EmpDto,
   req: Request,
   res: Response,
   statusCode: number,
@@ -136,6 +137,14 @@ export const signin = catchAsync(async (req: Request, res: Response) => {
 
   createAndSendToken(user, req, res, 200);
 });
+
+export const signinEmployee = catchAsync(
+  async (req: Request, res: Response) => {
+    const { user } = await authService.employeeLogin(req.body);
+
+    createAndSendToken(user, req, res, 200);
+  }
+);
 
 export const validateRecaptcha = catchAsync(
   async (req: Request, res: Response) => {
@@ -237,5 +246,50 @@ export const requireResetToken = catchAsync(
     next();
   }
 );
+
+export const requireEmpAuth = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.access_token) {
+      token = req.cookies.access_token;
+    }
+
+    if (!token) {
+      return next(
+        new AppError('You are not logged in, please login to get access', 401)
+      );
+    }
+
+    const { employee } = await authService.checkEmpAuth(
+      token,
+      process.env.ACCESSTOKEN_SECRET_KEY!
+    );
+
+    if (employee.status == EmployeeStatus.INACTIVE)
+      throw new AppError('The employee not activated yet', 401);
+
+    res.locals.currentEmployee = employee;
+    next();
+  }
+);
+
+export const strictTo = (...roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const type = res.locals.currentEmployee.type;
+
+    if (!roles.includes(type)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+
+    next();
+  };
+};
 
 export { createAndSendToken };

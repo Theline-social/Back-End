@@ -11,7 +11,11 @@ import {
   Topic,
   Reel,
   Poll,
-  PollOption,TweetMedia, Tag
+  PollOption,
+  TweetMedia,
+  Tag,
+  Subscription,
+  Employee,
 } from './entities';
 
 const AppDataSource = new DataSource({
@@ -44,7 +48,9 @@ const AppDataSource = new DataSource({
     Reel,
     Poll,
     PollOption,
-    Tag
+    Tag,
+    Subscription,
+    Employee
   ],
   subscribers: [],
   migrations: [],

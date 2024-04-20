@@ -12,12 +12,15 @@ import {
   Email,
   MsegatSmsRepository,
   SignupGoogleRequestBody,
+  filterEmployee,
 } from '../common';
 import { AuthProvider, User } from '../entities';
 import { OtpCodes, OtpProvider } from '../entities/OtpCodes';
 import moment from 'moment';
 import { UsersService } from './user.service';
 import { filterUser } from '../common/filters/users/filterUser';
+import { Employee } from '../entities/Employee';
+import { EmployeeService } from './employee.service';
 
 /**
  * @class AuthService
@@ -25,6 +28,7 @@ import { filterUser } from '../common/filters/users/filterUser';
  */
 
 const usersService = new UsersService();
+const employeeService = new EmployeeService();
 
 class AuthService {
   constructor() {}
@@ -104,11 +108,12 @@ class AuthService {
     user.phoneNumber = body.phoneNumber;
     user.name = name;
     user.imageUrl = picture;
-    user.username = `user${body.phoneNumber}`;
 
     const saveduser = await userRepository.save(user);
+    user.username = `user-${saveduser.userId}`;
+    const saveduser2 = await userRepository.save(user);
 
-    return { user: filterUser(saveduser) };
+    return { user: filterUser(saveduser2) };
   };
 
   checkValidOtp = async (body: CheckValidOtpBody): Promise<boolean> => {
@@ -215,6 +220,29 @@ class AuthService {
     return { user: filterUser(user) };
   };
 
+  employeeLogin = async (body: SignedInOtpBody) => {
+    const { input, password } = body;
+
+    const { isFound, data } = await employeeService.isEmployeeFound({ input });
+
+    if (!isFound) throw new AppError('No Employee Found', 404);
+
+    const employee = await AppDataSource.getRepository(Employee).findOne({
+      where: { email: data.email },
+    });
+
+    if (!employee) throw new AppError('No Employee Found', 404);
+
+    const isCorrectPassword = await Password.comparePassword(
+      password,
+      employee.password
+    );
+
+    if (!isCorrectPassword) throw new AppError('Wrong Password', 400);
+
+    return { user: filterEmployee(employee) };
+  };
+
   validateRecaptcha = async (body: {
     gRecaptchaResponse: string;
   }): Promise<boolean> => {
@@ -262,13 +290,27 @@ class AuthService {
 
     const user = await AppDataSource.getRepository(User).findOne({
       where: { userId: payload.id },
-      select: ['username', 'email', 'userId'],
+      select: ['username', 'email', 'userId', 'name'],
     });
 
     if (!user) {
       throw new AppError('User does no longer exist', 401);
     }
     return { user };
+  };
+
+  checkEmpAuth = async (token: string, secretKey: string) => {
+    const payload = await jwtVerifyPromisified(token, secretKey);
+
+    const employee = await AppDataSource.getRepository(Employee).findOne({
+      where: { userId: payload.id },
+      select: ['email', 'userId', 'type', 'status'],
+    });
+
+    if (!employee) {
+      throw new AppError('User does no longer exist', 401);
+    }
+    return { employee };
   };
 }
 

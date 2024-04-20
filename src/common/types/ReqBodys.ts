@@ -1,4 +1,5 @@
 import { OtpProvider } from '../../entities';
+import { EmployeeStatus, EmployeeType } from '../../entities/Employee';
 
 export interface SignupRequestBody {
   name: string;
@@ -54,3 +55,13 @@ export interface editProfileBody {
   imageUrl?: string;
   dateOfBirth?: Date;
 }
+
+export interface addEmplyeeRequestBody {
+  name: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  status: EmployeeStatus;
+  type: EmployeeType;
+}
+

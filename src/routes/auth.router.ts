@@ -223,6 +223,40 @@ router
 
 /**
  * @swagger
+ * /auth/signin-emp:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Sign in
+ *     description: Sign in with email and password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               input:
+ *                 type: string
+ *                 description: The email address of the user.
+ *               password:
+ *                 type: string
+ *                 description: The password of the user.
+ *     responses:
+ *       '200':
+ *         description: OK. User successfully signed in.
+ *       '400':
+ *         description: Bad Request. Invalid email or password.
+ *       '500':
+ *         description: Internal Server Error. Failed to sign in.
+ */
+
+router
+  .route('/signin-emp')
+  .post(signinValidationRules, validateRequest, authController.signinEmployee);
+
+/**
+ * @swagger
  * /auth/validate-recaptcha:
  *   post:
  *     tags:
@@ -295,7 +329,11 @@ router
 
 router
   .route('/google-signup')
-  .post(signupGoogleValidationRules, validateRequest, authController.signupWithGoogle);
+  .post(
+    signupGoogleValidationRules,
+    validateRequest,
+    authController.signupWithGoogle
+  );
 
 /**
  * @swagger

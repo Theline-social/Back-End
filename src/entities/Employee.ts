@@ -6,8 +6,8 @@ import {
 } from 'typeorm';
 
 export enum EmployeeStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
+  ACTIVATED = 'ACTIVATED',
+  DEACTIVATED = 'DEACTIVATED',
 }
 
 export enum EmployeeType {
@@ -57,7 +57,7 @@ export class Employee {
   @Column({
     type: 'enum',
     enum: EmployeeStatus,
-    default: EmployeeStatus.INACTIVE,
+    default: EmployeeStatus.DEACTIVATED,
   })
   status: EmployeeStatus;
 }

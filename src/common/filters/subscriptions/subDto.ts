@@ -1,6 +1,7 @@
 import { SubscriptionStatus, SubscriptionType } from '../../../entities';
 
 export interface SubscriptionDto {
+  subscriptionId:number;
   fullname: string;
   createdAt: Date;
   liveImage: string;

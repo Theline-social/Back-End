@@ -56,3 +56,16 @@ export const refuseSubscription = catchAsync(
     });
   }
 );
+
+export const removeSubscription = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    await subscriptionService.removeSubscription(userId);
+
+    res.status(200).json({
+      status: true,
+      message: 'subscription removed successfully ',
+    });
+  }
+);

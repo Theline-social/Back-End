@@ -14,3 +14,4 @@ export * from './Media';
 export * from './Tag';
 export * from './Subscription';
 export * from './Employee';
+export * from './Job';

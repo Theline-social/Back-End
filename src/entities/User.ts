@@ -14,6 +14,7 @@ import { Reel } from './Reel';
 import { ReelMention } from './ReelMention';
 import { PollOption } from './Poll';
 import { Subscription } from './Subscription';
+import { Job } from './Job';
 
 export enum Gender {
   MALE = 'MALE',
@@ -109,6 +110,9 @@ export class User {
   @OneToMany(() => Reel, (reel) => reel.reeler)
   reels: Reel[];
 
+  @OneToMany(() => Job, (job) => job.poster)
+  postedJobs: Job[];
+
   @ManyToMany(() => User, (user) => user.following)
   followers: User[];
 
@@ -156,12 +160,20 @@ export class User {
   @JoinTable()
   reelBookmarks: Reel[];
 
+  @ManyToMany(() => Job, (job) => job.bookmarkedBy)
+  @JoinTable()
+  jobBookmarks: Job[];
+
   @ManyToMany(() => PollOption, (option) => option.voters)
   @JoinTable()
   votedOptions: PollOption[];
 
   @OneToMany(() => Subscription, (subscription) => subscription.user)
   subscriptions: Subscription[];
+
+  @ManyToMany(() => Job)
+  @JoinTable()
+  jobsApplied: Job[];
 
   isMutedBy(userId: number): boolean {
     return this.muted.some((user) => user.userId === userId);
@@ -170,7 +182,7 @@ export class User {
   isBlockedBy(userId: number): boolean {
     return this.blocked.some((user) => user.userId === userId);
   }
-  
+
   isBlocking(userId: number): boolean {
     return this.blocking.some((user) => user.userId === userId);
   }

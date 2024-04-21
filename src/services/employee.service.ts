@@ -105,10 +105,13 @@ export class EmployeeService {
 
     if (!employee) throw new AppError('Employee not found', 404);
 
-    employee.status =
-      employee.status === EmployeeStatus.ACTIVE
-        ? EmployeeStatus.INACTIVE
-        : EmployeeStatus.ACTIVE;
+    if (employee.status === EmployeeStatus.ACTIVATED) {
+      employee.status = EmployeeStatus.DEACTIVATED;
+      employee.inActivatedAt = new Date();
+    } else {
+      employee.status = EmployeeStatus.ACTIVATED;
+      employee.createdAt = new Date();
+    }
 
     await employeeRepository.save(employee);
   };

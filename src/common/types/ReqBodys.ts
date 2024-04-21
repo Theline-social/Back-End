@@ -65,3 +65,10 @@ export interface addEmplyeeRequestBody {
   type: EmployeeType;
 }
 
+export interface addJobRequestBody {
+  topic: string;
+  description: string;
+  imageUrls?: string[];
+  jobDurationInDays: number;
+  availableApplicantsCount: number;
+}

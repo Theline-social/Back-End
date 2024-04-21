@@ -15,8 +15,8 @@ export enum SubscriptionType {
 }
 
 export enum SubscriptionStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
+  ACTIVATED = 'ACTIVATED',
+  DEACTIVATEd = 'DEACTIVATED',
 }
 
 @Entity()
@@ -34,7 +34,7 @@ export class Subscription {
   @Column({
     type: 'enum',
     enum: SubscriptionStatus,
-    default: SubscriptionStatus.INACTIVE,
+    default: SubscriptionStatus.DEACTIVATEd,
   })
   status: SubscriptionStatus;
 

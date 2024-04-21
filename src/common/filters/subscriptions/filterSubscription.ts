@@ -5,6 +5,7 @@ export const filterSubscription = (
   subscription: Subscription
 ): SubscriptionDto => {
   return {
+    subscriptionId: subscription.subscriptionId,
     type: subscription.type,
     status: subscription.status,
     liveImage: subscription.liveImage,

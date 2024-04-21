@@ -30,7 +30,7 @@ export class SubscriptionService {
     subscription.type = body.type;
     subscription.fullname = body.fullname;
     subscription.liveImage = liveImage;
-    subscription.status = SubscriptionStatus.INACTIVE;
+    subscription.status = SubscriptionStatus.DEACTIVATEd;
 
     const savedSubscription = await subsRepository.save(subscription);
 
@@ -63,7 +63,7 @@ export class SubscriptionService {
       {
         subscriptionId,
       },
-      { status: SubscriptionStatus.ACTIVE }
+      { status: SubscriptionStatus.ACTIVATED }
     );
   };
 
@@ -72,6 +72,14 @@ export class SubscriptionService {
 
     await subsRepository.delete({
       subscriptionId,
+    });
+  };
+
+  removeSubscription = async (userId: number) => {
+    const subsRepository = AppDataSource.getRepository(Subscription);
+
+    await subsRepository.delete({
+      userId,
     });
   };
 

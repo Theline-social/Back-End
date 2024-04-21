@@ -23,6 +23,7 @@ import {
 import { userProfileSelectOptions } from '../common/filters/users/userSelectOptions';
 import { AppDataSource } from '../dataSource';
 import {
+    Job,
   OtpCodes,
   OtpProvider,
   Reel,
@@ -34,6 +35,7 @@ import {
   User,
 } from '../entities';
 import * as fs from 'fs';
+import { filterJob } from '../common/filters/jobs/filterJob';
 
 export class UsersService {
   constructor() {}
@@ -727,6 +729,42 @@ export class UsersService {
 
     return {
       tweets: tweets.map((tweet) => filterTweet(tweet, userId)),
+    };
+  };
+
+  getUserJobs = async (
+    userId: number,
+    username: string,
+    lang: string = 'ar',
+    page: number = 1,
+    limit: number = 30
+  ) => {
+    const jobRepository = AppDataSource.getRepository(Job);
+    const userRepository = AppDataSource.getRepository(User);
+
+    const user = await userRepository.findOne({
+      where: { username },
+      select: { blocking: { userId: true } },
+      relations: { blocking: true },
+    });
+
+    if (!user) throw new AppError('User not found', 404);
+
+    const blockingsIds = user.blocking.map((blocking) => blocking.userId);
+
+    if (blockingsIds.includes(userId)) return { tweets: [] };
+
+    const jobs = await jobRepository.find({
+      where: { poster: { username } },
+      order: {
+        createdAt: 'DESC',
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      tweets: jobs.map((job) => filterJob(job, lang,userId)),
     };
   };
 }

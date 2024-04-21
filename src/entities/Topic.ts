@@ -4,8 +4,10 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { Reel } from './Reel';
+import { Job } from './Job';
 
 @Entity()
 export class Topic {
@@ -26,4 +28,7 @@ export class Topic {
 
   @ManyToMany(() => Reel, (reel) => reel.supportedTopics)
   supportingReels: Reel[];
+
+  @OneToMany(() => Job, (job) => job.relatedTopic)
+  jobs: Job[];
 }

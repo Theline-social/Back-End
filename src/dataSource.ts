@@ -16,6 +16,8 @@ import {
   Tag,
   Subscription,
   Employee,
+  Job,
+  JobMedia,
 } from './entities';
 
 const AppDataSource = new DataSource({
@@ -50,7 +52,9 @@ const AppDataSource = new DataSource({
     PollOption,
     Tag,
     Subscription,
-    Employee
+    Employee,
+    Job,
+    JobMedia,
   ],
   subscribers: [],
   migrations: [],

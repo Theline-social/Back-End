@@ -270,7 +270,7 @@ export const requireEmpAuth = catchAsync(
       process.env.ACCESSTOKEN_SECRET_KEY!
     );
 
-    if (employee.status == EmployeeStatus.INACTIVE)
+    if (employee.status == EmployeeStatus.DEACTIVATED)
       throw new AppError('The employee not activated yet', 401);
 
     res.locals.currentEmployee = employee;

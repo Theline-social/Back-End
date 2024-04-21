@@ -115,7 +115,7 @@ router
 /**
  * @swagger
  * /subscriptions/{subscriptionId}/refuse:
- *   patch:
+ *   delete:
  *     summary: Refuse a subscription
  *     description: Refuse a subscription with the specified subscription ID.
  *     tags:
@@ -137,10 +137,36 @@ router
  */
 router
   .route('/:subscriptionId/refuse')
-  .patch(
+  .delete(
     authController.requireEmpAuth,
     subscriptionIdParamsValidation,
     validateRequest,
     subscriptionController.refuseSubscription
   );
+
+/**
+ * @swagger
+ * /remove-current-subscription:
+ *   delete:
+ *     summary: Remove current subscription
+ *     description: Remove the current subscription associated with the authenticated user.
+ *     tags:
+ *       - Subscriptions
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Subscription removed successfully
+ *       '401':
+ *         description: Unauthorized, authentication token is missing or invalid
+ *       '500':
+ *         description: Internal server error
+ */
+router
+  .route('/remove-current-subscription')
+  .delete(
+    authController.requireAuth,
+    subscriptionController.removeSubscription
+  );
+
 export { router as subscriptionsRouter };

@@ -16,7 +16,7 @@ const isValidProvider = (value: OtpProvider) => {
 };
 
 const isValidEmpStatus = (value: EmployeeStatus) => {
-  if (![EmployeeStatus.ACTIVE, EmployeeStatus.INACTIVE].includes(value)) {
+  if (![EmployeeStatus.ACTIVATED, EmployeeStatus.DEACTIVATED].includes(value)) {
     throw new Error(
       'Invalid EmployeeStatus. Must be either "active" or "inActive".'
     );

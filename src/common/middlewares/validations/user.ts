@@ -2,10 +2,12 @@ import { body, param } from 'express-validator';
 import { passwordRegex } from '../../constants/regex';
 import phoneNumberUtil from 'google-libphonenumber';
 import { UsersService } from '../../../services/user.service';
+import { EmployeeService } from '../../../services/employee.service';
 
 const phoneUtil = phoneNumberUtil.PhoneNumberUtil.getInstance();
 
 const usersService = new UsersService();
+const employeeService = new EmployeeService();
 
 export const isPhoneValid = (phone: string) => {
   try {
@@ -91,4 +93,17 @@ export const usernameParamsValidation = [
         throw new Error('user does not exist');
       }
     }),
+];
+
+export const employeeIdParamsValidation = [
+  param('employeeId')
+    .exists()
+    .toInt()
+    .custom(async (id) => {
+      const exists = await employeeService.exists(id);
+      if (!exists) {
+        throw new Error('employee does not exist');
+      }
+    })
+    .withMessage('employee is required'),
 ];

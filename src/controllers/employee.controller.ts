@@ -49,3 +49,14 @@ export const searchEmployees = catchAsync(
     });
   }
 );
+
+export const toggleActivateEmp = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await employeeService.toggleActivateEmp(+req.params.employeeId);
+
+    res.status(200).json({
+      status: true,
+      message: 'Acctivation toggled successfully',
+    });
+  }
+);

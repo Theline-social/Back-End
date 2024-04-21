@@ -18,7 +18,7 @@ export enum EmployeeType {
 @Entity({ name: 'employees' })
 export class Employee {
   @PrimaryGeneratedColumn({ type: 'int' })
-  userId: number;
+  employeeId: number;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   name: string;

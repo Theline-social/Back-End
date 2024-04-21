@@ -3,7 +3,7 @@ import { EmpDto } from './empDto';
 
 export const filterEmployee = (employee: Employee): EmpDto => {
   return {
-    userId: employee.userId,
+    userId: employee.employeeId,
     name: employee.name,
     email: employee.email,
     phoneNumber: employee.phoneNumber,

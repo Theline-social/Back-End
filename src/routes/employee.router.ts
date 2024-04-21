@@ -2,7 +2,11 @@ import express, { Router } from 'express';
 import * as employeeController from '../controllers/employee.controller';
 import * as authController from '../controllers/auth.controller';
 import * as usersController from '../controllers/user.controller';
-import { addEmpValidationRules, validateRequest } from '../common';
+import {
+  addEmpValidationRules,
+  employeeIdParamsValidation,
+  validateRequest,
+} from '../common';
 import { EmployeeType } from '../entities';
 
 const router: Router = express.Router();
@@ -173,6 +177,43 @@ router
     authController.requireEmpAuth,
     authController.strictTo(EmployeeType.ADMIN),
     employeeController.searchEmployees
+  );
+
+/**
+ * @swagger
+ * /employees/{employeeId}/toggle-activate:
+ *   patch:
+ *     summary: Toggle the activation status of an employee.
+ *     description: Toggle the activation status (active/inactive) of an employee by their ID.
+ *     tags:
+ *       - Employees
+ *     parameters:
+ *       - in: path
+ *         name: employeeId
+ *         required: true
+ *         description: ID of the employee to toggle activation status.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Success. Activation status toggled successfully.
+ *       '400':
+ *         description: Invalid request. The provided employee ID is invalid.
+ *       '401':
+ *         description: Unauthorized. The user does not have permission to perform this action.
+ *       '404':
+ *         description: Employee not found. The provided employee ID does not exist.
+ *       '500':
+ *         description: Internal Server Error. An unexpected error occurred.
+ */
+router
+  .route('/:employeeId/toggle-activate')
+  .patch(
+    authController.requireEmpAuth,
+    authController.strictTo(EmployeeType.ADMIN),
+    employeeIdParamsValidation,
+    validateRequest,
+    employeeController.toggleActivateEmp
   );
 
 export { router as employeeRouter };

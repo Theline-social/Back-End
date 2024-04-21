@@ -1,13 +1,14 @@
 import { ILike, Like } from 'typeorm';
 import {
-    Password,
+  AppError,
+  Password,
   addEmplyeeRequestBody,
   emailRegex,
   filterEmployee,
   isPhoneValid,
 } from '../common';
 import { AppDataSource } from '../dataSource';
-import { Employee } from '../entities/Employee';
+import { Employee, EmployeeStatus } from '../entities/Employee';
 
 export class EmployeeService {
   constructor() {}
@@ -93,5 +94,28 @@ export class EmployeeService {
         name: employee?.name,
       },
     };
+  };
+
+  toggleActivateEmp = async (employeeId: number) => {
+    const employeeRepository = AppDataSource.getRepository(Employee);
+
+    const employee = await employeeRepository.findOne({
+      where: { employeeId },
+    });
+
+    if (!employee) throw new AppError('Employee not found', 404);
+
+    employee.status =
+      employee.status === EmployeeStatus.ACTIVE
+        ? EmployeeStatus.INACTIVE
+        : EmployeeStatus.ACTIVE;
+
+    await employeeRepository.save(employee);
+  };
+
+  exists = async (id: number) => {
+    const empRepository = AppDataSource.getRepository(Employee);
+
+    return await empRepository.exists({ where: { employeeId: id } });
   };
 }

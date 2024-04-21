@@ -303,8 +303,8 @@ class AuthService {
     const payload = await jwtVerifyPromisified(token, secretKey);
 
     const employee = await AppDataSource.getRepository(Employee).findOne({
-      where: { userId: payload.id },
-      select: ['email', 'userId', 'type', 'status'],
+      where: { employeeId: payload.id },
+      select: ['email', 'employeeId', 'type', 'status'],
     });
 
     if (!employee) {

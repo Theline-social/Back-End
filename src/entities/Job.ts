@@ -24,7 +24,7 @@ export class Job {
   poster: User;
 
   @Column({ type: 'integer', default: 0 })
-  availableApplicantsCount: number;
+  requiredApplicantsCount: number;
 
   @Column({ type: 'integer', default: 0 })
   jobDurationInDays: number;
@@ -77,7 +77,7 @@ export class Job {
 
   get remainingApplications(): number {
     return this.applicants
-      ? this.availableApplicantsCount - this.applicants.length
+      ? this.requiredApplicantsCount - this.applicants.length
       : 0;
   }
 

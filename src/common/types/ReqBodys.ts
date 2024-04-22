@@ -70,5 +70,5 @@ export interface addJobRequestBody {
   description: string;
   imageUrls?: string[];
   jobDurationInDays: number;
-  availableApplicantsCount: number;
+  requiredApplicantsCount: number;
 }

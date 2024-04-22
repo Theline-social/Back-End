@@ -1,3 +1,5 @@
+import { ProfileDto } from "../users/userDto";
+
 export interface JobDto {
   topic: string;
   description: string;
@@ -10,4 +12,5 @@ export interface JobDto {
   remainingApplications: number;
   applicantsCount: number;
   bookmarksCount: number;
+  poster: ProfileDto;
 }

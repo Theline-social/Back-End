@@ -1,7 +1,10 @@
+import { In, Not } from 'typeorm';
 import {
   AppError,
   addJobRequestBody,
   getPartialUserProfile,
+  jobRelations,
+  jobSelectOptions,
   userProfileRelations,
   userProfileSelectOptions,
 } from '../common';
@@ -42,13 +45,13 @@ export class JobService {
     const newJob = new Job();
     newJob.description = body.description;
     newJob.media = media;
-    newJob.availableApplicantsCount = body.availableApplicantsCount;
+    newJob.requiredApplicantsCount = body.requiredApplicantsCount;
     newJob.jobDurationInDays = body.jobDurationInDays;
     newJob.relatedTopic = relatedTopic;
 
     const savedJob = await jobRepository.save(newJob);
 
-    return { job: filterJob(savedJob, lang, userId) };
+    return { job: filterJob(savedJob, userId, lang) };
   };
 
   applyForJob = async (userId: number, jobId: number) => {
@@ -116,7 +119,7 @@ export class JobService {
       },
     });
 
-    if (!job) throw new AppError('Reel not found', 404);
+    if (!job) throw new AppError('Job not found', 404);
 
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
@@ -130,5 +133,69 @@ export class JobService {
       currentPage: page,
       totalPages: Math.ceil(job.applicants.length / limit),
     };
+  };
+
+  getTimelineJobss = async (
+    userId: number,
+    page: number = 1,
+    limit: number = 30,
+    lang: string = 'ar'
+  ) => {
+    const jobRepository = AppDataSource.getRepository(Job);
+    const userRepository = AppDataSource.getRepository(User);
+
+    const user = await userRepository.findOne({
+      where: { userId },
+      select: { following: { userId: true }, blocking: { userId: true } },
+      relations: { following: true, blocking: true },
+    });
+
+    if (!user) throw new AppError('User not found', 404);
+
+    const followingsIds = user.following.map((following) => following.userId);
+    const blockingsIds = user.blocking.map((blocking) => blocking.userId);
+
+    const jobsOfFollowings = await jobRepository.find({
+      where: {
+        poster: {
+          userId: In([...followingsIds]),
+          ...(blockingsIds.length > 0 && {
+            userId: Not(In([...blockingsIds])),
+          }),
+        },
+      },
+      select: jobSelectOptions,
+      relations: jobRelations,
+      order: { createdAt: 'DESC' },
+    });
+
+    let randomJobs: Job[] = [];
+    if (jobsOfFollowings.length < limit) {
+      randomJobs = await jobRepository.find({
+        where: {
+          poster: {
+            userId: Not(In([...followingsIds])),
+            ...(blockingsIds.length > 0 && {
+              userId: Not(In([...blockingsIds])),
+            }),
+          },
+        },
+        select: jobSelectOptions,
+        relations: jobRelations,
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    const mergedJobs = [...jobsOfFollowings, ...randomJobs];
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedJobs = mergedJobs.slice(startIndex, endIndex);
+
+    const timelineJobs = paginatedJobs.map((job) =>
+      filterJob(job, userId, lang)
+    );
+
+    return { timelineJobs };
   };
 }

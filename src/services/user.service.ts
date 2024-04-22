@@ -23,7 +23,7 @@ import {
 import { userProfileSelectOptions } from '../common/filters/users/userSelectOptions';
 import { AppDataSource } from '../dataSource';
 import {
-    Job,
+  Job,
   OtpCodes,
   OtpProvider,
   Reel,
@@ -764,7 +764,7 @@ export class UsersService {
     });
 
     return {
-      tweets: jobs.map((job) => filterJob(job, lang,userId)),
+      tweets: jobs.map((job) => filterJob(job, userId, lang)),
     };
   };
 }

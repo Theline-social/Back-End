@@ -34,6 +34,7 @@ export * from './filters/notifications/filterNotification';
 export * from './filters/employees/filterEmp';
 export * from './filters/employees/empDto';
 export * from './filters/subscriptions/filterSubscription';
+export * from './filters/jobs/filterJob';
+export * from './filters/jobs/jobsOps';
 
-
-export * from './utils/extractTags'
+export * from './utils/extractTags';

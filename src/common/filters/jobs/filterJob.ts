@@ -1,7 +1,7 @@
 import { Job } from '../../../entities';
 import { JobDto } from './JobDto';
 
-export const filterJob = (job: Job, lang: string, userId: number): JobDto => {
+export const filterJob = (job: Job, userId: number, lang: string): JobDto => {
   return {
     description: job.description,
     topic: lang == 'ar' ? job.relatedTopic.topic_ar : job.relatedTopic.topic_en,
@@ -11,5 +11,18 @@ export const filterJob = (job: Job, lang: string, userId: number): JobDto => {
     remainingApplications: job.remainingApplications,
     remainingDays: job.remainingDays,
     isBookmarked: job.isBookmarkedBy(userId),
+    poster: {
+      userId: job.poster.userId,
+      imageUrl: job.poster.imageUrl,
+      username: job.poster.username,
+      jobtitle: job.poster.jobtitle,
+      name: job.poster.name,
+      bio: job.poster.bio,
+      followersCount: job.poster.followersCount,
+      followingsCount: job.poster.followingsCount,
+      isMuted: job.poster.isMutedBy(userId),
+      isBlocked: job.poster.isBlockedBy(userId),
+      isFollowed: job.poster.isFollowedBy(userId),
+    },
   };
 };

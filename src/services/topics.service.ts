@@ -1,4 +1,9 @@
-import { AddTopicBody } from '../common';
+import {
+  AddTopicBody,
+  filterJob,
+  jobRelations,
+  jobSelectOptions,
+} from '../common';
 import { filterReel } from '../common/filters/reels/filterReel';
 import {
   reelRelations,
@@ -93,6 +98,46 @@ export class TopicsService {
       supportingreels: paginatedReels.map((reel) =>
         filterReel(reel, userId, lang)
       ),
+    };
+  };
+
+  getTopicJobs = async (
+    userId: number,
+    topicName: string,
+    lang: string = 'ar',
+    page: number = 1,
+    limit: number = 30
+  ) => {
+    const topicRepository = AppDataSource.getRepository(Topic);
+
+    const topic = await topicRepository.findOne({
+      where: lang === 'ar' ? { topic_ar: topicName } : { topic_en: topicName },
+      select: {
+        jobs: jobSelectOptions,
+      },
+      relations: {
+        jobs: jobRelations,
+      },
+    });
+
+    if (!topic) {
+      return { jobs: [] };
+    }
+
+    const sortedJobs = topic.jobs.sort((a, b) => {
+      const applicantsCountA = a.applicantsCount;
+      const applicantsCountB = b.applicantsCount;
+
+      return applicantsCountB - applicantsCountA;
+    });
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const paginatedJobs = sortedJobs.slice(startIndex, endIndex);
+
+    return {
+      supportingreels: paginatedJobs.map((job) => filterJob(job, userId, lang)),
     };
   };
 }

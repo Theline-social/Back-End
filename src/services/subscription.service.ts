@@ -59,6 +59,7 @@ export class SubscriptionService {
 
   acceptSubscription = async (subscriptionId: number) => {
     const subsRepository = AppDataSource.getRepository(Subscription);
+    const userRepository = AppDataSource.getRepository(User);
 
     const subscription = await subsRepository.findOne({
       where: { subscriptionId },
@@ -66,9 +67,12 @@ export class SubscriptionService {
     });
 
     if (!subscription) throw new AppError('Subscription not found', 404);
-    subscription.status = SubscriptionStatus.ACTIVATED;
-    subscription.user.subscriptionType = subscription.type;
 
+    subscription.status = SubscriptionStatus.ACTIVATED;
+    await userRepository.update(
+      { userId: subscription.userId },
+      { subscriptionType: SubscriptionType.NONE }
+    );
     await subsRepository.save(subscription);
 
     return { subscription: filterSubscription(subscription) };
@@ -90,7 +94,7 @@ export class SubscriptionService {
       { userId },
       { subscriptionType: SubscriptionType.NONE }
     );
-    
+
     await subsRepository.delete({
       userId,
     });

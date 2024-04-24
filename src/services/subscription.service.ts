@@ -71,7 +71,7 @@ export class SubscriptionService {
     subscription.status = SubscriptionStatus.ACTIVATED;
     await userRepository.update(
       { userId: subscription.userId },
-      { subscriptionType: SubscriptionType.NONE }
+      { subscriptionType: subscription.type }
     );
     await subsRepository.save(subscription);
 

@@ -13,7 +13,7 @@ import { TweetMention } from './TweetMention';
 import { Reel } from './Reel';
 import { ReelMention } from './ReelMention';
 import { PollOption } from './Poll';
-import { Subscription } from './Subscription';
+import { Subscription, SubscriptionType } from './Subscription';
 import { Job } from './Job';
 
 export enum Gender {
@@ -66,6 +66,13 @@ export class User {
 
   @Column({ type: 'varchar', length: 100, default: 'Engineer' })
   jobtitle: string;
+
+  @Column({
+    type: 'enum',
+    enum: SubscriptionType,
+    default: SubscriptionType.NONE,
+  })
+  subscriptionType: SubscriptionType;
 
   @Column({
     type: 'date',
@@ -171,7 +178,7 @@ export class User {
   @OneToMany(() => Subscription, (subscription) => subscription.user)
   subscriptions: Subscription[];
 
-  @ManyToMany(() => Job)
+  @ManyToMany(() => Job, (job) => job.applicants)
   @JoinTable()
   jobsApplied: Job[];
 
@@ -186,6 +193,7 @@ export class User {
   isBlocking(userId: number): boolean {
     return this.blocking.some((user) => user.userId === userId);
   }
+
   isFollowedBy(userId: number): boolean {
     return this.followers.some((user) => user.userId === userId);
   }

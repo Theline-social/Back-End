@@ -63,7 +63,7 @@ router
   .route('/')
   .get(
     authController.requireEmpAuth,
-    authController.strictTo(EmployeeType.ADMIN),
+    authController.strictEmployeeTo(EmployeeType.ADMIN),
     employeeController.getEmployees
   );
 
@@ -109,7 +109,7 @@ router
   .route('/add-employee')
   .post(
     authController.requireEmpAuth,
-    authController.strictTo(EmployeeType.ADMIN),
+    authController.strictEmployeeTo(EmployeeType.ADMIN),
     usersController.uploadProfileMedia,
     usersController.processProfileMedia,
     addEmpValidationRules,
@@ -175,7 +175,7 @@ router
   .route('/search')
   .get(
     authController.requireEmpAuth,
-    authController.strictTo(EmployeeType.ADMIN),
+    authController.strictEmployeeTo(EmployeeType.ADMIN),
     employeeController.searchEmployees
   );
 
@@ -210,7 +210,7 @@ router
   .route('/:employeeId/toggle-activate')
   .patch(
     authController.requireEmpAuth,
-    authController.strictTo(EmployeeType.ADMIN),
+    authController.strictEmployeeTo(EmployeeType.ADMIN),
     employeeIdParamsValidation,
     validateRequest,
     employeeController.toggleActivateEmp

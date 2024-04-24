@@ -3,6 +3,7 @@ import { JobDto } from './JobDto';
 
 export const filterJob = (job: Job, userId: number, lang: string): JobDto => {
   return {
+    jobId:job.jobId,
     description: job.description,
     topic: lang == 'ar' ? job.relatedTopic.topic_ar : job.relatedTopic.topic_en,
     media: job.media,
@@ -20,6 +21,7 @@ export const filterJob = (job: Job, userId: number, lang: string): JobDto => {
       bio: job.poster.bio,
       followersCount: job.poster.followersCount,
       followingsCount: job.poster.followingsCount,
+      subscriptionType: job.poster.subscriptionType,
       isMuted: job.poster.isMutedBy(userId),
       isBlocked: job.poster.isBlockedBy(userId),
       isFollowed: job.poster.isFollowedBy(userId),

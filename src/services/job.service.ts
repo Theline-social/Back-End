@@ -16,7 +16,11 @@ import { Job } from '../entities/Job';
 export class JobService {
   constructor() {}
 
-  addJob = async (lang: string, userId: number, body: addJobRequestBody) => {
+  addJob = async (
+    userId: number,
+    body: addJobRequestBody,
+    lang: string = 'ar'
+  ) => {
     const jobRepository = AppDataSource.getRepository(Job);
     const topicRepository = AppDataSource.getRepository(Topic);
 
@@ -42,16 +46,31 @@ export class JobService {
 
     if (!relatedTopic) throw new AppError('topic not supported', 400);
 
+    const poster = new User();
+    poster.userId = userId;
+
     const newJob = new Job();
     newJob.description = body.description;
     newJob.media = media;
     newJob.requiredApplicantsCount = body.requiredApplicantsCount;
     newJob.jobDurationInDays = body.jobDurationInDays;
     newJob.relatedTopic = relatedTopic;
+    newJob.poster = poster;
 
     const savedJob = await jobRepository.save(newJob);
 
-    return { job: filterJob(savedJob, userId, lang) };
+    return {
+      job: {
+        description: savedJob.description,
+        topic:
+          lang == 'ar'
+            ? savedJob.relatedTopic.topic_ar
+            : savedJob.relatedTopic.topic_en,
+        media: savedJob.media,
+        remainingApplications: savedJob.remainingApplications,
+        remainingDays: savedJob.remainingDays,
+      },
+    };
   };
 
   applyForJob = async (userId: number, jobId: number) => {
@@ -102,8 +121,8 @@ export class JobService {
   };
 
   getJobApplicants = async (
-    jobId: number,
     userId: number,
+    jobId: number,
     page: number = 1,
     limit: number = 30
   ) => {
@@ -129,13 +148,13 @@ export class JobService {
       .map((applicant) => getPartialUserProfile(applicant, userId));
 
     return {
-      reacters: paginatedApplicants,
+      applicants: paginatedApplicants,
       currentPage: page,
       totalPages: Math.ceil(job.applicants.length / limit),
     };
   };
 
-  getTimelineJobss = async (
+  getTimelineJobs = async (
     userId: number,
     page: number = 1,
     limit: number = 30,
@@ -197,5 +216,11 @@ export class JobService {
     );
 
     return { timelineJobs };
+  };
+
+  exists = async (id: number) => {
+    const jobsRepository = AppDataSource.getRepository(Job);
+
+    return await jobsRepository.exists({ where: { jobId: id } });
   };
 }

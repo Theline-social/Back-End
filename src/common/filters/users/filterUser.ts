@@ -17,6 +17,7 @@ export const filterUser = (user: User): userDto => {
     gender: user.gender,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    subscriptionType: user.subscriptionType,
     followersCount: user.followersCount,
     followingsCount: user.followingsCount,
   };
@@ -35,6 +36,7 @@ export const getPartialUserProfile = (
     bio: user.bio,
     followersCount: user.followersCount,
     followingsCount: user.followingsCount,
+    subscriptionType: user.subscriptionType,
     isMuted: user.isMutedBy(userId),
     isBlocked: user.isBlockedBy(userId),
     isFollowed: user.isFollowedBy(userId),
@@ -66,6 +68,7 @@ export const getFullUserProfile = (
     gender: user.gender,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    subscriptionType: user.subscriptionType,
     followersCount: user.followersCount,
     followingsCount: user.followingsCount,
     isMuted: user.isMutedBy(userId),

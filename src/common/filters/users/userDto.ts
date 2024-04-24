@@ -1,4 +1,4 @@
-import { Gender } from '../../../entities';
+import { Gender, SubscriptionType } from '../../../entities';
 
 export interface userDto {
   userId: number;
@@ -15,6 +15,7 @@ export interface userDto {
   gender: Gender;
   createdAt: Date;
   updatedAt: Date;
+  subscriptionType: SubscriptionType;
   followersCount: number;
   followingsCount: number;
 }
@@ -26,6 +27,7 @@ export interface ProfileDto {
   jobtitle: string;
   name: string;
   bio: string;
+  subscriptionType: SubscriptionType;
   followersCount: number;
   followingsCount: number;
   isMuted: boolean;

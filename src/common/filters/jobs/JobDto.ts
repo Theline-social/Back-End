@@ -1,6 +1,7 @@
-import { ProfileDto } from "../users/userDto";
+import { ProfileDto } from '../users/userDto';
 
 export interface JobDto {
+  jobId: number;
   topic: string;
   description: string;
   media?: {

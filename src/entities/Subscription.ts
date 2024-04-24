@@ -12,6 +12,7 @@ export enum SubscriptionType {
   INTERESTED = 'INTERESTED',
   PROFESSIONAL = 'PROFESSIONAL',
   BUSINESS = 'BUSINESS',
+  NONE = 'NONE',
 }
 
 export enum SubscriptionStatus {

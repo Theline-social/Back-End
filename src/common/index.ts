@@ -22,6 +22,7 @@ export * from './middlewares/validations/tweet';
 export * from './middlewares/validations/topic';
 export * from './middlewares/validations/conversation';
 export * from './middlewares/validations/subscription';
+export * from './middlewares/validations/job';
 
 export * from './constants/regex';
 

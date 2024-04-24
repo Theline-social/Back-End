@@ -20,6 +20,7 @@ import { tagsRouter } from './routes/tag.router';
 import { chatRouter } from './routes/chat.router';
 import { employeeRouter } from './routes/employee.router';
 import { subscriptionsRouter } from './routes/subscription.router';
+import { jobsRouter } from './routes/job.router';
 
 const app = express();
 
@@ -77,6 +78,7 @@ app.use('/api/v1/tags', tagsRouter);
 app.use('/api/v1/chats', chatRouter);
 app.use('/api/v1/employees', employeeRouter);
 app.use('/api/v1/subscriptions', subscriptionsRouter);
+app.use('/api/v1/jobs', jobsRouter);
 
 // Swagger
 app.use('/api/v1/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

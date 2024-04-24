@@ -5,6 +5,7 @@ export const userProfileSelectOptions = {
   imageUrl: true,
   userId: true,
   bio: true,
+  subscriptionType: true,
 };
 
 export const userProfileRelations = {

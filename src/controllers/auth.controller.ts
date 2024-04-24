@@ -278,9 +278,23 @@ export const requireEmpAuth = catchAsync(
   }
 );
 
-export const strictTo = (...roles: string[]) => {
+export const strictEmployeeTo = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const type = res.locals.currentEmployee.type;
+
+    if (!roles.includes(type)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+
+    next();
+  };
+};
+
+export const strictUserTo = (...roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const type = res.locals.currentUser.subscriptionType;
 
     if (!roles.includes(type)) {
       return next(

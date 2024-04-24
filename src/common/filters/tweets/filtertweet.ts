@@ -43,6 +43,7 @@ export const filterTweet = (
       bio: tweet.tweeter.bio,
       followersCount: tweet.tweeter.followersCount,
       followingsCount: tweet.tweeter.followingsCount,
+      subscriptionType: tweet.tweeter.subscriptionType,
       isMuted: tweet.tweeter.isMutedBy(userId),
       isBlocked: tweet.tweeter.isBlockedBy(userId),
       isFollowed: tweet.tweeter.isFollowedBy(userId),

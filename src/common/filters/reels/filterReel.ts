@@ -34,6 +34,7 @@ export const filterReel = (
       bio: reel.reeler.bio,
       followersCount: reel.reeler.followersCount,
       followingsCount: reel.reeler.followingsCount,
+      subscriptionType: reel.reeler.subscriptionType,
       isMuted: reel.reeler.isMutedBy(userId),
       isBlocked: reel.reeler.isBlockedBy(userId),
       isFollowed: reel.reeler.isFollowedBy(userId),

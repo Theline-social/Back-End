@@ -18,6 +18,7 @@ export const filterNotification = (
       jobtitle: notification.notificationFrom.jobtitle,
       name: notification.notificationFrom.name,
       bio: notification.notificationFrom.bio,
+      subscriptionType: notification.notificationFrom.subscriptionType,
       followersCount: notification.notificationFrom.followersCount,
       followingsCount: notification.notificationFrom.followingsCount,
       isMuted: notification.notificationFrom.isMutedBy(userId),

@@ -46,12 +46,12 @@ export class Job {
   @JoinColumn()
   relatedTopic: Topic;
 
-  @ManyToMany(() => User, (user) => user.tweetBookmarks, {
+  @ManyToMany(() => User, (user) => user.jobBookmarks, {
     onDelete: 'CASCADE',
   })
   bookmarkedBy: User[];
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, (user) => user.jobsApplied)
   applicants: User[];
 
   get bookmarksCount(): number {

@@ -51,6 +51,28 @@ export const getTopicReels = catchAsync(
   }
 );
 
+export const getTopicJobs = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+      const userId = res.locals.currentUser.userId;
+      const lang = req.headers['accept-language'] as string;
+  
+      const { page, limit } = req.query;
+  
+      const { jobs } = await topicsService.getTopicJobs(
+        userId,
+        req.params.topic,
+        lang,
+        +(page as string) || 1,
+        +(limit as string) || 10
+      );
+  
+      res.status(200).json({
+        status: true,
+        data: { jobs },
+      });
+    }
+  );
+
 export const getTopics = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const lang = req.headers['accept-language'] as string;

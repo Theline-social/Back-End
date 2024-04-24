@@ -409,6 +409,28 @@ export const getUserReels = catchAsync(
   }
 );
 
+export const getUserJobs = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+    const { page, limit } = req.query;
+    const lang = req.headers['accept-language'] as string;
+
+    const { jobs } = await usersService.getUserJobs(
+      +userId,
+      req.params.username,
+      lang,
+      +(page as string) || 1,
+      +(limit as string) || 10
+    );
+
+    res.status(200).json({
+      status: true,
+      message: 'User profile updated successfully',
+      data: { jobs },
+    });
+  }
+);
+
 export const changeEmail = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;

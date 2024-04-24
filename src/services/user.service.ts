@@ -764,7 +764,7 @@ export class UsersService {
     });
 
     return {
-      tweets: jobs.map((job) => filterJob(job, userId, lang)),
+      jobs: jobs.map((job) => filterJob(job, userId, lang)),
     };
   };
 }

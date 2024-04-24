@@ -137,7 +137,7 @@ export class TopicsService {
     const paginatedJobs = sortedJobs.slice(startIndex, endIndex);
 
     return {
-      supportingreels: paginatedJobs.map((job) => filterJob(job, userId, lang)),
+      jobs: paginatedJobs.map((job) => filterJob(job, userId, lang)),
     };
   };
 }

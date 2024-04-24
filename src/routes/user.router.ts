@@ -850,4 +850,47 @@ router
     usersController.getUserReels
   );
 
+/**
+ * @swagger
+ * /users/{username}/jobs:
+ *   get:
+ *     summary: Get current user's jobs
+ *     description: Retrieve jobs posted by the currently authenticated user.
+ *     tags:
+ *       - profile
+ *     security:
+ *       - jwt: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number (default 1)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of tweets per page (default 10, max 100)
+ *       - name: username
+ *         in: path
+ *         description: ID of the user to get followings for.
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Successful operation. Returns the user's reels.
+ *       '401':
+ *         description: Unauthorized. User authentication failed.
+ *       '500':
+ *         description: Internal Server Error. Failed to retrieve reels.
+ */
+router
+  .route('/:username/jobs')
+  .get(
+    authController.requireAuth,
+    usernameParamsValidation,
+    validateRequest,
+    usersController.getUserJobs
+  );
 export { router as usersRouter };

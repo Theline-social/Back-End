@@ -57,7 +57,7 @@ export class SubscriptionService {
     };
   };
 
-  acceptSubscription = async (subscriptionId: number) => {
+  acceptSubscription = async (subscriptionId: number, employeeName: string) => {
     const subsRepository = AppDataSource.getRepository(Subscription);
     const userRepository = AppDataSource.getRepository(User);
 
@@ -73,6 +73,8 @@ export class SubscriptionService {
       { userId: subscription.userId },
       { subscriptionType: subscription.type }
     );
+    subscription.activatedAt = new Date();
+    subscription.activationEmployee = employeeName;
     await subsRepository.save(subscription);
 
     return { subscription: filterSubscription(subscription) };

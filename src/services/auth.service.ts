@@ -304,7 +304,7 @@ class AuthService {
 
     const employee = await AppDataSource.getRepository(Employee).findOne({
       where: { employeeId: payload.id },
-      select: ['email', 'employeeId', 'type', 'status'],
+      select: ['email', 'employeeId', 'type', 'status', 'name'],
     });
 
     if (!employee) {

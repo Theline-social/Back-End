@@ -11,15 +11,18 @@ export const filterSubscription = (
     liveImage: subscription.liveImage,
     createdAt: subscription.createdAt,
     fullname: subscription.fullname,
+    activationEmployee: subscription.activationEmployee ?? undefined,
+    activatedAt: subscription.activatedAt?? undefined,
     subscriber: subscription.user
-    ? {
-      email: subscription.user.email,
-      imageUrl: subscription.user.imageUrl,
-      jobtitle: subscription.user.jobtitle,
-      name: subscription.user.name,
-      phoneNumber: subscription.user.phoneNumber,
-      userId: subscription.user.userId,
-      username: subscription.user.username,
-    }: undefined,
+      ? {
+          email: subscription.user.email,
+          imageUrl: subscription.user.imageUrl,
+          jobtitle: subscription.user.jobtitle,
+          name: subscription.user.name,
+          phoneNumber: subscription.user.phoneNumber,
+          userId: subscription.user.userId,
+          username: subscription.user.username,
+        }
+      : undefined,
   };
 };

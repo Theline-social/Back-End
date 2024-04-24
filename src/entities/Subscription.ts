@@ -57,4 +57,13 @@ export class Subscription {
     default: () => 'CURRENT_TIMESTAMP(6)',
   })
   createdAt: Date;
+
+  @CreateDateColumn({
+    type: 'timestamp',
+    nullable: true,
+  })
+  activatedAt: Date;
+
+  @Column({ nullable: true })
+  activationEmployee: string;
 }

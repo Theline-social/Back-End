@@ -37,8 +37,10 @@ export const getSubscriptions = catchAsync(
 
 export const acceptSubscription = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+
+    const empName = req.body.currentEmployee.name;
     const { subscription } = await subscriptionService.acceptSubscription(
-      +req.params.subscriptionId
+      +req.params.subscriptionId, empName
     );
 
     res.status(200).json({

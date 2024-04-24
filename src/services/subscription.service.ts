@@ -3,9 +3,10 @@ import {
   Subscription,
   SubscriptionStatus,
   SubscriptionType,
+  User,
 } from '../entities';
 import { AppDataSource } from '../dataSource';
-import { Email, filterSubscription } from '../common';
+import { AppError, Email, filterSubscription } from '../common';
 
 export class SubscriptionService {
   constructor() {}
@@ -59,12 +60,18 @@ export class SubscriptionService {
   acceptSubscription = async (subscriptionId: number) => {
     const subsRepository = AppDataSource.getRepository(Subscription);
 
-    await subsRepository.update(
-      {
-        subscriptionId,
-      },
-      { status: SubscriptionStatus.ACTIVATED }
-    );
+    const subscription = await subsRepository.findOne({
+      where: { subscriptionId },
+      relations: { user: true },
+    });
+
+    if (!subscription) throw new AppError('Subscription not found', 404);
+    subscription.status = SubscriptionStatus.ACTIVATED;
+    subscription.user.subscriptionType = subscription.type;
+
+    await subsRepository.save(subscription);
+
+    return { subscription: filterSubscription(subscription) };
   };
 
   refuseSubscription = async (subscriptionId: number) => {
@@ -77,7 +84,13 @@ export class SubscriptionService {
 
   removeSubscription = async (userId: number) => {
     const subsRepository = AppDataSource.getRepository(Subscription);
+    const userRepository = AppDataSource.getRepository(User);
 
+    await userRepository.update(
+      { userId },
+      { subscriptionType: SubscriptionType.NONE }
+    );
+    
     await subsRepository.delete({
       userId,
     });

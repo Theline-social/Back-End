@@ -37,11 +37,14 @@ export const getSubscriptions = catchAsync(
 
 export const acceptSubscription = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    await subscriptionService.acceptSubscription(+req.params.subscriptionId);
+    const { subscription } = await subscriptionService.acceptSubscription(
+      +req.params.subscriptionId
+    );
 
     res.status(200).json({
       status: true,
       message: 'subscription accepted successfully ',
+      data: { subscription },
     });
   }
 );

@@ -11,8 +11,8 @@ export const filterSubscription = (
     liveImage: subscription.liveImage,
     createdAt: subscription.createdAt,
     fullname: subscription.fullname,
-    activationEmployee: subscription.activationEmployee ?? undefined,
-    activatedAt: subscription.activatedAt?? undefined,
+    reviewerEmployeeName: subscription.reviewerEmployeeName ?? undefined,
+    reviewedAt: subscription.reviewedAt?? undefined,
     subscriber: subscription.user
       ? {
           email: subscription.user.email,

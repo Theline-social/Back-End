@@ -7,8 +7,8 @@ export interface SubscriptionDto {
   liveImage: string;
   status: SubscriptionStatus;
   type: SubscriptionType;
-  activationEmployee: string;
-  activatedAt: Date;
+  reviewerEmployeeName: string;
+  reviewedAt: Date;
   subscriber?: {
     userId: number;
     imageUrl: string;

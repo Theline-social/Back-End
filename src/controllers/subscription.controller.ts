@@ -35,12 +35,25 @@ export const getSubscriptions = catchAsync(
   }
 );
 
+export const getSubscription = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = res.locals.currentUser.userId;
+
+    const { subscription } = await subscriptionService.getSubscription(userId);
+
+    res.status(200).json({
+      status: true,
+      data: { subscription },
+    });
+  }
+);
+
 export const acceptSubscription = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-
     const empName = req.body.currentEmployee.name;
     const { subscription } = await subscriptionService.acceptSubscription(
-      +req.params.subscriptionId, empName
+      +req.params.subscriptionId,
+      empName
     );
 
     res.status(200).json({
@@ -53,10 +66,15 @@ export const acceptSubscription = catchAsync(
 
 export const refuseSubscription = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    await subscriptionService.refuseSubscription(+req.params.subscriptionId);
+    const empName = req.body.currentEmployee.name;
+    const { subscription } = await subscriptionService.refuseSubscription(
+      +req.params.subscriptionId,
+      empName
+    );
 
     res.status(200).json({
       status: true,
+      data: { subscription },
       message: 'subscription refused successfully ',
     });
   }
@@ -72,5 +90,11 @@ export const removeSubscription = catchAsync(
       status: true,
       message: 'subscription removed successfully ',
     });
+  }
+);
+
+export const handleTransactionStatusChange = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await subscriptionService.handleTransactionStatusChange(req.body);
   }
 );

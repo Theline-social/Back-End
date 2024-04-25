@@ -17,7 +17,7 @@ export enum SubscriptionType {
 
 export enum SubscriptionStatus {
   ACTIVATED = 'ACTIVATED',
-  DEACTIVATEd = 'DEACTIVATED',
+  DEACTIVATED = 'DEACTIVATED',
 }
 
 @Entity()
@@ -35,7 +35,7 @@ export class Subscription {
   @Column({
     type: 'enum',
     enum: SubscriptionStatus,
-    default: SubscriptionStatus.DEACTIVATEd,
+    default: SubscriptionStatus.DEACTIVATED,
   })
   status: SubscriptionStatus;
 
@@ -52,6 +52,9 @@ export class Subscription {
   @Column()
   liveImage: string;
 
+  @Column({ nullable: true })
+  reviewerEmployeeName: string;
+
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
@@ -62,8 +65,17 @@ export class Subscription {
     type: 'timestamp',
     nullable: true,
   })
-  activatedAt: Date;
+  reviewedAt: Date;
 
-  @Column({ nullable: true })
-  activationEmployee: string;
+  @CreateDateColumn({
+    type: 'timestamp',
+    nullable: true,
+  })
+  endDate: Date;
+
+  @Column({ type: 'varchar', default: 'FreeTrial' })
+  myFatoorahPaymentId: string;
+
+  @Column({ type: 'boolean', default: false })
+  isFreeTrialUsed: boolean;
 }

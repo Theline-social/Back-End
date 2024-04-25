@@ -82,6 +82,24 @@ router
 
 /**
  * @swagger
+ * /subscriptions/my-subscription:
+ *   get:
+ *     summary: Get all subscriptions
+ *     description: Retrieve a list of all subscriptions.
+ *     tags:
+ *       - Subscriptions
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: A list of subscriptions
+ */
+router
+  .route('/my-subscription')
+  .get(authController.requireAuth, subscriptionController.getSubscription);
+
+/**
+ * @swagger
  * /subscriptions/{subscriptionId}/accept:
  *   patch:
  *     summary: Accept a subscription
@@ -168,5 +186,27 @@ router
     authController.requireAuth,
     subscriptionController.removeSubscription
   );
+
+/**
+ * @swagger
+ * /transaction-status-hook:
+ *   delete:
+ *     summary: handle Transaction Status Change
+ *     description:  handle Transaction Status Change
+ *     tags:
+ *       - Subscriptions
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Subscription removed successfully
+ *       '401':
+ *         description: Unauthorized, authentication token is missing or invalid
+ *       '500':
+ *         description: Internal server error
+ */
+router
+  .route('/transaction-status-hook')
+  .post(subscriptionController.handleTransactionStatusChange);
 
 export { router as subscriptionsRouter };

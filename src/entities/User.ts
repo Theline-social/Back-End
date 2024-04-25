@@ -74,6 +74,8 @@ export class User {
   })
   subscriptionType: SubscriptionType;
 
+  
+
   @Column({
     type: 'date',
     default: new Date(

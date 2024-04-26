@@ -50,7 +50,7 @@ export const getSubscription = catchAsync(
 
 export const acceptSubscription = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const empName = req.body.currentEmployee.name;
+    const empName = res.locals.currentEmployee.name;
     const { subscription } = await subscriptionService.acceptSubscription(
       +req.params.subscriptionId,
       empName
@@ -66,7 +66,7 @@ export const acceptSubscription = catchAsync(
 
 export const refuseSubscription = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const empName = req.body.currentEmployee.name;
+    const empName = res.locals.currentEmployee.name;
     const { subscription } = await subscriptionService.refuseSubscription(
       +req.params.subscriptionId,
       empName

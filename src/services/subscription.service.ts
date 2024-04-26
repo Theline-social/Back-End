@@ -66,24 +66,45 @@ export class SubscriptionService {
   getSubscription = async (userId: number) => {
     const subsRepository = AppDataSource.getRepository(Subscription);
 
-    const subscription = await subsRepository.findOne({
+    const subscriptions = await subsRepository.find({
       where: { userId },
-      relations: { user: true },
     });
 
-    if (!subscription) throw new AppError('Subscription not found', 404);
+    if (!subscriptions) throw new AppError('Subscription not found', 404);
 
+    const activeSubscription = subscriptions.find(
+      (subscription) => subscription.status === SubscriptionStatus.ACTIVATED
+    );
+
+    const isFreeTrailBusinessUsed = subscriptions.filter(
+      (subscription) => subscription.type === SubscriptionType.BUSINESS
+    )[0].isFreeTrialUsed;
+
+    const isFreeTrailProfessionalUsed = subscriptions.filter(
+      (subscription) => subscription.type === SubscriptionType.PROFESSIONAL
+    )[0].isFreeTrialUsed;
+
+    const isFreeTrailInterestedUsed = subscriptions.filter(
+      (subscription) => subscription.type === SubscriptionType.INTERESTED
+    )[0].isFreeTrialUsed;
     return {
-      subscription: {
-        subscriptionId: subscription.subscriptionId,
-        type: subscription.type,
-        status: subscription.status,
-        fullname: subscription.fullname,
-        reviewerEmployeeName: subscription.reviewerEmployeeName ?? undefined,
-        reviewedAt: subscription.reviewedAt ?? undefined,
-        isFreeTrialUsed: subscription.isFreeTrialUsed,
-        endDate: subscription.endDate,
-      },
+      subscription: activeSubscription
+        ? {
+            subscriptionId: activeSubscription.subscriptionId,
+            type: activeSubscription.type,
+            status: activeSubscription.status,
+            fullname: activeSubscription.fullname,
+            reviewerEmployeeName:
+              activeSubscription.reviewerEmployeeName ?? undefined,
+            reviewedAt: activeSubscription.reviewedAt ?? undefined,
+            isFreeTrialUsed: {
+              INTERESTED: isFreeTrailInterestedUsed,
+              PROFESSIONAL: isFreeTrailProfessionalUsed,
+              BUSINESS: isFreeTrailBusinessUsed,
+            },
+            endDate: activeSubscription.endDate,
+          }
+        : null,
     };
   };
 
@@ -108,9 +129,9 @@ export class SubscriptionService {
     );
     subscription.reviewedAt = new Date();
     subscription.reviewerEmployeeName = employeeName;
-    await subsRepository.save(subscription);
+    const savedSub = await subsRepository.save(subscription);
 
-    return { subscription: filterSubscription(subscription) };
+    return { subscription: filterSubscription(savedSub) };
   };
 
   refuseSubscription = async (subscriptionId: number, employeeName: string) => {
@@ -125,9 +146,9 @@ export class SubscriptionService {
 
     subscription.reviewedAt = new Date();
     subscription.reviewerEmployeeName = employeeName;
-    await subsRepository.save(subscription);
+    const savedSub = await subsRepository.save(subscription);
 
-    return { subscription: filterSubscription(subscription) };
+    return { subscription: filterSubscription(savedSub) };
   };
 
   removeSubscription = async (userId: number) => {

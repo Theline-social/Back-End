@@ -1,4 +1,4 @@
-import { EmployeeStatus, EmployeeType } from "../../../entities";
+import { EmployeeStatus, EmployeeType } from '../../../entities';
 
 export interface EmpDto {
   userId: number;
@@ -9,5 +9,5 @@ export interface EmpDto {
   status: EmployeeStatus;
   type: EmployeeType;
   createdAt: Date;
-  inActivatedAt: Date;
+  inActivatedAt: Date | null;
 }

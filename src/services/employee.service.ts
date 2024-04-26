@@ -111,6 +111,7 @@ export class EmployeeService {
     } else {
       employee.status = EmployeeStatus.ACTIVATED;
       employee.createdAt = new Date();
+      employee.inActivatedAt = null;
     }
 
     await employeeRepository.save(employee);

@@ -52,7 +52,7 @@ export class Employee {
     type: 'timestamp',
     nullable: true,
   })
-  inActivatedAt: Date;
+  inActivatedAt: Date | null;
 
   @Column({
     type: 'enum',

@@ -133,7 +133,7 @@ router
 /**
  * @swagger
  * /subscriptions/{subscriptionId}/refuse:
- *   delete:
+ *   patch:
  *     summary: Refuse a subscription
  *     description: Refuse a subscription with the specified subscription ID.
  *     tags:
@@ -155,7 +155,7 @@ router
  */
 router
   .route('/:subscriptionId/refuse')
-  .delete(
+  .patch(
     authController.requireEmpAuth,
     subscriptionIdParamsValidation,
     validateRequest,
@@ -165,7 +165,7 @@ router
 /**
  * @swagger
  * /remove-current-subscription:
- *   delete:
+ *   patch:
  *     summary: Remove current subscription
  *     description: Remove the current subscription associated with the authenticated user.
  *     tags:
@@ -182,7 +182,7 @@ router
  */
 router
   .route('/remove-current-subscription')
-  .delete(
+  .patch(
     authController.requireAuth,
     subscriptionController.removeSubscription
   );
@@ -190,7 +190,7 @@ router
 /**
  * @swagger
  * /transaction-status-hook:
- *   delete:
+ *   post:
  *     summary: handle Transaction Status Change
  *     description:  handle Transaction Status Change
  *     tags:

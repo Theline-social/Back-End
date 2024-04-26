@@ -76,17 +76,20 @@ export class SubscriptionService {
       (subscription) => subscription.status === SubscriptionStatus.ACTIVATED
     );
 
+    console.log(subscriptions);
+    
     const isFreeTrailBusinessUsed = subscriptions.filter(
       (subscription) => subscription.type === SubscriptionType.BUSINESS
-    )[0].isFreeTrialUsed;
+    )[0]?.isFreeTrialUsed || false;
 
     const isFreeTrailProfessionalUsed = subscriptions.filter(
       (subscription) => subscription.type === SubscriptionType.PROFESSIONAL
-    )[0].isFreeTrialUsed;
+    )[0]?.isFreeTrialUsed || false;
 
     const isFreeTrailInterestedUsed = subscriptions.filter(
       (subscription) => subscription.type === SubscriptionType.INTERESTED
-    )[0].isFreeTrialUsed;
+    )[0]?.isFreeTrialUsed  || false;
+    
     return {
       subscription: activeSubscription
         ? {

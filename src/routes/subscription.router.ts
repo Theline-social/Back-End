@@ -164,7 +164,7 @@ router
 
 /**
  * @swagger
- * /remove-current-subscription:
+ * /subscriptions/remove-current-subscription:
  *   patch:
  *     summary: Remove current subscription
  *     description: Remove the current subscription associated with the authenticated user.

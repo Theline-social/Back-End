@@ -77,19 +77,22 @@ export class SubscriptionService {
     );
 
     console.log(subscriptions);
-    
-    const isFreeTrailBusinessUsed = subscriptions.filter(
-      (subscription) => subscription.type === SubscriptionType.BUSINESS
-    )[0]?.isFreeTrialUsed || false;
 
-    const isFreeTrailProfessionalUsed = subscriptions.filter(
-      (subscription) => subscription.type === SubscriptionType.PROFESSIONAL
-    )[0]?.isFreeTrialUsed || false;
+    const isFreeTrailBusinessUsed =
+      subscriptions.filter(
+        (subscription) => subscription.type === SubscriptionType.BUSINESS
+      )[0]?.isFreeTrialUsed || false;
 
-    const isFreeTrailInterestedUsed = subscriptions.filter(
-      (subscription) => subscription.type === SubscriptionType.INTERESTED
-    )[0]?.isFreeTrialUsed  || false;
-    
+    const isFreeTrailProfessionalUsed =
+      subscriptions.filter(
+        (subscription) => subscription.type === SubscriptionType.PROFESSIONAL
+      )[0]?.isFreeTrialUsed || false;
+
+    const isFreeTrailInterestedUsed =
+      subscriptions.filter(
+        (subscription) => subscription.type === SubscriptionType.INTERESTED
+      )[0]?.isFreeTrialUsed || false;
+
     return {
       subscription: activeSubscription
         ? {
@@ -130,9 +133,20 @@ export class SubscriptionService {
       { userId: subscription.userId },
       { subscriptionType: subscription.type }
     );
+    subscription.isFreeTrialUsed = true;
     subscription.reviewedAt = new Date();
     subscription.reviewerEmployeeName = employeeName;
     const savedSub = await subsRepository.save(subscription);
+
+    setTimeout(async () => {
+      const updatedSubscription = await subsRepository.findOne({
+        where: { subscriptionId },
+      });
+      if (updatedSubscription) {
+        updatedSubscription.status = SubscriptionStatus.DEACTIVATED;
+        await subsRepository.save(updatedSubscription);
+      }
+    }, 30 * 24 * 60 * 60 * 1000);
 
     return { subscription: filterSubscription(savedSub) };
   };

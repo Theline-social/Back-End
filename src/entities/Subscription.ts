@@ -19,6 +19,7 @@ export enum SubscriptionStatus {
   ACTIVATED = 'ACTIVATED',
   DEACTIVATED = 'DEACTIVATED',
   REJECTED = 'REJECTED',
+  PENDING = 'PENDING',
 }
 
 @Entity()
@@ -36,7 +37,7 @@ export class Subscription {
   @Column({
     type: 'enum',
     enum: SubscriptionStatus,
-    default: SubscriptionStatus.DEACTIVATED,
+    default: SubscriptionStatus.PENDING,
   })
   status: SubscriptionStatus;
 
@@ -62,13 +63,13 @@ export class Subscription {
   })
   createdAt: Date;
 
-  @CreateDateColumn({
+  @Column({
     type: 'timestamp',
     nullable: true,
   })
   reviewedAt: Date;
 
-  @CreateDateColumn({
+  @Column({
     type: 'timestamp',
     nullable: true,
   })

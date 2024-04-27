@@ -37,7 +37,7 @@ export class SubscriptionService {
     subscription.type = body.type;
     subscription.fullname = body.fullname;
     subscription.liveImage = liveImage;
-    subscription.status = SubscriptionStatus.DEACTIVATED;
+    subscription.status = SubscriptionStatus.PENDING;
 
     const savedSubscription = await subsRepository.save(subscription);
 
@@ -73,7 +73,9 @@ export class SubscriptionService {
     if (!subscriptions) throw new AppError('Subscription not found', 404);
 
     const activeSubscription = subscriptions.find(
-      (subscription) => subscription.status === SubscriptionStatus.ACTIVATED
+      (subscription) =>
+        subscription.status === SubscriptionStatus.ACTIVATED ||
+        subscription.status === SubscriptionStatus.PENDING
     );
 
     const isFreeTrailBusinessUsed =

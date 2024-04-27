@@ -76,8 +76,6 @@ export class SubscriptionService {
       (subscription) => subscription.status === SubscriptionStatus.ACTIVATED
     );
 
-    console.log(subscriptions);
-
     const isFreeTrailBusinessUsed =
       subscriptions.filter(
         (subscription) => subscription.type === SubscriptionType.BUSINESS
@@ -103,14 +101,14 @@ export class SubscriptionService {
             reviewerEmployeeName:
               activeSubscription.reviewerEmployeeName ?? undefined,
             reviewedAt: activeSubscription.reviewedAt ?? undefined,
-            isFreeTrialUsed: {
-              INTERESTED: isFreeTrailInterestedUsed,
-              PROFESSIONAL: isFreeTrailProfessionalUsed,
-              BUSINESS: isFreeTrailBusinessUsed,
-            },
             endDate: activeSubscription.endDate,
           }
         : null,
+        isFreeTrialUsed: {
+            INTERESTED: isFreeTrailInterestedUsed,
+            PROFESSIONAL: isFreeTrailProfessionalUsed,
+            BUSINESS: isFreeTrailBusinessUsed,
+          },
     };
   };
 

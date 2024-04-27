@@ -11,6 +11,7 @@ import { Server } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import {
   filterNotification,
+  filterSubNotification,
   jwtVerifyPromisified,
   notificationTypeContentMap,
   userProfileRelations,
@@ -49,7 +50,7 @@ class SocketService {
     senderId: number,
     receiverUsername: string,
     type: NotificationType,
-    metadata: any = {},
+    metadata: any = {}
   ): Promise<void> {
     const userRepository: Repository<User> =
       this.AppDataSource.getRepository(User);
@@ -97,6 +98,41 @@ class SocketService {
           'notification-receive',
           filterNotification(savednotification, receiver.userId)
         );
+    }
+  }
+
+  async emitSubscriptionNotifications(
+    receiverId: number,
+    type: NotificationType,
+    metadata: any = {}
+  ): Promise<void> {
+    const userRepository: Repository<User> =
+      this.AppDataSource.getRepository(User);
+
+    const receiver = await userRepository.findOne({
+      where: { userId: receiverId },
+      select: {
+        userId: true,
+      },
+    });
+
+    if (!receiver) throw new AppError('User not found', 404);
+
+    const notification = new Notification();
+    notification.notificationFrom = null;
+    notification.notificationTo = receiver;
+    notification.isSeen = false;
+    notification.type = type;
+    notification.metadata = metadata;
+
+    const savednotification = await this.AppDataSource.getRepository(
+      Notification
+    ).save(notification);
+
+    if (receiver) {
+      this.io?.sockets
+        .in(`user_${receiver.userId}_room`)
+        .emit('notification-receive', filterSubNotification(savednotification));
     }
   }
 
@@ -225,7 +261,6 @@ class SocketService {
         socket.on('chat-opened', async ({ conversationId, contactId }: any) => {
           if (!conversationId || !contactId) return;
           const { userId } = socket.data.user;
-          
 
           await this.AppDataSource.createQueryBuilder()
             .update(Conversation)
@@ -237,7 +272,6 @@ class SocketService {
               conversationId,
             })
             .execute();
-          
 
           if (contactId) {
             socket.to(`user_${contactId}_room`).emit('status-of-contact', {
@@ -245,7 +279,6 @@ class SocketService {
               inConversation: true,
             });
           }
-        
 
           await this.AppDataSource.getRepository(Message).update(
             { conversation: { conversationId }, receiverId: userId },

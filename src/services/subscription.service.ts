@@ -1,5 +1,6 @@
 import {
   EmployeeStatus,
+  NotificationType,
   Subscription,
   SubscriptionStatus,
   SubscriptionType,
@@ -8,6 +9,7 @@ import {
 import { AppDataSource } from '../dataSource';
 import { AppError, Email, filterSubscription } from '../common';
 import schedule from 'node-schedule';
+import socketService from './socket.service';
 
 export class SubscriptionService {
   constructor() {}
@@ -141,9 +143,7 @@ export class SubscriptionService {
     );
 
     const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setMinutes(thirtyDaysFromNow.getMinutes() + 5);
-    console.log("start");
-    
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
     schedule.scheduleJob(thirtyDaysFromNow, async () => {
       const updatedSubscription = await subsRepository.findOne({
@@ -153,7 +153,22 @@ export class SubscriptionService {
         updatedSubscription.status = SubscriptionStatus.DEACTIVATED;
         await subsRepository.save(updatedSubscription);
       }
+
+      await userRepository.update(
+        { userId: subscription.userId },
+        { subscriptionType: SubscriptionType.NONE }
+      );
+
+      await socketService.emitSubscriptionNotifications(
+        subscription.userId,
+        NotificationType.Subscription_Terminated
+      );
     });
+
+    await socketService.emitSubscriptionNotifications(
+      subscription.userId,
+      NotificationType.Subscription_Accepted
+    );
 
     return { subscription: filterSubscription(savedSub) };
   };
@@ -172,6 +187,11 @@ export class SubscriptionService {
     subscription.reviewerEmployeeName = employeeName;
     subscription.status = SubscriptionStatus.REJECTED;
     const savedSub = await subsRepository.save(subscription);
+
+    await socketService.emitSubscriptionNotifications(
+      subscription.userId,
+      NotificationType.Subscription_Rejected
+    );
 
     return { subscription: filterSubscription(savedSub) };
   };
@@ -222,6 +242,7 @@ export class SubscriptionService {
       {
         userId: +transactionData.Data.CustomerReference,
         type: transactionData.Data.SubscriptionType,
+        status: SubscriptionStatus.DEACTIVATED,
       },
       { endDate: currDate, status: SubscriptionStatus.ACTIVATED }
     );
@@ -230,5 +251,32 @@ export class SubscriptionService {
       { userId: +transactionData.Data.CustomerReference },
       { subscriptionType: transactionData.Data.SubscriptionType }
     );
+
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setFullYear(currDate.getFullYear() + 1);
+    schedule.scheduleJob(thirtyDaysFromNow, async () => {
+      const updatedSubscription = await subsRepository.findOne({
+        where: {
+          userId: +transactionData.Data.CustomerReference,
+          type: transactionData.Data.SubscriptionType,
+          status: SubscriptionStatus.ACTIVATED,
+        },
+      });
+
+      if (updatedSubscription) {
+        updatedSubscription.status = SubscriptionStatus.DEACTIVATED;
+        await subsRepository.save(updatedSubscription);
+      }
+
+      await userRepository.update(
+        { userId: +transactionData.Data.CustomerReference },
+        { subscriptionType: SubscriptionType.NONE }
+      );
+
+      await socketService.emitSubscriptionNotifications(
+        +transactionData.Data.CustomerReference,
+        NotificationType.Subscription_Terminated
+      );
+    });
   };
 }

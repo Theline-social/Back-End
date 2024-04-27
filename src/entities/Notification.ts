@@ -22,13 +22,17 @@ export enum NotificationType {
   Reply_Tweet = 'REPLY_TWEET',
   Repost_Tweet = 'REPOST_TWEET',
   Quote_Tweet = 'QUOTE_TWEET',
+
+  Subscription_Accepted = 'SUBSCRIPTION_ACCEPTED',
+  Subscription_Rejected = 'SUBSCRIPTION_REJECTED',
+  Subscription_Terminated = 'SUBSCRIPTION_TERMINATED',
 }
 
 @Entity()
 export class Notification {
   @PrimaryGeneratedColumn()
   notificationId: number;
-  
+
   @Column({ type: 'boolean', default: false })
   isSeen: boolean;
 
@@ -51,5 +55,5 @@ export class Notification {
   notificationTo: User;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  notificationFrom: User;
+  notificationFrom: User | null;
 }

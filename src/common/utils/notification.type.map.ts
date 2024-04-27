@@ -52,4 +52,16 @@ export const notificationTypeContentMap: Record<
     en: 'quoted your reel',
     ar: 'نقل  قصة خاصة بك',
   },
+  [NotificationType.Subscription_Accepted]: {
+    en: 'accepted your subscription',
+    ar: 'وافق على اشتراكك',
+  },
+  [NotificationType.Subscription_Rejected]: {
+    en: 'rejected your subscription',
+    ar: 'رفض اشتراكك',
+  },
+  [NotificationType.Subscription_Terminated]: {
+    en: 'terminated your subscription',
+    ar: 'أنهى اشتراكك',
+  },
 };

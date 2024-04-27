@@ -7,5 +7,5 @@ export interface NotificationDto {
   type: NotificationType;
   createdAt: Date;
   metadata: any;
-  notificationFrom: ProfileDto;
+  notificationFrom: ProfileDto | null | { name: string; imageUrl: string };
 }

@@ -27,7 +27,7 @@ export class SubscriptionService {
     const subsRepository = AppDataSource.getRepository(Subscription);
 
     const checkFreeTrial = await subsRepository.exists({
-      where: { userId: currUser.userId },
+      where: { userId: currUser.userId, type: body.type },
     });
 
     if (checkFreeTrial) throw new AppError('Free trial used before', 400);
@@ -104,11 +104,11 @@ export class SubscriptionService {
             endDate: activeSubscription.endDate,
           }
         : null,
-        isFreeTrialUsed: {
-            INTERESTED: isFreeTrailInterestedUsed,
-            PROFESSIONAL: isFreeTrailProfessionalUsed,
-            BUSINESS: isFreeTrailBusinessUsed,
-          },
+      isFreeTrialUsed: {
+        INTERESTED: isFreeTrailInterestedUsed,
+        PROFESSIONAL: isFreeTrailProfessionalUsed,
+        BUSINESS: isFreeTrailBusinessUsed,
+      },
     };
   };
 
@@ -127,14 +127,15 @@ export class SubscriptionService {
     currDate.setMonth(currDate.getMonth() + 1);
     subscription.endDate = currDate;
     subscription.status = SubscriptionStatus.ACTIVATED;
-    await userRepository.update(
-      { userId: subscription.userId },
-      { subscriptionType: subscription.type }
-    );
     subscription.isFreeTrialUsed = true;
     subscription.reviewedAt = new Date();
     subscription.reviewerEmployeeName = employeeName;
     const savedSub = await subsRepository.save(subscription);
+
+    await userRepository.update(
+      { userId: subscription.userId },
+      { subscriptionType: subscription.type }
+    );
 
     setTimeout(async () => {
       const updatedSubscription = await subsRepository.findOne({
@@ -161,6 +162,7 @@ export class SubscriptionService {
 
     subscription.reviewedAt = new Date();
     subscription.reviewerEmployeeName = employeeName;
+    subscription.status = SubscriptionStatus.REJECTED;
     const savedSub = await subsRepository.save(subscription);
 
     return { subscription: filterSubscription(savedSub) };

@@ -18,6 +18,7 @@ export enum SubscriptionType {
 export enum SubscriptionStatus {
   ACTIVATED = 'ACTIVATED',
   DEACTIVATED = 'DEACTIVATED',
+  REJECTED = 'REJECTED',
 }
 
 @Entity()

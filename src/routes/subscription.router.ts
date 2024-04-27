@@ -82,7 +82,7 @@ router
 
 /**
  * @swagger
- * /subscriptions/my-subscription:
+ * /subscriptions/current-subscription:
  *   get:
  *     summary: Get all subscriptions
  *     description: Retrieve a list of all subscriptions.
@@ -95,7 +95,7 @@ router
  *         description: A list of subscriptions
  */
 router
-  .route('/my-subscription')
+  .route('/current-subscription')
   .get(authController.requireAuth, subscriptionController.getSubscription);
 
 /**

@@ -7,6 +7,7 @@ import {
 } from '../entities';
 import { AppDataSource } from '../dataSource';
 import { AppError, Email, filterSubscription } from '../common';
+import schedule from 'node-schedule';
 
 export class SubscriptionService {
   constructor() {}
@@ -139,7 +140,12 @@ export class SubscriptionService {
       { subscriptionType: subscription.type }
     );
 
-    setTimeout(async () => {
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setMinutes(thirtyDaysFromNow.getMinutes() + 5);
+    console.log("start");
+    
+
+    schedule.scheduleJob(thirtyDaysFromNow, async () => {
       const updatedSubscription = await subsRepository.findOne({
         where: { subscriptionId },
       });
@@ -147,7 +153,7 @@ export class SubscriptionService {
         updatedSubscription.status = SubscriptionStatus.DEACTIVATED;
         await subsRepository.save(updatedSubscription);
       }
-    }, 30 * 24 * 60 * 60 * 1000);
+    });
 
     return { subscription: filterSubscription(savedSub) };
   };

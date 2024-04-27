@@ -39,11 +39,11 @@ export const getSubscription = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    const { subscription } = await subscriptionService.getSubscription(userId);
+    const { subscription, isFreeTrialUsed } = await subscriptionService.getSubscription(userId);
 
     res.status(200).json({
       status: true,
-      data: { subscription },
+      data: { subscription, isFreeTrialUsed },
     });
   }
 );

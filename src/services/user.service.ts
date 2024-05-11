@@ -10,6 +10,8 @@ import {
   getFullUserProfile,
   isPhoneValid,
   editProfileBody,
+  jobSelectOptions,
+  jobRelations,
 } from '../common';
 import { filterReel } from '../common/filters/reels/filterReel';
 import {
@@ -753,9 +755,11 @@ export class UsersService {
     const blockingsIds = user.blocking.map((blocking) => blocking.userId);
 
     if (blockingsIds.includes(userId)) return { tweets: [] };
-
+    
     const jobs = await jobRepository.find({
       where: { poster: { username } },
+      select: jobSelectOptions,
+      relations: jobRelations,
       order: {
         createdAt: 'DESC',
       },

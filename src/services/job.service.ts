@@ -131,14 +131,17 @@ export class JobService {
     const job = await jobRepository.findOne({
       where: { jobId },
       select: {
+         poster: {userId: true},
         applicants: userProfileSelectOptions,
       },
       relations: {
+        poster: true,
         applicants: userProfileRelations,
       },
     });
 
     if (!job) throw new AppError('Job not found', 404);
+    if (job.poster.userId != userId) throw new AppError('Only job poster can see the applicants', 400);
 
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;

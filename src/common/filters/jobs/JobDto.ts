@@ -7,7 +7,7 @@ export interface JobDto {
   media?: {
     url: string;
   }[];
-
+  createdAt: Date;
   isBookmarked: boolean;
   remainingDays: number;
   remainingApplications: number;

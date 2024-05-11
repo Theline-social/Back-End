@@ -11,6 +11,7 @@ export const jobSelectOptions = {
   applicants: { userId: true },
   bookmarkedBy: { userId: true },
   jobId: true,
+  createdAt: true,
   poster: userProfileSelectOptions,
 };
 

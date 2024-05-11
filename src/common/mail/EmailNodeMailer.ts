@@ -41,6 +41,7 @@ export class Email {
           subtype: 'html',
         },
       });
+      
       if (resp.status == 200) return true;
 
       throw new AppError('Error in sending email', 400);
@@ -123,10 +124,10 @@ export class Email {
                 <li>اثبات هوية شخصية سارية المفعول</li>
                 
                 ${
-                    type === SubscriptionType.INTERESTED
-                      ? '<li>اثبات العنوان الوطني</li>'
-                      : ''
-                  }
+                  type === SubscriptionType.INTERESTED
+                    ? '<li>اثبات العنوان الوطني</li>'
+                    : ''
+                }
                 ${
                   type === SubscriptionType.PROFESSIONAL
                     ? '<li>اثبات العنوان الوطني</li><li>اثبات التخصص كما هو موضح في حسابك</li>'

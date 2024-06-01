@@ -31,6 +31,9 @@ export class Email {
         rejectUnauthorized: false,
       });
 
+
+      console.log(data);
+      
       const resp = await axios.post(url, null, {
         params: {
           mail_from: data.mailFrom,

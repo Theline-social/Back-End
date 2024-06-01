@@ -42,6 +42,9 @@ export class Email {
         },
       });
       
+
+      console.log(resp);
+      
       if (resp.status == 200) return true;
 
       throw new AppError('Error in sending email', 400);

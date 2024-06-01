@@ -31,9 +31,6 @@ export class Email {
         rejectUnauthorized: false,
       });
 
-
-      console.log(data);
-      
       const resp = await axios.post(url, null, {
         params: {
           mail_from: data.mailFrom,
@@ -44,9 +41,6 @@ export class Email {
           subtype: 'html',
         },
       });
-      
-
-      console.log(resp);
       
       if (resp.status == 200) return true;
 

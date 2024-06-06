@@ -1,10 +1,13 @@
 import multer from 'multer';
 import sharp from 'sharp';
 
-import { AppError, catchAsync } from '../common';
+import { AppError, IStorage, catchAsync } from '../common';
 import { Request, Response, NextFunction } from 'express';
 import { TweetsService } from '../services/tweet.service';
 import { fileFilter } from './user.controller';
+
+import BackblazeStorage from '../common/storage/BackblazeStorage';
+import LocalStorage from '../common/storage/LocalStorage';
 
 const tweetsService = new TweetsService();
 
@@ -17,6 +20,11 @@ export const uploadTweetMedia = upload.fields([
   { name: 'gif', maxCount: 1 },
 ]);
 
+const storageService: IStorage =
+  process.env.NODE_ENV === 'production'
+    ? BackblazeStorage.getInstance()
+    : LocalStorage.getInstance();
+
 export const processTweetMedia = async (
   req: Request,
   res: Response,
@@ -28,48 +36,37 @@ export const processTweetMedia = async (
     const images = (req.files as Record<string, any>)[
       'images'
     ] as Express.Multer.File[];
+    const gifs = (req.files as Record<string, any>)[
+      'gif'
+    ] as Express.Multer.File[];
 
     if (images) {
-      let imageUrls: string[] = [];
+      const imageUrls: string[] = [];
 
       await Promise.all(
         images.map(async (image: Express.Multer.File, i: number) => {
           const fileName = `tweet-${Date.now()}-${i + 1}.jpeg`;
 
-          await sharp(image.buffer)
-            .toFormat('jpeg')
-            .jpeg({ quality: 90 })
-            .toFile(
-              process.env.NODE_ENV !== 'production'
-                ? `${process.env.DEV_MEDIA_PATH}/tweets/${fileName}`
-                : `${process.env.PROD_MEDIA_PATH}/tweets/${fileName}`
-            );
+          const imageId = await storageService.processAndUploadImage(
+            image.buffer,
+            fileName
+          );
 
-          imageUrls.push(fileName);
+          imageUrls.push(imageId);
         })
       );
 
       req.body.imageUrls = imageUrls;
     }
 
-    const gif = (req.files as Record<string, any>)[
-      'gif'
-    ] as Express.Multer.File[];
+    if (gifs) {
+      const gifUrl = `gif-${Date.now()}-${Math.round(Math.random() * 1e9)}.gif`;
 
-    if (gif) {
-      const gifUrl = `gif-${
-        Date.now() + '-' + Math.round(Math.random() * 1e9)
-      }.gif`;
-
-      await sharp(gif[0].buffer, { animated: true })
-        .toFormat('gif')
-        .toFile(
-          process.env.NODE_ENV !== 'production'
-            ? `${process.env.DEV_MEDIA_PATH}/tweets/${gifUrl}`
-            : `${process.env.PROD_MEDIA_PATH}/tweets/${gifUrl}`
-        );
-
-      req.body.gifUrl = gifUrl;
+      const gifId = await storageService.processAndUploadGif(
+        gifs[0].buffer,
+        gifUrl
+      );
+      req.body.gifUrl = gifId;
     }
 
     next();

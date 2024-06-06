@@ -39,3 +39,7 @@ export * from './filters/jobs/filterJob';
 export * from './filters/jobs/jobsOps';
 
 export * from './utils/extractTags';
+
+export * from './storage/IStorage';
+// export * from './storage/LocalStorage';
+// export * from './storage/backblazeStorage';

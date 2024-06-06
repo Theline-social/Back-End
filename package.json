@@ -20,6 +20,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/node-schedule": "^2.1.7",
     "@types/sharp": "^0.32.0",
+    "backblaze-b2": "^1.7.0",
     "bcrypt": "^5.1.1",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
@@ -53,6 +54,7 @@
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
+    "@types/backblaze-b2": "^1.5.6",
     "@types/bcrypt": "^5.0.2",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.6",

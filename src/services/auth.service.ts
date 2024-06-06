@@ -45,11 +45,12 @@ class AuthService {
     if (!phoneOtpCode.isVerified)
       throw new AppError('Phone number not verified', 400);
 
-    const emailOtpCode = await otpCodesRepository.findOne({
-      where: { input: body.email, provider: OtpProvider.EMAIL },
-    });
-    if (!emailOtpCode) throw new AppError('Go to verifiy your email', 400);
-    if (!emailOtpCode.isVerified) throw new AppError('Email not verified', 400);
+    // Email is Optional now
+    // const emailOtpCode = await otpCodesRepository.findOne({
+    //   where: { input: body.email, provider: OtpProvider.EMAIL },
+    // });
+    // if (!emailOtpCode) throw new AppError('Go to verifiy your email', 400);
+    // if (!emailOtpCode.isVerified) throw new AppError('Email not verified', 400);
 
     const hashedPassword = await Password.hashPassword(body.password);
 

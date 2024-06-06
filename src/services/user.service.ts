@@ -12,6 +12,9 @@ import {
   editProfileBody,
   jobSelectOptions,
   jobRelations,
+  IStorage,
+//   BackblazeStorage,
+//   LocalStorage,
 } from '../common';
 import { filterReel } from '../common/filters/reels/filterReel';
 import {
@@ -36,8 +39,15 @@ import {
   TweetType,
   User,
 } from '../entities';
-import * as fs from 'fs';
 import { filterJob } from '../common/filters/jobs/filterJob';
+
+import BackblazeStorage from '../common/storage/BackblazeStorage';
+import LocalStorage from '../common/storage/LocalStorage';
+
+const storageService: IStorage =
+  process.env.NODE_ENV === 'production'
+    ? BackblazeStorage.getInstance()
+    : LocalStorage.getInstance();
 
 export class UsersService {
   constructor() {}
@@ -609,35 +619,22 @@ export class UsersService {
     }
 
     if (body.imageUrl !== undefined) {
-      try {
-        if (userProfile.imageUrl !== 'default.jpeg')
-          process.env.NODE_ENV !== 'production'
-            ? fs.unlinkSync(
-                `${process.env.DEV_MEDIA_PATH}/users/${userProfile.imageUrl}`
-              )
-            : fs.unlinkSync(
-                `${process.env.PROD_MEDIA_PATH}/users/${userProfile.imageUrl}`
-              );
-      } catch (err) {
-        console.error('Error while unlinking file:', err);
+      if (userProfile.imageUrl && userProfile.imageUrl !== 'default.jpeg') {
+        await storageService.deleteFile(userProfile.imageUrl);
       }
       userProfile.imageUrl = body.imageUrl;
     }
+
     if (body.bannerUrl !== undefined) {
-      try {
-        if (userProfile.bannerUrl !== 'banner_default2.jpeg')
-          process.env.NODE_ENV !== 'production'
-            ? fs.unlinkSync(
-                `${process.env.DEV_MEDIA_PATH}/users/${userProfile.bannerUrl}`
-              )
-            : fs.unlinkSync(
-                `${process.env.PROD_MEDIA_PATH}/users/${userProfile.bannerUrl}`
-              );
-      } catch (err) {
-        console.error('Error while unlinking file:', err);
+      if (
+        userProfile.bannerUrl &&
+        userProfile.bannerUrl !== 'banner_default2.jpeg'
+      ) {
+        await storageService.deleteFile(userProfile.bannerUrl);
       }
       userProfile.bannerUrl = body.bannerUrl;
     }
+
     if (body.name !== undefined) {
       userProfile.name = body.name;
     }
@@ -654,9 +651,9 @@ export class UsersService {
       userProfile.dateOfBirth = body.dateOfBirth;
     }
 
-    const saveduser = await userProfileRepository.save(userProfile);
+    const savedUser = await userProfileRepository.save(userProfile);
 
-    return { user: filterUser(saveduser) };
+    return { user: filterUser(savedUser) };
   };
 
   getUserReels = async (
@@ -755,7 +752,7 @@ export class UsersService {
     const blockingsIds = user.blocking.map((blocking) => blocking.userId);
 
     if (blockingsIds.includes(userId)) return { tweets: [] };
-    
+
     const jobs = await jobRepository.find({
       where: { poster: { username } },
       select: jobSelectOptions,

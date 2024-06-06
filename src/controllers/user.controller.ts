@@ -1,12 +1,17 @@
-import { AppError, catchAsync } from '../common';
+import { AppError, IStorage, catchAsync } from '../common';
 import { Request, Response, NextFunction } from 'express';
 import { UsersService } from '../services/user.service';
 import multer from 'multer';
-import sharp from 'sharp';
-import { AppDataSource } from '../dataSource';
-import { User } from '../entities';
+
+import BackblazeStorage from '../common/storage/BackblazeStorage';
+import LocalStorage from '../common/storage/LocalStorage';
 
 const usersService = new UsersService();
+
+const storageService: IStorage =
+  process.env.NODE_ENV === 'production'
+    ? BackblazeStorage.getInstance()
+    : LocalStorage.getInstance();
 
 const storage = multer.memoryStorage();
 
@@ -41,47 +46,35 @@ export const processProfileMedia = async (
   if (!req.files) return next();
 
   try {
-    const image_profile = (req.files as Record<string, any>)[
+    const imageProfileFile = (req.files as Record<string, any>)[
       'image_profile'
     ] as Express.Multer.File[];
-
-    if (image_profile) {
-      const imageUrl = `user-${
-        Date.now() + '-' + Math.round(Math.random() * 1e9)
-      }.jpeg`;
-
-      await sharp(image_profile[0].buffer, { animated: true })
-        .toFormat('jpeg')
-        .resize(500, 500)
-        .jpeg({ quality: 90 })
-        .toFile(
-          process.env.NODE_ENV !== 'production'
-            ? `${process.env.DEV_MEDIA_PATH}/users/${imageUrl}`
-            : `${process.env.PROD_MEDIA_PATH}/users/${imageUrl}`
-        );
-
-      req.body.imageUrl = imageUrl;
-    }
-
-    const banner_profile = (req.files as Record<string, any>)[
+    const bannerProfileFile = (req.files as Record<string, any>)[
       'banner_profile'
     ] as Express.Multer.File[];
 
-    if (banner_profile) {
-      const bannerUrl = `user-${
-        Date.now() + '-' + Math.round(Math.random() * 1e9)
-      }.jpeg`;
+    if (imageProfileFile) {
+      const imageUrl = `user-${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}.jpeg`;
 
-      await sharp(banner_profile[0].buffer, { animated: true })
-        .toFormat('jpeg')
-        .jpeg({ quality: 90 })
-        .toFile(
-          process.env.NODE_ENV !== 'production'
-            ? `${process.env.DEV_MEDIA_PATH}/users/${bannerUrl}`
-            : `${process.env.PROD_MEDIA_PATH}/users/${bannerUrl}`
-        );
+      const imageId = await storageService.processAndUploadImage(
+        imageProfileFile[0].buffer,
+        imageUrl
+      );
+      req.body.imageUrl = imageId;
+    }
 
-      req.body.bannerUrl = bannerUrl;
+    if (bannerProfileFile) {
+      const bannerUrl = `banner-${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}.jpeg`;
+
+      const bannerId = await storageService.processAndUploadImage(
+        bannerProfileFile[0].buffer,
+        bannerUrl
+      );
+      req.body.bannerUrl = bannerId;
     }
 
     next();

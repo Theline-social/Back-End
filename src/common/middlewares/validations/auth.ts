@@ -74,8 +74,7 @@ export const checkOTPVerificationEmailValidationRules = [
 export const signupValidationRules = [
   body('name')
     .isString()
-    .isLength({ min: 3 })
-    .withMessage('Name must be at least 2 characters'),
+    .withMessage('Name must be characters'),
   body('email').toLowerCase().isEmail().withMessage('Invalid email address'),
   body('phoneNumber')
     .notEmpty()

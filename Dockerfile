@@ -1,22 +1,20 @@
-FROM node
+# Use an official Node.js runtime as a parent image
+FROM node:14
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY . .
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-# Change Windows Command to Linux Command
-RUN sed -i 's/ "npm run build & (SET NODE_ENV=production)  & node dist/server.js"/"npm run build && NODE_ENV=production node dist/server.js"/' package.json
-
-
-# RUN sed -i 's/(SET NODE_ENV=development)  & nodemon server.js/NODE_ENV=production node server.js/' package.json
-
-# Install app dependencies
+# Install dependencies
 RUN npm install
 
-# Expose port 2023 (the port your app is running on)
+# Copy the rest of your application
+COPY . .
+
+# Expose the port the app runs on
 EXPOSE 2023
 
-# Start the app using the full path to npm
-CMD npm run start:dev
+# Command to run the application
+CMD ["npm", "run","start:prod"]

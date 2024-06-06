@@ -94,6 +94,7 @@ router
   .post(
     authController.requireAuth,
     reelsController.uploadReel,
+    reelsController.processReelMedia,
     reelsController.addReel
   );
 

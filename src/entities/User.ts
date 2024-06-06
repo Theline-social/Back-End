@@ -40,10 +40,15 @@ export class User {
   })
   username: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({
+    type: 'varchar',
+    length: 50,
+    default: `user${Date.now()}`,
+    nullable: true,
+  })
   name: string;
 
-  @Column({ type: 'varchar', unique: true, length: 70 })
+  @Column({ type: 'varchar', unique: true, length: 70, nullable: true })
   email: string;
 
   @Column({ type: 'varchar', unique: true, length: 70 })
@@ -64,7 +69,7 @@ export class User {
   @Column({ type: 'varchar', length: 160, nullable: true })
   bio: string;
 
-  @Column({ type: 'varchar', length: 100, default: 'Engineer' })
+  @Column({ type: 'varchar', length: 100, default: 'Business Pioneer' })
   jobtitle: string;
 
   @Column({
@@ -73,8 +78,6 @@ export class User {
     default: SubscriptionType.NONE,
   })
   subscriptionType: SubscriptionType;
-
-  
 
   @Column({
     type: 'date',

@@ -19,4 +19,4 @@ COPY . .
 EXPOSE 2023
 
 # Command to run the application
-CMD ["npm", "run","start:prod"]
+CMD ["npm", "run","start:dev"]

@@ -14,6 +14,8 @@ RUN npx tsc || echo "TypeScript compilation failed"
 
 # Copy the rest of your application
 COPY . .
+COPY dist /app/dist
+
 
 # Expose the port the app runs on
 EXPOSE 2023

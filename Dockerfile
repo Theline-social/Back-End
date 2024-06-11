@@ -9,11 +9,15 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install 
-RUN rm -rf dist
-RUN npx tsc || echo "TypeScript compilation failed"
 
 # Copy the rest of your application
 COPY . .
+
+# Build the application
+RUN rm -rf dist
+RUN npx tsc
+
+
 COPY dist /app/dist
 
 

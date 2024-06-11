@@ -21,4 +21,4 @@ COPY dist /app/dist
 EXPOSE 2023
 
 # Command to run the application
-CMD ["npm", "run","start:dev"]
+CMD ["npm", "run","start:prod"]

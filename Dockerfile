@@ -9,7 +9,7 @@ COPY package*.json ./
 
 # Install dependencies
 RUN npm install 
-RUN rimraf dist
+RUN rm -rf dist
 RUN npx tsc || echo "TypeScript compilation failed"
 
 # Copy the rest of your application

@@ -15,10 +15,12 @@ COPY . .
 
 # Build the application
 RUN rm -rf dist
-RUN npx tsc
-
+RUN npx tsc 
 
 COPY dist /app/dist
+
+
+
 
 
 # Expose the port the app runs on

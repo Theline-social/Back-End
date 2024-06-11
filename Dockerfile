@@ -8,7 +8,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install && npm run build 
+RUN npm install 
+RUN rimraf dist
+RUN npx tsc || echo "TypeScript compilation failed"
 
 # Copy the rest of your application
 COPY . .

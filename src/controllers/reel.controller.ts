@@ -11,9 +11,10 @@ import { ReelsService } from '../services/reel.service';
 
 const reelsService = new ReelsService();
 
-const storageService: IStorage = process.env.NODE_ENV === 'production'
-  ? BackblazeStorage.getInstance()
-  : LocalStorage.getInstance();
+const storageService: IStorage =
+  process.env.NODE_ENV === 'production'
+    ? BackblazeStorage.getInstance()
+    : LocalStorage.getInstance();
 
 const storage = multer.memoryStorage();
 
@@ -45,11 +46,8 @@ export const processReelMedia = async (
   if (!req.file) return next();
 
   try {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const fileName = `reel-${uniqueSuffix}.mp4`;
-
-    const reelId = await storageService.uploadVideo(req.file.buffer, fileName);
-    req.body.reelUrl = reelId;
+    const reelUrl = await storageService.uploadVideo(req.file.buffer);
+    req.body.reelUrl = reelUrl;
 
     next();
   } catch (error) {
@@ -83,7 +81,6 @@ export const addReel = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = res.locals.currentUser.userId;
 
-    
     const { reel } = await reelsService.addReel(userId, req.body);
 
     res.status(201).json({

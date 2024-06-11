@@ -54,25 +54,15 @@ export const processProfileMedia = async (
     ] as Express.Multer.File[];
 
     if (imageProfileFile) {
-      const imageUrl = `user-${Date.now()}-${Math.round(
-        Math.random() * 1e9
-      )}.jpeg`;
-
-      const imageId = await storageService.processAndUploadImage(
+      const imageUrl = await storageService.processAndUploadImage(
         imageProfileFile[0].buffer,
-        imageUrl
       );
-      req.body.imageUrl = imageId;
+      req.body.imageUrl = imageUrl;
     }
 
     if (bannerProfileFile) {
-      const bannerUrl = `banner-${Date.now()}-${Math.round(
-        Math.random() * 1e9
-      )}.jpeg`;
-
       const bannerId = await storageService.processAndUploadImage(
         bannerProfileFile[0].buffer,
-        bannerUrl
       );
       req.body.bannerUrl = bannerId;
     }

@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import { IStorage } from './IStorage';
 
- class BackblazeStorage implements IStorage {
+class BackblazeStorage implements IStorage {
   private static instance: BackblazeStorage;
   private b2: BackblazeB2;
 
@@ -16,7 +16,7 @@ import { IStorage } from './IStorage';
 
   public static getInstance(): BackblazeStorage {
     if (!BackblazeStorage.instance) {
-        BackblazeStorage.instance = new BackblazeStorage();
+      BackblazeStorage.instance = new BackblazeStorage();
     }
     return BackblazeStorage.instance;
   }
@@ -40,24 +40,31 @@ import { IStorage } from './IStorage';
     await this.authorize();
     const uploadUrl = await this.getUploadUrl();
 
-    const uploadResponse = await this.b2.uploadFile({
+    const response = await this.b2.uploadFile({
       uploadUrl: uploadUrl.uploadUrl,
       uploadAuthToken: uploadUrl.authorizationToken,
       fileName,
       data: fileBuffer,
       mime: mimeType,
     });
+    console.log(response);
 
-    return uploadResponse.data.fileId;
+    const fileUrl = `https://f003.backblazeb2.com/file/${process.env.B2_BUCKET_NAME}/${fileName}`;
+    return fileUrl;
   }
 
   public async processAndUploadImage(
     imageBuffer: Buffer,
-    fileName: string
+    fileName?: string
   ): Promise<string> {
+    if (!fileName) {
+      fileName = `images/user-${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}.jpeg`;
+    }
+
     const processedImage = await sharp(imageBuffer)
       .toFormat('jpeg')
-      .resize(500, 500)
       .jpeg({ quality: 90 })
       .toBuffer();
 
@@ -66,15 +73,25 @@ import { IStorage } from './IStorage';
 
   public async processAndUploadGif(
     gifBuffer: Buffer,
-    fileName: string
+    fileName?: string
   ): Promise<string> {
+    if (!fileName) {
+      fileName = `gifs/gif-${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}.jpeg`;
+    }
     return this.uploadFile(fileName, gifBuffer, 'image/gif');
   }
 
   public async uploadVideo(
     videoBuffer: Buffer,
-    fileName: string
+    fileName?: string
   ): Promise<string> {
+    if (!fileName) {
+      fileName = `reels/reel-${Date.now()}-${Math.round(
+        Math.random() * 1e9
+      )}.jpeg`;
+    }
     return this.uploadFile(fileName, videoBuffer, 'video/mp4');
   }
 
@@ -100,6 +117,22 @@ import { IStorage } from './IStorage';
     });
 
     return response.data.files.map((file: any) => file.fileName);
+  }
+
+  public async generateAuthorizedUrl(
+    fileName: string,
+    validDurationInSeconds: number = 3600
+  ): Promise<string> {
+    await this.authorize();
+    const response = await this.b2.getDownloadAuthorization({
+      bucketId: process.env.B2_BUCKET_ID!,
+      fileNamePrefix: fileName,
+      validDurationInSeconds: validDurationInSeconds,
+    });
+
+    const downloadAuthToken = response.data.authorizationToken;
+    const baseUrl = `https://f003.backblazeb2.com/file/${process.env.B2_BUCKET_NAME}/${fileName}`;
+    return `${baseUrl}?Authorization=${downloadAuthToken}`;
   }
 }
 

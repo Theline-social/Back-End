@@ -45,14 +45,11 @@ export const processTweetMedia = async (
 
       await Promise.all(
         images.map(async (image: Express.Multer.File, i: number) => {
-          const fileName = `tweet-${Date.now()}-${i + 1}.jpeg`;
-
-          const imageId = await storageService.processAndUploadImage(
+          const imageUrl = await storageService.processAndUploadImage(
             image.buffer,
-            fileName
           );
 
-          imageUrls.push(imageId);
+          imageUrls.push(imageUrl);
         })
       );
 
@@ -60,13 +57,10 @@ export const processTweetMedia = async (
     }
 
     if (gifs) {
-      const gifUrl = `gif-${Date.now()}-${Math.round(Math.random() * 1e9)}.gif`;
-
-      const gifId = await storageService.processAndUploadGif(
+      const gifUrl = await storageService.processAndUploadGif(
         gifs[0].buffer,
-        gifUrl
       );
-      req.body.gifUrl = gifId;
+      req.body.gifUrl = gifUrl;
     }
 
     next();

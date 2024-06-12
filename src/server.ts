@@ -25,6 +25,8 @@ let server: http.Server | https.Server;
 
 (async () => {
   try {
+    console.log("euvbiuevrb",process.env.DATABASE_PASSWORD, process.env.PORT);
+    
     await AppDataSource.initialize();
     if (AppDataSource.isInitialized) {
       console.log('DB connection established ✔️');

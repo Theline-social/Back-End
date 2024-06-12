@@ -61,6 +61,7 @@ let server: http.Server | https.Server;
       deleteOldNotificationJob.start();
       deleteTerminatedTagsJob.start();
     }
+    
   } catch (err) {
     console.log((err as Error).name, (err as Error).message);
     process.exit(1);

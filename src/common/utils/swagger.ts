@@ -14,7 +14,7 @@ export const options: swaggerJsdoc.Options = {
       description: 'Local server',
     },
     {
-      url: 'https://theline.social/api/v1', 
+      url: 'http://thelinechat.com/api/v1', 
       description: 'Production server',
     }
   ],

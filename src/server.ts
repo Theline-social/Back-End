@@ -24,15 +24,8 @@ const PORT = process.env.PORT || 2000;
 let server: http.Server | https.Server;
 (async () => {
   try {
-    console.log(process.env.DATABASE_NAME);
-    console.log(process.env.DATABASE_PASSWORD);
-    console.log(process.env.DATABASE_USERNAME);
-    console.log(process.env.DATABASE_PORT);
-    console.log(process.env.DATABASE_HOST);
-    
-    const i = await AppDataSource.initialize();
-    console.log(i);
-    
+    await AppDataSource.initialize();
+
     if (AppDataSource.isInitialized) {
       console.log('DB connection established ✔️');
 
@@ -68,7 +61,6 @@ let server: http.Server | https.Server;
       deleteOldNotificationJob.start();
       deleteTerminatedTagsJob.start();
     }
-    
   } catch (err) {
     console.log((err as Error).name, (err as Error).message);
     process.exit(1);

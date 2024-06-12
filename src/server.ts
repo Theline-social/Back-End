@@ -22,10 +22,10 @@ process.on('uncaughtException', (err: Error) => {
 const PORT = process.env.PORT || 2000;
 
 let server: http.Server | https.Server;
-
+console.log("euvbiuevrb",process.env.DATABASE_PASSWORD, process.env.PORT);
 (async () => {
   try {
-    console.log("euvbiuevrb",process.env.DATABASE_PASSWORD, process.env.PORT);
+    
     
     await AppDataSource.initialize();
     if (AppDataSource.isInitialized) {

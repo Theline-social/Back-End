@@ -154,8 +154,9 @@ class AuthService {
     body: SendConfirmOtpBody,
     lang: string
   ): Promise<void> => {
-    const { input, name, provider } = body;
+    let { input, name, provider } = body;
 
+    if (!name) name = 'Theliner';
     const { otp, hashedOtp, otpExpires } = createOtp(8, 10);
 
     const otpCode = await AppDataSource.getRepository(OtpCodes).findOne({

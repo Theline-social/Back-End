@@ -43,7 +43,7 @@ export class User {
   @Column({
     type: 'varchar',
     length: 50,
-    default: `user${Date.now()}`,
+    default: `The Liner`,
     nullable: true,
   })
   name: string;

@@ -55,7 +55,6 @@ export const sendOTPVerificationEmailValidationRules = [
   body('input')
     .custom((value, { req }) => isValidEmailOrPhone(value, req.body.provider))
     .withMessage('Invalid input'),
-  body('name').isString(),
 ];
 
 export const checkOTPVerificationEmailValidationRules = [

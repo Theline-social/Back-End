@@ -24,7 +24,7 @@ export interface CheckValidOtpBody {
 }
 
 export interface SendConfirmOtpBody {
-  name: string;
+  name?: string;
   input: string;
   provider: OtpProvider;
 }

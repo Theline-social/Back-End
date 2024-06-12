@@ -22,12 +22,17 @@ process.on('uncaughtException', (err: Error) => {
 const PORT = process.env.PORT || 2000;
 
 let server: http.Server | https.Server;
-console.log("euvbiuevrb",process.env.DATABASE_PASSWORD, process.env.PORT);
 (async () => {
   try {
+    console.log(process.env.DATABASE_NAME);
+    console.log(process.env.DATABASE_PASSWORD);
+    console.log(process.env.DATABASE_USERNAME);
+    console.log(process.env.DATABASE_PORT);
+    console.log(process.env.DATABASE_HOST);
     
+    const i = await AppDataSource.initialize();
+    console.log(i);
     
-    await AppDataSource.initialize();
     if (AppDataSource.isInitialized) {
       console.log('DB connection established ✔️');
 

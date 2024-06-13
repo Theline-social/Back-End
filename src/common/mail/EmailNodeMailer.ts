@@ -145,7 +145,7 @@ export class Email {
     } else {
       html = `
         <!-- CONTENT-->
-        <p>Hi ${this.firstName},</p>
+        <p>Dear ${this.firstName},</p>
         <p>To activate your subscription, we require some information from you</p>
 
         <p>You may receive a phone call to confirm the information. The activation process takes a maximum of 15 work days. Your subscription will start from the activation date.</p>

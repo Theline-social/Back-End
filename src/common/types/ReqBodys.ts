@@ -2,11 +2,11 @@ import { OtpProvider } from '../../entities';
 import { EmployeeStatus, EmployeeType } from '../../entities/Employee';
 
 export interface SignupRequestBody {
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
   phoneNumber: string;
   password: string;
-  jobtitle: string;
+  jobtitle?: string;
   dateOfBirth: Date;
 }
 

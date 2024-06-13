@@ -56,14 +56,15 @@ class AuthService {
 
     const user = new User();
     user.password = hashedPassword;
-    user.email = body.email;
-    user.jobtitle = body.jobtitle;
+    if (body.email) user.email = body.email;
+    if (body.jobtitle) user.jobtitle = body.jobtitle;
     user.dateOfBirth = body.dateOfBirth;
     user.phoneNumber = body.phoneNumber;
-    user.name = body.name;
+    if (body.name) user.name = body.name;
 
     const saveduser = await userRepository.save(user);
     user.username = `user-${saveduser.userId}`;
+    if (!user.email) user.email = `user-${saveduser.userId}@email.com`;
     const saveduser2 = await userRepository.save(user);
 
     return { user: filterUser(saveduser2) };
@@ -156,7 +157,7 @@ class AuthService {
   ): Promise<void> => {
     let { input, name, provider } = body;
 
-    if (!name) name = 'Theliner';
+    if (!name) name = 'The Liner';
     const { otp, hashedOtp, otpExpires } = createOtp(8, 10);
 
     const otpCode = await AppDataSource.getRepository(OtpCodes).findOne({

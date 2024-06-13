@@ -7,7 +7,7 @@ import {
   NotificationType,
 } from '../entities';
 import { AppError } from '../common/utils/AppError';
-import { Server } from 'http';
+import { METHODS, Server } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import {
   filterNotification,
@@ -147,9 +147,8 @@ class SocketService {
     this.io = require('socket.io')(this.server, {
       path: '/socket.io',
       cors: {
-        origin: (origin: any, callback: any) => {
-          callback(null, true);
-        },
+        origin: "https://theline.social",
+        METHODS: ["GET", "POST"],
         credentials: true,
         allowedHeaders: ['token'],
       },

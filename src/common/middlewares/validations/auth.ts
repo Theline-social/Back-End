@@ -74,7 +74,7 @@ export const signupValidationRules = [
   body('name')
     .isString()
     .withMessage('Name must be characters'),
-  body('email').toLowerCase().isEmail().withMessage('Invalid email address'),
+  body('email').toLowerCase(),
   body('phoneNumber')
     .notEmpty()
     .custom(isPhoneValid)

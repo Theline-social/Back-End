@@ -31,7 +31,7 @@ const usersService = new UsersService();
 const employeeService = new EmployeeService();
 
 class AuthService {
-  constructor() { }
+  constructor() {  }
 
   signup = async (body: SignupRequestBody) => {
     const userRepository = AppDataSource.getRepository(User);

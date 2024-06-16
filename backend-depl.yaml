@@ -17,11 +17,11 @@ spec:
         image: mahmoudyahia/backend-image:latest
         resources:
           limits:
-            cpu: "1"
-            memory: "512Mi"
+            cpu: "2"
+            memory: "4096Mi"
           requests:
-            cpu: "0.5"
-            memory: "256Mi"
+            cpu: "1"
+            memory: "2048Mi"
         env:
           - name: NODE_ENV
             value: production

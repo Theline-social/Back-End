@@ -44,7 +44,7 @@ pipeline {
                 script {
                     withEnv(["KUBECONFIG=/var/lib/jenkins/.kube/config"]) {
                         dir('Back-End') {
-                           // sh 'kubectl delete deployment backend-deployment'
+                           sh 'kubectl delete deployment backend-deployment'
                             sh 'kubectl apply -f backend-depl.yaml --validate=false'
                         }
                     }

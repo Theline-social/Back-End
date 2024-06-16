@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: mahmoudyahia/backend-image:latest
+        resources:
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+          requests:
+            cpu: "0.5"
+            memory: "256Mi"
+        env:
+          - name: NODE_ENV
+            value: production
+          - name: ACCESSTOKEN_SECRET_KEY
+            value: Yahia-Samir2
+          - name: RESETTOKEN_SECRET_KEY
+            value: Yahia-Samir
+          - name: ACCESS_TOKEN_EXPIRESIN
+            value: "240"
+          - name: PORT
+            value: "2023"
+          - name: DATABASE_HOST
+            value: '194.164.77.10'
+          - name: DATABASE_PORT
+            value: '5432'
+          - name: DATABASE_USERNAME
+            value: postgres
+          - name: DATABASE_PASSWORD
+            value: BnYahia162
+          - name: DATABASE_NAME
+            value: thelinedb
+          - name: SSL
+            value: "FALSE"
+          - name: ReCAPTCHA_SECRET_KEY
+            value: 6Lf0UH0pAAAAAESMKpCDmXkKk_Hc3N7syCgotGN5
+          - name: CLIENT_SECRET_GOOGLE
+            value: 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
+          - name: CLIENT_ID_GOOGLE
+            value: 747286868244-5769tksecnl0s5jds76cdtj13phph6l7.apps.googleusercontent.com
+          - name: PAYMENT_FATOORAH_DEV_API_KEY
+            value: rLtt6JWvbUHDDhsZnfpAhpYk4dxYDQkbcPTyGaKp2TYqQgG7FGZ5Th_WD53Oq8Ebz6A53njUoo1w3pjU1D4vs_ZMqFiz_j0urb_BH9Oq9VZoKFoJEDAbRZepGcQanImyYrry7Kt6MnMdgfG5jn4HngWoRdKduNNyP4kzcp3mRv7x00ahkm9LAK7ZRieg7k1PDAnBIOG3EyVSJ5kK4WLMvYr7sCwHbHcu4A5WwelxYK0GMJy37bNAarSJDFQsJ2ZvJjvMDmfWwDVFEVe_5tOomfVNt6bOg9mexbGjMrnHBnKnZR1vQbBtQieDlQepzTZMuQrSuKn-t5XZM7V6fCW7oP-uXGX-sMOajeX65JOf6XVpk29DP6ro8WTAflCDANC193yof8-f5_EYY-3hXhJj7RBXmizDpneEQDSaSz5sFk0sV5qPcARJ9zGG73vuGFyenjPPmtDtXtpx35A-BVcOSBYVIWe9kndG3nclfefjKEuZ3m4jL9Gg1h2JBvmXSMYiZtp9MR5I6pvbvylU_PP5xJFSjVTIz7IQSjcVGO41npnwIxRXNRxFOdIUHn0tjQ-7LwvEcTXyPsHXcMD8WtgBh-wxR8aKX7WPSsT1O8d8reb2aR7K3rkV3K82K_0OgawImEpwSvp9MNKynEAJQS6ZHe_J_l77652xwPNxMRTMASk1ZsJL
+          - name: PAYMENT_FATOORAH_PROD_API_KEY
+            value: 8JFLVztZCvghXW-mWrWaFUSgE_ZqsXRNFrutkAAHyypxDAX-B9PURPcrmitHrh2Rl_RakG2hnYX3SMkOBxOQdv9p8QzUq9I5YjsggQPRTTCJkYfkCbyWnAJESIRYGaqtSzx0MuNFDaoMp5fEQevBB3kptrsAVPIGapcQ9oBKL9OrcZc44AE-mtLj4cIGZPJ3LK_ApRtewkY-P1LXOJFYdmP5vumWCIiUVK0RZuX-gRqWxZWkfaEKotLNfHTOAbrEUBcfEng9c7A_4zy-gfluDWJnvJl9m1Ae5gNYUySJhiwy57xKg35NKfwBxZUorpuBvNyLJnXhKBo8ucjd7up7WLD3ngloT1BFFBpU3PMQxcOuZC4fG5Z5Y3ZDtZpmxhIhTPzb3cHaiYRiBxcl5thsott8LULjOw-pPZ8Kvn531Rag8hSa2eQCMP8Ac2E0vM9bphXZo04CgbJwPV-mZOtTcJ_yRuML83L4qCVHOjwS-AHDsBzl33G43WbeJ6RqQezLoCMV1zf8QIdXfGFB24236zF5CL9LG8sQ35p3uws9lE2cPuInbY-pxGJ9s1bQc_dRjvHnFEJ4O_vvRfQYeDnowlJAdZzAxDDY9H6khWVPehzZPdFQkeCJiV_RshRDVv0tlCzeYeDTlEP4tpx4U5ERFOZfj5bQZJtK9y2xbor5EI_X3_w8julSAn9JICYVUt3ZnvNjthhitWala2pu__Nnio2shpoIYmlII-eGELjrA50OXJNp
+          - name: MAIL_HOST
+            value: sandbox.smtp.mailtrap.io
+          - name: MAIL_PORT
+            value: "587"
+          - name: MAIL_USERNAME
+            value: 4ea5e0dc18afea
+          - name: MAIL_PASSWORD
+            value: 56a7f0edc78341
+          - name: MAIL_FROM
+            value: no-reply@TheLine.com
+          - name: VERIFY_MAILER_FROM
+            value: verify@theline.social
+          - name: VERIFY_MAILER_PASSWORD
+            value: TlS123tLs1
+          - name: PANEL_ADDRESS
+            value: https://109.199.106.235:27648
+          - name: SUBSCRIPTION_MAILER_FROM
+            value: sub@theline.social
+          - name: SUBSCRIPTION_MAILER_PASSWORD
+            value: C347ee1d
+          - name: Recovery_code
+            value: ZV8E3R96RMTNUY476TA51A7Q
+          - name: TWILIO_AUTH_TOKEN
+            value: 8921a1cf6fd1c0006f8e23ce035eb8b8
+          - name: TWILIO_ACCOUNT_SID
+            value: AC84e36fa66b1084613920118482d47a65
+          - name: TWILIO_PHONE_NUMBER
+            value: "+15169906455"
+          - name: TWILIO_SERVICE_ID
+            value: VA1b7ef0624677e7482e8eff8e2d7b21f6
+          - name: MSEGAT_USERSENDER
+            value: Linker
+          - name: MSEGAT_USERNAME
+            value: Zaki_Almalki
+          - name: MSEGAT_API_KEY
+            value: 0fd2d124c543215303a13f9727aae1a3
+          - name: B2_APPLICATION_KEY_ID
+            value: "0033f6091c1d8320000000002"
+          - name: B2_APPLICATION_KEY
+            value: "K003vrMz7X4Wuq24qaBrmEmUlKbn8aM"
+          - name: B2_BUCKET_ID
+            value: "53afd6a0d921ec118df80312"
+          - name:  B2_BUCKET_NAME
+            value: "thelinesocial"    
+        ports:
+        - containerPort: 2023
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  type: NodePort
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 2023
+      targetPort: 2023
+      nodePort: 30036 

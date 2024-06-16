@@ -4,7 +4,7 @@ import compression from 'compression';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import cors from 'cors';
-import bodyParser from 'body-parser';
+import bodyParser from 'body-parser'; 
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import { AppError, swaggerSpec } from './common';

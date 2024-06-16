@@ -147,10 +147,7 @@ class SocketService {
     this.io = require('socket.io')(this.server, {
       path: '/socket.io',
       cors: {
-        origin: "https://thelinechat.com",
-        METHODS: ["GET", "POST"],
-        credentials: true,
-        allowedHeaders: ['token'],
+        origin: '*',
       },
     });
 

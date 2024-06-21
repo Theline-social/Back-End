@@ -94,8 +94,6 @@ pipeline {
                 sh 'docker volume prune -f'
                 // Remove all unused networks
                 sh 'docker network prune -f'
-                // Remove images with the repository goushaa/frontend and no tag (dangling)
-                sh 'docker rmi $(docker images -f "dangling=true" -q)'
 
                 // Remove all unused Docker objects (containers, images, volumes, networks) ==> in kube only
                 //sh 'docker system prune -a -f'

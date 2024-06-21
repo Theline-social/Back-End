@@ -54,10 +54,12 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 script {
-                    // Ensure Docker Compose is up-to-date
-                    sh 'docker-compose -f docker-compose.yaml pull'
-                    // Start containers defined in the docker-compose file
-                    sh 'docker-compose -f docker-compose.yaml up -d'
+                   dir('Back-End') {
+                       // Ensure Docker Compose is up-to-date
+                       sh 'docker-compose -f docker-compose.yaml pull'
+                       // Start containers defined in the docker-compose file
+                       sh 'docker-compose -f docker-compose.yaml up -d'
+                    }
                 }
             }
         }

@@ -6,12 +6,14 @@ pipeline {
     }
   
     stages {
-         stage('Cleanup Workspace') {
+        stage('Cleanup Workspace') {
             steps {
                 // Clean up the workspace to ensure no conflicts with previous builds
                 script {
                     sh '''
-                        if [ -d "Back-End" ]; then rm -rf Back-End; fi
+                        if [ -d "Back-End" ]; then
+                            rm -rf Back-End
+                        fi
                     '''
                 }
             }
@@ -19,26 +21,38 @@ pipeline {
         
         stage('Checkout Backend') {
             steps {
+                // Clone the backend repository
                 withCredentials([usernamePassword(credentialsId: 'github-auth', passwordVariable: 'GITHUB_TOKEN', usernameVariable: 'GITHUB_USERNAME')]) {
-                    sh 'git clone https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/Motaql-Social-media/Back-End.git'
+                    sh 'git clone https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/Motaql-Social-media/Back-End.git Back-End'
                 }
             }
         }
+        
         stage('Build Backend Image') {
             steps {
                 script {
                     dir('Back-End') {
+                        // Login to Docker Hub
                         sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                        
+                        // Build the Docker image
                         sh 'docker build -t backend-image .'
+                        
+                        // Tag the Docker image
                         sh "docker tag backend-image:latest ${DOCKERHUB_CREDENTIALS_USR}/backend-image:latest"
-                        echo 'pushing to hub....'
+                        
+                        // Push the Docker image to Docker Hub
+                        echo 'Pushing image to Docker Hub...'
                         sh 'docker push ${DOCKERHUB_CREDENTIALS_USR}/backend-image:latest'
+                        
+                        // Logout from Docker Hub
                         sh 'docker logout'
                     }
                 }
             }
         }
-     /* stage('Deploy to Kubernetes') {
+        /*
+           stage('Deploy to Kubernetes') {
             steps {
                 script {
                     withEnv(["KUBECONFIG=/var/lib/jenkins/.kube/config-rancher-cluster"]) {
@@ -50,20 +64,22 @@ pipeline {
                 }
             }
         }
-    }*/    
+        */
         stage('Deploy with Docker Compose') {
             steps {
                 script {
-                   dir('Back-End') {
-                       // Ensure Docker Compose is up-to-date
-                       sh 'docker-compose -f docker-compose.yaml pull'
-                       // Start containers defined in the docker-compose file
-                       sh 'docker-compose -f docker-compose.yaml up -d'
+                    dir('Back-End') {
+                        // Ensure Docker Compose is up-to-date
+                        sh 'docker-compose -f docker-compose.yaml pull'
+                        
+                        // Start containers defined in the docker-compose file
+                        sh 'docker-compose -f docker-compose.yaml up -d'
                     }
                 }
             }
         }
-
+    }
+    
     post {
         always {
             echo 'Cleaning up...'
@@ -81,13 +97,13 @@ pipeline {
                 sh 'docker system prune -a -f'
             }
         }
+        
         success {
             echo 'Pipeline completed successfully!'
         }
+        
         failure {
             echo 'Pipeline failed.'
         }
     }
-  }
 }
-    

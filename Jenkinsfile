@@ -71,10 +71,8 @@ pipeline {
                     dir('Back-End') {
                         // Ensure Docker Compose is up-to-date
                         sh 'docker-compose -f docker-compose.yaml pull'
-
                         // Stop and remove existing containers
                         sh 'docker-compose -f docker-compose.yaml down'
-                        
                         // Start containers defined in the docker-compose file
                         sh 'docker-compose -f docker-compose.yaml up -d'
                     }
@@ -89,15 +87,18 @@ pipeline {
             script {
                 echo 'Cleaning up Docker system...'
                 // Remove all stopped containers
-                sh 'docker container prune -f'
+                sh 'docker container prune -f --filter "until=1h"'
                 // Remove all dangling images
                 sh 'docker image prune -f'
                 // Remove all unused volumes
                 sh 'docker volume prune -f'
                 // Remove all unused networks
                 sh 'docker network prune -f'
-                // Remove all unused Docker objects (containers, images, volumes, networks)
-                sh 'docker system prune -a -f'
+                // Remove images with the repository goushaa/frontend and no tag (dangling)
+                sh 'docker rmi $(docker images -f "dangling=true" -q)'
+
+                // Remove all unused Docker objects (containers, images, volumes, networks) ==> in kube only
+                //sh 'docker system prune -a -f'
             }
         }
         
@@ -106,6 +107,12 @@ pipeline {
         }
         
         failure {
+            script {   // ==> in compose only
+               dir('Back-End') {
+                  // Stop and remove existing containers
+                  sh 'docker-compose -f docker-compose.yaml down'
+               }
+            }
             echo 'Pipeline failed.'
         }
     }

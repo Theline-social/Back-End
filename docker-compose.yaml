@@ -5,6 +5,8 @@ services:
     image: mahmoudyahia/backend-image:latest
     ports:
       - "30036:2023"  # Expose container port 2023 to host
+    networks:
+      - my_shared_network
     environment:
       - NODE_ENV=production
       - ACCESSTOKEN_SECRET_KEY=Yahia-Samir2
@@ -53,4 +55,9 @@ services:
       POSTGRES_DB: thelinedb
     ports:
       - "5432:5432"  # Expose PostgreSQL port
-
+    networks:
+      - my_shared_network
+      
+networks:
+  my_shared_network:
+    external: true

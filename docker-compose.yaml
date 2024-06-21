@@ -11,7 +11,7 @@ services:
       - RESETTOKEN_SECRET_KEY=Yahia-Samir
       - ACCESS_TOKEN_EXPIRESIN=240
       - PORT=2023
-      - DATABASE_HOST=localhost
+      - DATABASE_HOST=database  # Use service name of PostgreSQL container
       - DATABASE_PORT=5432
       - DATABASE_USERNAME=postgres
       - DATABASE_PASSWORD=BnYahia162
@@ -44,3 +44,13 @@ services:
       - B2_APPLICATION_KEY=K003vrMz7X4Wuq24qaBrmEmUlKbn8aM
       - B2_BUCKET_ID=53afd6a0d921ec118df80312
       - B2_BUCKET_NAME=thelinesocial
+
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: BnYahia162
+      POSTGRES_USER: postgres
+      POSTGRES_DB: thelinedb
+    ports:
+      - "5432:5432"  # Expose PostgreSQL port
+

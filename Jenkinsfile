@@ -71,8 +71,6 @@ pipeline {
                     dir('Back-End') {
                         // Ensure Docker Compose is up-to-date
                         sh 'docker-compose -f docker-compose.yaml pull'
-                        // Stop and remove existing containers
-                        sh 'docker-compose -f docker-compose.yaml down'
                         // Start containers defined in the docker-compose file
                         sh 'docker-compose -f docker-compose.yaml up -d'
                     }

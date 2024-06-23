@@ -7,6 +7,8 @@ services:
       - "30036:2023"  # Expose container port 2023 to host
     networks:
       - my_shared_network
+    extra_hosts:
+      - "host.docker.internal:172.17.0.1"  
     environment:
       - NODE_ENV=production
       - ACCESSTOKEN_SECRET_KEY=Yahia-Samir2

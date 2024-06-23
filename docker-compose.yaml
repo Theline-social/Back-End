@@ -13,7 +13,7 @@ services:
       - RESETTOKEN_SECRET_KEY=Yahia-Samir
       - ACCESS_TOKEN_EXPIRESIN=240
       - PORT=2023
-      - DATABASE_HOST=172.22.0.1
+      - DATABASE_HOST=localhost
       - DATABASE_PORT=5432
       - DATABASE_USERNAME=postgres
       - DATABASE_PASSWORD=BnYahia162

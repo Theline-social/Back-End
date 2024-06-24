@@ -16,6 +16,7 @@ import {
   User,
 } from '../entities';
 import * as fs from 'fs';
+import { performance } from 'perf_hooks';
 
 import socketService from './socket.service';
 import { TweetMedia } from '../entities/Media';
@@ -38,6 +39,7 @@ export class TweetsService {
   ) => {
     const tweetRepository = AppDataSource.getRepository(Tweet);
     const userRepository = AppDataSource.getRepository(User);
+    const startTime = performance.now();
 
     const user = await userRepository.findOne({
       where: { userId },
@@ -63,7 +65,10 @@ export class TweetsService {
       select: tweetSelectOptions,
       relations: tweetRelations,
       order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+    console.log(tweetsOfFollowings);
 
     let randomTweets: Tweet[] = [];
     if (tweetsOfFollowings.length < limit) {
@@ -80,6 +85,8 @@ export class TweetsService {
         select: tweetSelectOptions,
         relations: tweetRelations,
         order: { createdAt: 'DESC' },
+        skip: 0,
+        take: limit - tweetsOfFollowings.length,
       });
     }
 
@@ -92,6 +99,12 @@ export class TweetsService {
     const timelineTweets = paginatedTweets.map((tweet) =>
       filterTweet(tweet, userId)
     );
+
+    const endTime = performance.now();
+    console.log(
+      `timeline tweets fetch Execution time: ${(endTime - startTime)/1000.0} s`
+    );
+    console.log(`for number of tweets: ${timelineTweets.length}`);
 
     return { timelineTweets };
   };

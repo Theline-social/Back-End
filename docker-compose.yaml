@@ -6,7 +6,7 @@ services:
     ports:
       - "30036:2023"  # Expose container port 2023 to host
     networks:
-      - my_shared_network
+      - my_shared_network  
     extra_hosts:
       - "host.docker.internal:172.17.0.1"  
     environment:
@@ -59,7 +59,6 @@ services:
   #     - "5432:5432"  # Expose PostgreSQL port
   #   networks:
   #     - my_shared_network
-      
 networks:
   my_shared_network:
     external: true

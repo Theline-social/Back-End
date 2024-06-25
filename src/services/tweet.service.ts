@@ -68,7 +68,6 @@ export class TweetsService {
       skip: (page - 1) * limit,
       take: limit,
     });
-    console.log(tweetsOfFollowings);
 
     let randomTweets: Tweet[] = [];
     if (tweetsOfFollowings.length < limit) {

@@ -150,7 +150,7 @@ class SocketService {
         origin: (origin: any, callback: any) => {
           callback(null, true);
         },
-        // credentials: true,
+        credentials: true,
         allowedHeaders: ['token'],
       },
     });

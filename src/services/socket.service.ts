@@ -158,6 +158,7 @@ class SocketService {
     if (!this.io) return;
     if (!process.env.ACCESSTOKEN_SECRET_KEY!)
       throw new AppError('JWT secret key not provided', 400);
+console.log(0);
 
     this.io
       .use(async (socket: Socket, next: any) => {

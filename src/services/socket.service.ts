@@ -163,12 +163,15 @@ class SocketService {
       .use(async (socket: Socket, next: any) => {
         if (!socket.handshake.headers.token)
           return next(new AppError('you are not logged in', 401));
+console.log(1);
 
         try {
           const payload = await jwtVerifyPromisified(
             socket.handshake.headers.token as string,
             process.env.ACCESSTOKEN_SECRET_KEY as string
           );
+console.log(2);
+
           const user = await this.AppDataSource.getRepository(User).findOne({
             where: { userId: payload.id },
             select: {
@@ -178,6 +181,7 @@ class SocketService {
               name: true,
             },
           });
+          console.log(3);
 
           if (!user) {
             return next(new AppError('User does no longer exist', 401));

@@ -145,7 +145,7 @@ class SocketService {
     this.AppDataSource = AppDataSource;
 
     this.io = require('socket.io')(this.server, {
-      path: '/socket.io',
+      path: '/api/socket.io',
       cors: {
         origin: (origin: any, callback: any) => {
           callback(null, true);

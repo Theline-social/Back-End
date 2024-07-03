@@ -147,7 +147,11 @@ class SocketService {
     this.io = require('socket.io')(this.server, {
       path: '/socket.io',
       cors: {
-        origin: '*',
+        origin: (origin: any, callback: any) => {
+          callback(null, true);
+        },
+        // credentials: true,
+        allowedHeaders: ['token'],
       },
     });
 
@@ -165,7 +169,6 @@ class SocketService {
             socket.handshake.headers.token as string,
             process.env.ACCESSTOKEN_SECRET_KEY as string
           );
-
           const user = await this.AppDataSource.getRepository(User).findOne({
             where: { userId: payload.id },
             select: {
@@ -179,7 +182,6 @@ class SocketService {
           if (!user) {
             return next(new AppError('User does no longer exist', 401));
           }
-
           socket.data.user = user ? user : {};
 
           socket.join(`user_${user.userId}_room`);

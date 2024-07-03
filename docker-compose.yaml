@@ -6,7 +6,8 @@ services:
     ports:
       - "30036:2023"  # Expose container port 2023 to host
     networks:
-      - my_shared_network  
+      - stack_comm
+      - private_network
     extra_hosts:
       - "host.docker.internal:172.17.0.1"  
     environment:
@@ -15,7 +16,7 @@ services:
       - RESETTOKEN_SECRET_KEY=Yahia-Samir
       - ACCESS_TOKEN_EXPIRESIN=240
       - PORT=2023
-      - DATABASE_HOST=host.docker.internal
+      - DATABASE_HOST=database
       - DATABASE_PORT=5432
       - DATABASE_USERNAME=postgres
       - DATABASE_PASSWORD=BnYahia162
@@ -49,16 +50,26 @@ services:
       - B2_BUCKET_ID=53afd6a0d921ec118df80312
       - B2_BUCKET_NAME=thelinesocial
 
-  # database:
-  #   image: postgres:latest
-  #   environment:
-  #     POSTGRES_PASSWORD: BnYahia162
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_DB: thelinedb
-  #   ports:
-  #     - "5432:5432"  # Expose PostgreSQL port
-  #   networks:
-  #     - my_shared_network
+
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: BnYahia162
+      POSTGRES_USER: postgres
+      POSTGRES_DB: thelinedb
+    ports:
+      - "5432:5432"  # Expose PostgreSQL port
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - stack_comm
+      - private_network
+
 networks:
-  my_shared_network:
+  private_network:
+  stack_comm:
     external: true
+    
+volumes:
+  db_data:
+    driver: local

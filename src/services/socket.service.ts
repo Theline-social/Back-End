@@ -330,7 +330,7 @@ class SocketService {
             .execute();
         });
       });
-    console.log('WebSocket initialized ✔️');
+    console.log('WebSocket initialized00 ✔️');
   }
 }
 

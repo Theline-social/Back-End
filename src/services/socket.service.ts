@@ -154,24 +154,25 @@ class SocketService {
         allowedHeaders: ['token'],
       },
     });
+    console.log(-1);
 
     if (!this.io) return;
     if (!process.env.ACCESSTOKEN_SECRET_KEY!)
       throw new AppError('JWT secret key not provided', 400);
-console.log(0);
+    console.log(0);
 
     this.io
       .use(async (socket: Socket, next: any) => {
         if (!socket.handshake.headers.token)
           return next(new AppError('you are not logged in', 401));
-console.log(1);
+        console.log(1);
 
         try {
           const payload = await jwtVerifyPromisified(
             socket.handshake.headers.token as string,
             process.env.ACCESSTOKEN_SECRET_KEY as string
           );
-console.log(2);
+          console.log(2);
 
           const user = await this.AppDataSource.getRepository(User).findOne({
             where: { userId: payload.id },
